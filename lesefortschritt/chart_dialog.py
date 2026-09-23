@@ -5,12 +5,14 @@ from qt.core import (
     QPushButton, QSizePolicy, Qt, QPixmap
 )
 
+from calibre_plugins.lesefortschritt.localization import _
+
 
 class ChartDialog(QDialog):
 
     def __init__(self, png_pfad, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('Lesefortschritt')
+        self.setWindowTitle(_('Reading progress'))
 
         self._original_pixmap = None
 
@@ -18,8 +20,8 @@ class ChartDialog(QDialog):
 
         if not os.path.exists(png_pfad):
             layout.addWidget(QLabel(
-                f'Chart nicht gefunden:\n{png_pfad}\n\n'
-                f'Wurde zeichne_chart.py erfolgreich ausgeführt?'
+                _('Chart not found:\n{}\n\n'
+                  'Did zeichne_chart.py run successfully?').format(png_pfad)
             ))
             self._fuege_buttonzeile_hinzu(layout)
             self._setze_startgroesse()
@@ -28,7 +30,7 @@ class ChartDialog(QDialog):
         pixmap = QPixmap(png_pfad)
         if pixmap.isNull():
             layout.addWidget(QLabel(
-                f'PNG konnte nicht geladen werden:\n{png_pfad}'
+                _('Could not load PNG:\n{}').format(png_pfad)
             ))
             self._fuege_buttonzeile_hinzu(layout)
             self._setze_startgroesse()
@@ -48,7 +50,7 @@ class ChartDialog(QDialog):
     def _fuege_buttonzeile_hinzu(self, layout):
         zeile = QHBoxLayout()
         zeile.addStretch()
-        btn = QPushButton('Schließen')
+        btn = QPushButton(_('Close'))
         btn.clicked.connect(self.accept)
         zeile.addWidget(btn)
         layout.addLayout(zeile)
@@ -80,10 +82,7 @@ class ChartDialog(QDialog):
         if ziel.width() < 2 or ziel.height() < 2:
             return
         skaliert = self._original_pixmap.scaled(
-            ziel,
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation,
-        )
+            ziel, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.bild.setPixmap(skaliert)
 
     def resizeEvent(self, event):

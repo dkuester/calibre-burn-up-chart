@@ -66,6 +66,10 @@ lassen sich einstellen:
 Die Werte werden in `~/Library/Preferences/calibre/plugins/lesefortschritt.json`
 gespeichert und bleiben über Calibre-Neustarts erhalten.
 
+- **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
+  Calibres Spracheinstellung. Weitere Sprachen können über
+  `translations/<lang>/` ergänzt werden.
+
 ## Versionierung
 
 Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).

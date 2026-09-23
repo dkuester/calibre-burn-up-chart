@@ -3,6 +3,7 @@ from qt.core import (
 )
 
 from calibre_plugins.lesefortschritt import config
+from calibre_plugins.lesefortschritt.localization import _
 
 
 class ConfigWidget(QWidget):
@@ -23,7 +24,7 @@ class ConfigWidget(QWidget):
         self.datum_edit.setDisplayFormat('dd.MM.yyyy')
         self.datum_edit.setDate(QDate(jahr, monat, tag))
         self.datum_edit.setMinimumDate(QDate.currentDate())
-        layout.addRow('Zieldatum:', self.datum_edit)
+        layout.addRow(_('Target date:'), self.datum_edit)
 
         # --- Abbau-Faktor ---
         self.faktor_edit = QDoubleSpinBox()
@@ -31,15 +32,15 @@ class ConfigWidget(QWidget):
         self.faktor_edit.setSingleStep(0.05)
         self.faktor_edit.setDecimals(2)
         self.faktor_edit.setValue(float(config['abbau_faktor']))
-        layout.addRow('Sanfter Abbau (Faktor):', self.faktor_edit)
+        layout.addRow(_('Gentle reduction (factor):'), self.faktor_edit)
 
         # --- Erläuterung ---
-        hinweis = QLabel(
-            '<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 '
-            'sein soll.<br><br>'
-            '<b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch '
-            'übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.'
-        )
+        hinweis = QLabel(_(
+            '<b>Target date:</b> Date by which the backlog (TBR) should '
+            'reach 0.<br><br>'
+            '<b>Gentle reduction:</b> Fraction of the TBR that remains at '
+            'the target date. 0.50 means: TBR halved by the target date.'
+        ))
         hinweis.setWordWrap(True)
         layout.addRow(hinweis)
 
