@@ -78,7 +78,8 @@ across Calibre restarts.
 This plugin follows [Semantic Versioning](https://semver.org/).
 The current version is maintained as a `__version__` tuple in
 `lesefortschritt/__init__.py` and is displayed by Calibre in the plugins
-list. All changes are documented in [CHANGELOG.md](CHANGELOG.md).
+list. All changes are documented in [CHANGELOG.md](CHANGELOG.md)
+([German version](CHANGELOG.de.md)).
 
 Releases are marked in Git as annotated tags with a `v` prefix
 (e.g. `v1.0.0`). To bump the version:
@@ -103,6 +104,7 @@ calibre-burn-up-chart/
 ├── LICENSE
 ├── AGENTS.md
 ├── CHANGELOG.md
+├── CHANGELOG.de.md
 ├── make_icon.py
 └── lesefortschritt/
     ├── __init__.py                          # Plugin metadata, version

@@ -95,3 +95,20 @@ msgstr "Anzahl Bücher"
 
 msgid "Year"
 msgstr "Jahr"
+
+# Config dialog: custom columns
+msgid "Custom column \"read\":"
+msgstr "Benutzerdefinierte Spalte \"gelesen\":"
+
+msgid "Custom column \"last read\":"
+msgstr "Benutzerdefinierte Spalte \"zuletzt gelesen\":"
+
+msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date."
+msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen."
+
+# Error message for missing matplotlib
+msgid "Python 3 with matplotlib not found. Install it with: brew install python-matplotlib"
+msgstr "Python 3 mit matplotlib nicht gefunden. Installation mit: brew install python-matplotlib"
+
+msgid "matplotlib is missing in Python. Install it with: brew install python-matplotlib"
+msgstr "matplotlib fehlt in Python. Installation mit: brew install python-matplotlib"

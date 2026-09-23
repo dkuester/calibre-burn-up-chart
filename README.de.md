@@ -81,7 +81,8 @@ Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).
 Die aktuelle Version ist in `lesefortschritt/__init__.py` als
 `__version__`-Tupel gepflegt und wird von Calibre in der
 Erweiterungsliste angezeigt. Alle Änderungen sind im
-[CHANGELOG.md](CHANGELOG.md) dokumentiert.
+[CHANGELOG.md](CHANGELOG.md) dokumentiert
+([deutsche Version](CHANGELOG.de.md)).
 
 Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
 (z.B. `v1.0.0`). Um die Version zu erhöhen:
@@ -106,6 +107,7 @@ calibre-burn-up-chart/
 ├── LICENSE
 ├── AGENTS.md
 ├── CHANGELOG.md
+├── CHANGELOG.de.md
 ├── make_icon.py
 └── lesefortschritt/
     ├── __init__.py                          # Plugin-Metadaten, Version

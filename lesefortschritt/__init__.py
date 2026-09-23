@@ -2,13 +2,15 @@ from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 
 
-__version__ = (1, 1, 0)
+__version__ = (1, 2, 0)
 __version_str__ = '.'.join(str(x) for x in __version__)
 
 
 config = JSONConfig('plugins/lesefortschritt')
 config.defaults['ziel_datum'] = '2050-09-04'
 config.defaults['abbau_faktor'] = 0.5
+config.defaults['spalte_gelesen'] = '#gelesen'
+config.defaults['spalte_last_read'] = '#last_read'
 
 
 class LesefortschrittPlugin(InterfaceActionBase):
