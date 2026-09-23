@@ -66,6 +66,26 @@ lassen sich einstellen:
 Die Werte werden in `~/Library/Preferences/calibre/plugins/lesefortschritt.json`
 gespeichert und bleiben über Calibre-Neustarts erhalten.
 
+## Versionierung
+
+Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).
+Die aktuelle Version ist in `lesefortschritt/__init__.py` als
+`__version__`-Tupel gepflegt und wird von Calibre in der Erweiterungsliste
+angezeigt. Alle Änderungen sind im [CHANGELOG.md](CHANGELOG.md) dokumentiert.
+
+Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
+(z.B. `v1.0.0`). Um die Version zu erhöhen:
+
+1. `__version__` in `lesefortschritt/__init__.py` anpassen.
+2. Eintrag in `CHANGELOG.md` ergänzen.
+3. Plugin neu bauen und testen.
+4. Committen und taggen:
+
+   ```bash
+   git commit -am "Release v1.0.1"
+   git tag -a v1.0.1 -m "Kurze Beschreibung"
+   ```
+
 ## Projektstruktur
 
 ```
@@ -74,14 +94,18 @@ calibre-burn-up-chart/
 ├── README.md
 ├── LICENSE
 ├── AGENTS.md
+├── CHANGELOG.md
+├── make_icon.py
 └── lesefortschritt/
-    ├── __init__.py                          # Plugin-Metadaten
+    ├── __init__.py                          # Plugin-Metadaten, Version
     ├── plugin-import-name-lesefortschritt.txt
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_dialog.py                      # Chart-Anzeigedialog
     ├── export_lesestatus.py                 # Datenbeschaffung aus Calibre
-    └── zeichne_chart.py                     # Chart-Erzeugung (matplotlib)
+    ├── zeichne_chart.py                     # Chart-Erzeugung (matplotlib)
+    └── images/
+        └── icon.png                         # Plugin-Icon
 ```
 
 ## Technische Hinweise
