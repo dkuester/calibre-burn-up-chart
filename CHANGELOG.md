@@ -5,7 +5,33 @@ dokumentiert. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [1.2.0] – 2026-09-23
+
+### Hinzugefügt
+
+- Benutzerdefinierte Spaltennamen (`#gelesen`, `#last_read`) sind jetzt
+  über den Einstellungsdialog konfigurierbar. Damit funktioniert das
+  Plugin auch für Nutzer, deren Calibre-Spalten anders heißen.
+- Automatische Suche nach einem Python-3-Interpreter mit matplotlib.
+  Unterstützt Homebrew (Apple Silicon und Intel), System-Python und
+  `PATH`.
+- Klarere Fehlermeldung, wenn matplotlib fehlt.
+
+### Geändert
+
+- Alle temporären Dateien (CSV, PNG, Cache) liegen jetzt in
+  `tempfile.gettempdir()`. Das Plugin läuft damit auch unter Windows.
+- Datumsformat in Chart und Einstellungsdialog passt sich der Sprache
+  an: `TT.MM.JJJJ` auf Deutsch, `JJJJ-MM-TT` sonst.
+- `.mo`-Cache-Dateinamen enthalten einen Hash der Quell-ZIP, um
+  Kollisionen bei parallel installierten Versionen zu vermeiden.
+- `SyntaxWarning`-Filter greift nur noch für das Kobo-Plugin statt
+  prozessweit.
+
+### Entfernt
+
+- Hardcodierte Pfade (`/Users/daniel/...`, `/opt/homebrew/bin/python3`)
+  sind aus `main.py` verschwunden.
 
 ## [1.1.0] – 2026-09-23
 

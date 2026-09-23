@@ -3,10 +3,12 @@ gettext-Setup für das Plugin.
 
 Lädt die Übersetzung für die von Calibre gewählte Sprache. Da Calibre
 Plugins immer aus einem ZIP lädt, kann gettext die .mo-Datei nicht
-direkt aus dem Archiv lesen – sie wird daher nach /tmp extrahiert.
+direkt aus dem Archiv lesen – sie wird daher in ein temporäres
+Verzeichnis extrahiert.
 """
 
 import gettext
+import hashlib
 import os
 import tempfile
 import zipfile
@@ -26,8 +28,18 @@ def _sprachcodes(lang):
     return codes
 
 
+def _cache_name(zip_pfad, code):
+    """Eindeutiger Cache-Name pro ZIP-Datei und Sprache.
+
+    Verhindert, dass zwei parallel installierte Versionen des Plugins
+    sich denselben Cache-Eintrag teilen und überschreiben.
+    """
+    kurz = hashlib.md5(zip_pfad.encode('utf-8')).hexdigest()[:8]
+    return f'lesefortschritt_{code}_{kurz}.mo'
+
+
 def _mo_aus_zip(zip_pfad, codes):
-    """Extrahiert die passende .mo aus dem ZIP nach /tmp und gibt den Pfad zurück."""
+    """Extrahiert die passende .mo aus dem ZIP und gibt den Pfad zurück."""
     with zipfile.ZipFile(zip_pfad) as z:
         for code in codes:
             rel = f'translations/{code}/LC_MESSAGES/lesefortschritt.mo'
@@ -36,7 +48,7 @@ def _mo_aus_zip(zip_pfad, codes):
             except KeyError:
                 continue
             ziel = os.path.join(tempfile.gettempdir(),
-                                f'lesefortschritt_{code}.mo')
+                                _cache_name(zip_pfad, code))
             with open(ziel, 'wb') as f:
                 f.write(daten)
             return ziel

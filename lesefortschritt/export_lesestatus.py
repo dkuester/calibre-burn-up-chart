@@ -3,7 +3,7 @@
 Liest den Lesestatus aus einer Calibre-Bibliothek und schreibt monatliche
 Snapshots als CSV.
 
-Als Modul:   from ... import exportiere;  exportiere(db_api)
+Als Modul:   from ... import exportiere;  exportiere(db_api, ...)
 Standalone:  calibre-debug -e export_lesestatus.py
 """
 
@@ -14,7 +14,11 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime
 
-warnings.filterwarnings("ignore", category=SyntaxWarning)
+# Gezielt nur die störende Warnung des Kobo-Plugins unterdrücken,
+# nicht alle SyntaxWarnings im Prozess.
+warnings.filterwarnings(
+    "ignore", category=SyntaxWarning,
+    module=r"calibre_plugins\.kobo_metadata")
 
 # --- Konfiguration ---
 LOG              = "/tmp/burndown_log.csv"
@@ -39,14 +43,27 @@ def monatsende(jahr, monat):
     return date(jahr, monat, monthrange(jahr, monat)[1])
 
 
-def exportiere(db_api, log_pfad=None):
+def exportiere(db_api, log_pfad=None,
+               spalte_gelesen=None, spalte_last_read=None):
+    """
+    Liest die Bibliothek und schreibt die CSV.
+
+    :param db_api:           Calibre ``new_api``-Instanz
+    :param log_pfad:         Zielpfad der CSV
+    :param spalte_gelesen:   Name der Ja/Nein-Spalte (Default: '#gelesen')
+    :param spalte_last_read: Name der Datum-Spalte (Default: '#last_read')
+    """
     if log_pfad is None:
         log_pfad = LOG
+    if spalte_gelesen is None:
+        spalte_gelesen = SPALTE_GELESEN
+    if spalte_last_read is None:
+        spalte_last_read = SPALTE_LAST_READ
 
     alle_ids = db_api.all_book_ids()
     added_map     = db_api.all_field_for("timestamp", alle_ids)
-    gelesen_map   = db_api.all_field_for(SPALTE_GELESEN, alle_ids)
-    last_read_map = db_api.all_field_for(SPALTE_LAST_READ, alle_ids)
+    gelesen_map   = db_api.all_field_for(spalte_gelesen, alle_ids)
+    last_read_map = db_api.all_field_for(spalte_last_read, alle_ids)
 
     added_events = defaultdict(int)
     read_events  = defaultdict(int)

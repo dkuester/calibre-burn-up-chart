@@ -7,6 +7,7 @@ Ausführen mit: python3 zeichne_chart.py [--log-pfad PFAD]
                                         [--abbau-faktor 0.0..1.0]
                                         [--ausgabe-pfad PFAD]
                                         [--translation-mo PFAD]
+                                        [--sprache CODE]
 Voraussetzung: matplotlib (brew install python-matplotlib)
 """
 
@@ -45,6 +46,10 @@ parser.add_argument(
 parser.add_argument(
     '--translation-mo', default=None,
     help='Pfad zur kompilierten .mo-Übersetzungsdatei (optional)')
+parser.add_argument(
+    '--sprache', default='en',
+    help='Sprachcode für Formatkonventionen (z.B. de, en) '
+         '(Default: %(default)s)')
 args = parser.parse_args()
 
 # --- Übersetzung laden ---
@@ -53,6 +58,12 @@ if args.translation_mo and os.path.exists(args.translation_mo):
         _ = gettext.GNUTranslations(f).gettext
 else:
     _ = lambda s: s
+
+# --- Datumsformat abhängig von der Sprache ---
+if args.sprache == 'de':
+    DATUM_FORMAT = '%d.%m.%Y'
+else:
+    DATUM_FORMAT = '%Y-%m-%d'
 
 
 LOG          = args.log_pfad
@@ -88,8 +99,8 @@ heutiger_backlog = backlog[-1]
 ziel_sanft   = heutiger_backlog * ABBAU_FAKTOR
 ziel_sanft_i = round(ziel_sanft)
 
-datum_str   = ZIEL_DATUM.strftime('%d.%m.%Y')
-jahr_str    = ZIEL_DATUM.strftime('%Y')
+datum_str = ZIEL_DATUM.strftime(DATUM_FORMAT)
+jahr_str  = ZIEL_DATUM.strftime('%Y')
 
 # --- Chart aufbauen ---
 fig, ax = plt.subplots(figsize=(13, 7))
