@@ -1,122 +1,135 @@
 # Calibre Burn-up Chart Plugin
 
-Ein Calibre-Plugin, das den Lesefortschritt als Burn-up-Chart anzeigt.
-Es rekonstruiert die historische Zeitreihe aus den Calibre-Metadaten
-(`timestamp` und benutzerdefinierte Spalten) und zeichnet den Verlauf
-von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
+*[Deutsche Version](README.de.md)*
 
-## Funktionen
+A Calibre plugin that displays reading progress as a burn-up chart.
+It reconstructs the historical time series from the Calibre metadata
+(`timestamp` and custom columns) and draws the progression of total
+library size, books read, and backlog (TBR).
 
-- **Historische Zeitreihe:** Monatliche Snapshots aus den Buch-Metadaten,
-  rückwirkend bis zum ältesten Buch in der Bibliothek.
-- **Burn-up-Chart:** Gesamtbestand, kumuliert Gelesenes und SuB im Zeitverlauf.
-- **Konfigurierbares Zieldatum:** Zielgerade „SuB = 0 am …" mit frei wählbarem
-  Datum über die Plugin-Einstellungen.
-- **Sanfter Abbau:** Zusätzliche Referenzlinie für ein realistischeres Szenario
-  (SuB halbiert bis zum Zieldatum, Faktor einstellbar).
-- **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
-  automatischer Skalierung auf die Bildschirmgröße.
+## Features
 
-## Voraussetzungen
+- **Historical time series:** Monthly snapshots derived from book metadata,
+  going back to the oldest book in the library.
+- **Burn-up chart:** Total library, cumulative books read, and backlog
+  over time.
+- **Configurable target date:** Goal line "TBR = 0 on …" with a freely
+  selectable date via the plugin settings.
+- **Gentle reduction:** Additional reference line for a more realistic
+  scenario (TBR halved by the target date, adjustable factor).
+- **In-GUI display:** The chart opens as a dialog inside Calibre, with
+  automatic scaling to screen size.
+- **Bilingual:** German and English interface, depending on Calibre's
+  language setting. Additional languages can be added via
+  `translations/<lang>/`.
 
-- Calibre 5.0 oder neuer
-- Homebrew-Python 3 mit matplotlib (`brew install python-matplotlib`)
-- Zwei benutzerdefinierte Spalten in Calibre:
-  - `#gelesen` (Ja/Nein) – markiert gelesene Bücher
-  - `#last_read` (Datum) – Datum des letzten Lesens
+## Requirements
+
+- Calibre 5.0 or newer
+- Homebrew Python 3 with matplotlib (`brew install python-matplotlib`)
+- Two custom columns in Calibre:
+  - `#gelesen` (Yes/No) – marks books as read
+  - `#last_read` (Date) – date of the last reading
 
 ## Installation
 
-1. Repository klonen:
+1. Clone the repository:
 
    ```bash
    git clone <repo-url> ~/GitHub/calibre-burn-up-chart
    ```
 
-2. Plugin in Calibre installieren:
+2. Install the plugin in Calibre:
 
    ```bash
    calibre-customize -b ~/GitHub/calibre-burn-up-chart/lesefortschritt
    ```
 
-3. Calibre neu starten.
+3. Restart Calibre.
 
-4. Die Aktion zur Toolbar hinzufügen:
-   *Einstellungen → Oberfläche → Symbolleisten & Menüs → Die Hauptsymbolleiste*
-   → „Burn-up Chart" aus der Liste der verfügbaren Aktionen hinzufügen.
+4. Add the action to the toolbar:
+   *Preferences → Interface → Toolbars & menus → The main toolbar*
+   → add "Burn-up Chart" from the list of available actions.
 
-## Benutzung
+## Usage
 
-Nach dem Klick auf den Button **„Burn-up Chart"** in der Haupttoolbar läuft
-folgender Ablauf:
+After clicking the **"Burn-up Chart"** button in the main toolbar, the
+following happens:
 
-1. Die CSV mit den monatlichen Snapshots wird erzeugt (`/tmp/burndown_log.csv`).
-2. Das Chart wird gezeichnet (`/tmp/lesefortschritt.png`).
-3. Ein Dialog öffnet sich mit dem fertigen Chart.
+1. The CSV with monthly snapshots is written (`/tmp/burndown_log.csv`).
+2. The chart is rendered (`/tmp/lesefortschritt.png`).
+3. A dialog opens showing the finished chart.
 
-### Konfiguration
+### Configuration
 
-Unter *Einstellungen → Erweitert → Erweiterungen → Lesefortschritt → Anpassen*
-lassen sich einstellen:
+Under *Preferences → Advanced → Plugins → Lesefortschritt → Customize*
+you can adjust:
 
-- **Zieldatum:** Der Tag, an dem der SuB auf 0 sein soll.
-- **Sanfter Abbau (Faktor):** Anteil des SuB, der am Zieldatum noch übrig
-  bleibt. `0.50` bedeutet: SuB halbiert bis zum Zieldatum.
+- **Target date:** The day on which the backlog (TBR) should reach 0.
+- **Gentle reduction (factor):** Fraction of the TBR that remains at
+  the target date. `0.50` means: TBR halved by the target date.
 
-Die Werte werden in `~/Library/Preferences/calibre/plugins/lesefortschritt.json`
-gespeichert und bleiben über Calibre-Neustarts erhalten.
+The values are stored in
+`~/Library/Preferences/calibre/plugins/lesefortschritt.json` and persist
+across Calibre restarts.
 
-## Versionierung
+## Versioning
 
-Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).
-Die aktuelle Version ist in `lesefortschritt/__init__.py` als
-`__version__`-Tupel gepflegt und wird von Calibre in der Erweiterungsliste
-angezeigt. Alle Änderungen sind im [CHANGELOG.md](CHANGELOG.md) dokumentiert.
+This plugin follows [Semantic Versioning](https://semver.org/).
+The current version is maintained as a `__version__` tuple in
+`lesefortschritt/__init__.py` and is displayed by Calibre in the plugins
+list. All changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
-Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
-(z.B. `v1.0.0`). Um die Version zu erhöhen:
+Releases are marked in Git as annotated tags with a `v` prefix
+(e.g. `v1.0.0`). To bump the version:
 
-1. `__version__` in `lesefortschritt/__init__.py` anpassen.
-2. Eintrag in `CHANGELOG.md` ergänzen.
-3. Plugin neu bauen und testen.
-4. Committen und taggen:
+1. Update `__version__` in `lesefortschritt/__init__.py`.
+2. Add an entry to `CHANGELOG.md`.
+3. Rebuild and test the plugin.
+4. Commit and tag:
 
    ```bash
    git commit -am "Release v1.0.1"
-   git tag -a v1.0.1 -m "Kurze Beschreibung"
+   git tag -a v1.0.1 -m "Short description"
    ```
 
-## Projektstruktur
+## Project structure
 
 ```
 calibre-burn-up-chart/
 ├── .gitignore
 ├── README.md
+├── README.de.md
 ├── LICENSE
 ├── AGENTS.md
 ├── CHANGELOG.md
 ├── make_icon.py
 └── lesefortschritt/
-    ├── __init__.py                          # Plugin-Metadaten, Version
+    ├── __init__.py                          # Plugin metadata, version
     ├── plugin-import-name-lesefortschritt.txt
-    ├── main.py                              # GUI-Integration
-    ├── config_dialog.py                     # Einstellungsdialog
-    ├── chart_dialog.py                      # Chart-Anzeigedialog
-    ├── export_lesestatus.py                 # Datenbeschaffung aus Calibre
-    ├── zeichne_chart.py                     # Chart-Erzeugung (matplotlib)
-    └── images/
-        └── icon.png                         # Plugin-Icon
+    ├── localization.py                      # gettext setup
+    ├── main.py                              # GUI integration
+    ├── config_dialog.py                     # Settings dialog
+    ├── chart_dialog.py                      # Chart display dialog
+    ├── export_lesestatus.py                 # Data retrieval from Calibre
+    ├── zeichne_chart.py                     # Chart rendering (matplotlib)
+    ├── images/
+    │   └── icon.png                         # Plugin icon
+    └── translations/
+        └── de/LC_MESSAGES/
+            ├── lesefortschritt.po
+            └── lesefortschritt.mo
 ```
 
-## Technische Hinweise
+## Technical notes
 
-- `export_lesestatus.py` läuft **innerhalb** des Calibre-Prozesses und nutzt
-  die Live-Datenbank (`self.gui.current_db.new_api`).
-- `zeichne_chart.py` läuft **außerhalb** als Subprozess unter Homebrew-Python,
-  weil Calibres eingebettetes Python kein matplotlib enthält.
-- Die Kommunikation zwischen beiden läuft über `/tmp`-Dateien:
-  `/tmp/burndown_log.csv` (Daten) und `/tmp/lesefortschritt.png` (Chart).
+- `export_lesestatus.py` runs **inside** the Calibre process and uses
+  the live database (`self.gui.current_db.new_api`).
+- `zeichne_chart.py` runs **outside** as a subprocess under Homebrew
+  Python, because Calibre's embedded Python does not include matplotlib.
+- Communication between the two runs via `/tmp` files:
+  `/tmp/burndown_log.csv` (data) and `/tmp/lesefortschritt.png` (chart).
 
-## Lizenz
+## License
 
-GNU General Public License v3.0 – siehe [LICENSE](LICENSE).
+GNU General Public License v3.0 – see [LICENSE](LICENSE).

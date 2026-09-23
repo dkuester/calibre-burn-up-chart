@@ -1,0 +1,97 @@
+# German translation for the Lesefortschritt Calibre plugin.
+# Copyright (C) 2026 Daniel
+# Distributed under the same license as the plugin (GPL-3.0).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: lesefortschritt 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-23 17:00+0200\n"
+"PO-Revision-Date: 2026-09-23 17:00+0200\n"
+"Last-Translator: Daniel\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Plugin description in the plugin list
+msgid "Displays reading progress as a burn-up chart"
+msgstr "Zeigt den Lesefortschritt als Burn-up-Chart an"
+
+# Tooltip of the toolbar button
+msgid "Display reading progress as a burn-up chart"
+msgstr "Lesefortschritt als Burn-up-Chart anzeigen"
+
+# Status bar error messages
+msgid "Export failed: {}"
+msgstr "Export fehlgeschlagen: {}"
+
+msgid "Could not extract drawing script: {}"
+msgstr "Zeichen-Skript konnte nicht extrahiert werden: {}"
+
+msgid "zeichne_chart.py not found."
+msgstr "zeichne_chart.py nicht gefunden."
+
+msgid "Python not found: {}"
+msgstr "Python nicht gefunden: {}"
+
+msgid "Chart rendering failed: {}"
+msgstr "Chart-Zeichnen fehlgeschlagen: {}"
+
+msgid "Reading status: {read}/{total} read, backlog {backlog}"
+msgstr "Lesestatus: {read}/{total} gelesen, Backlog {backlog}"
+
+# Config dialog
+msgid "Target date:"
+msgstr "Zieldatum:"
+
+msgid "Gentle reduction (factor):"
+msgstr "Sanfter Abbau (Faktor):"
+
+msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date."
+msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum."
+
+# Chart dialog
+msgid "Reading progress"
+msgstr "Lesefortschritt"
+
+msgid "Chart not found:\n{}\n\nDid zeichne_chart.py run successfully?"
+msgstr "Chart nicht gefunden:\n{}\n\nWurde zeichne_chart.py erfolgreich ausgeführt?"
+
+msgid "Could not load PNG:\n{}"
+msgstr "PNG konnte nicht geladen werden:\n{}"
+
+msgid "Close"
+msgstr "Schließen"
+
+# Chart rendering (zeichne_chart.py)
+msgid "Reading progress for TBR = {tbr} on {date}"
+msgstr "Lesefortschritt für SuB = {tbr} am {date}"
+
+msgid "Total library"
+msgstr "Gesamtbestand"
+
+msgid "Read (cumulative)"
+msgstr "Gelesen (kumuliert)"
+
+msgid "Backlog (TBR)"
+msgstr "Backlog (SuB)"
+
+msgid "Goal: TBR = 0 on {date}"
+msgstr "Ziel: SuB = 0 am {date}"
+
+msgid "Constant library (buy rate = read rate)"
+msgstr "Bestand stabil (Kaufrate = Leserate)"
+
+msgid "Gentle reduction to TBR = {tbr} by {year}"
+msgstr "Sanfter Abbau auf SuB = {tbr} bis {year}"
+
+msgid "Today: {count} unread"
+msgstr "Heute: {count} ungelesen"
+
+msgid "Number of books"
+msgstr "Anzahl Bücher"
+
+msgid "Year"
+msgstr "Jahr"

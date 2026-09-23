@@ -31,3 +31,6 @@ Lesefortschritt*.zip
 
 # --- Release-Artefakte ---
 dist/
+
+# --- Translation-Cache (wird zur Laufzeit extrahiert) ---
+.lesefortschritt_cache.mo

@@ -6,11 +6,13 @@ Ausführen mit: python3 zeichne_chart.py [--log-pfad PFAD]
                                         [--ziel-datum YYYY-MM-DD]
                                         [--abbau-faktor 0.0..1.0]
                                         [--ausgabe-pfad PFAD]
+                                        [--translation-mo PFAD]
 Voraussetzung: matplotlib (brew install python-matplotlib)
 """
 
 import argparse
 import csv
+import gettext
 import os
 from datetime import date, datetime
 
@@ -40,7 +42,18 @@ parser.add_argument(
 parser.add_argument(
     '--ausgabe-pfad', default=CHART_DEFAULT,
     help='Zielpfad der PNG-Datei (Default: %(default)s)')
+parser.add_argument(
+    '--translation-mo', default=None,
+    help='Pfad zur kompilierten .mo-Übersetzungsdatei (optional)')
 args = parser.parse_args()
+
+# --- Übersetzung laden ---
+if args.translation_mo and os.path.exists(args.translation_mo):
+    with open(args.translation_mo, 'rb') as f:
+        _ = gettext.GNUTranslations(f).gettext
+else:
+    _ = lambda s: s
+
 
 LOG          = args.log_pfad
 ZIEL_DATUM   = datetime.fromisoformat(args.ziel_datum).date()
@@ -49,7 +62,7 @@ CHART        = args.ausgabe_pfad
 
 # --- CSV einlesen ---
 if not os.path.exists(LOG):
-    raise SystemExit(f"Log-Datei nicht gefunden: {LOG}")
+    raise SystemExit(f"Log file not found: {LOG}")
 
 daten = []
 with open(LOG, newline="", encoding="utf-8") as f:
@@ -62,7 +75,7 @@ with open(LOG, newline="", encoding="utf-8") as f:
         ))
 
 if len(daten) < 2:
-    raise SystemExit("Zu wenige Datenpunkte für ein Chart.")
+    raise SystemExit("Not enough data points for a chart.")
 
 tage    = [d[0] for d in daten]
 gesamt  = [d[1] for d in daten]
@@ -72,32 +85,37 @@ backlog = [d[3] for d in daten]
 heute            = tage[-1]
 heutiger_backlog = backlog[-1]
 
-# Prognostizierter SuB am Zieldatum (Szenario "Sanfter Abbau")
 ziel_sanft   = heutiger_backlog * ABBAU_FAKTOR
 ziel_sanft_i = round(ziel_sanft)
+
+datum_str   = ZIEL_DATUM.strftime('%d.%m.%Y')
+jahr_str    = ZIEL_DATUM.strftime('%Y')
 
 # --- Chart aufbauen ---
 fig, ax = plt.subplots(figsize=(13, 7))
 
-ax.plot(tage, gesamt,  label="Gesamtbestand",       color="#888888", linewidth=1.6)
-ax.plot(tage, gelesen, label="Gelesen (kumuliert)", color="#2a9d8f", linewidth=2.0)
-ax.plot(tage, backlog, label="Backlog (SuB)",       color="#e76f51", linewidth=2.3)
+ax.plot(tage, gesamt,  label=_("Total library"),
+        color="#888888", linewidth=1.6)
+ax.plot(tage, gelesen, label=_("Read (cumulative)"),
+        color="#2a9d8f", linewidth=2.0)
+ax.plot(tage, backlog, label=_("Backlog (TBR)"),
+        color="#e76f51", linewidth=2.3)
 
 ax.plot([heute, ZIEL_DATUM], [heutiger_backlog, 0],
         linestyle="--", color="#264653", linewidth=2,
-        label=f"Ziel: SuB = 0 am {ZIEL_DATUM.strftime('%d.%m.%Y')}")
+        label=_("Goal: TBR = 0 on {date}").format(date=datum_str))
 
 ax.plot([heute, ZIEL_DATUM], [heutiger_backlog, heutiger_backlog],
         linestyle=":", color="#f4a261", linewidth=1.8,
-        label="Bestand stabil (Kaufrate = Leserate)")
+        label=_("Constant library (buy rate = read rate)"))
 
 ax.plot([heute, ZIEL_DATUM], [heutiger_backlog, ziel_sanft],
         linestyle="-.", color="#8ecae6", linewidth=1.8,
-        label=f"Sanfter Abbau auf SuB = {ziel_sanft_i} "
-              f"bis {ZIEL_DATUM.strftime('%Y')}")
+        label=_("Gentle reduction to TBR = {tbr} by {year}").format(
+            tbr=ziel_sanft_i, year=jahr_str))
 
 ax.annotate(
-    f"Heute: {heutiger_backlog} ungelesen",
+    _("Today: {count} unread").format(count=heutiger_backlog),
     xy=(heute, heutiger_backlog),
     xytext=(-160, 40), textcoords="offset points",
     arrowprops=dict(arrowstyle="->", color="#333"),
@@ -109,11 +127,11 @@ ax.xaxis.set_major_locator(mdates.YearLocator(2))
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
 ax.set_xlim(tage[0], ZIEL_DATUM)
 ax.set_ylim(bottom=0)
-ax.set_ylabel("Anzahl Bücher")
-ax.set_xlabel("Jahr")
+ax.set_ylabel(_("Number of books"))
+ax.set_xlabel(_("Year"))
 
-titel = (f"Lesefortschritt für SuB = {ziel_sanft_i} "
-         f"am {ZIEL_DATUM.strftime('%d.%m.%Y')}")
+titel = _("Reading progress for TBR = {tbr} on {date}").format(
+    tbr=ziel_sanft_i, date=datum_str)
 ax.set_title(titel, fontsize=14, pad=15)
 
 ax.grid(alpha=0.25)
@@ -122,4 +140,4 @@ ax.legend(loc="upper left", framealpha=0.95)
 plt.tight_layout()
 plt.savefig(CHART, dpi=150)
 plt.close(fig)
-print(f"Chart gespeichert: {CHART}")
+print(f"Chart saved: {CHART}")
