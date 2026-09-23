@@ -2,6 +2,11 @@ from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 
 
+# Einzige Quelle der Wahrheit für die Plugin-Version
+__version__ = (1, 0, 0)
+__version_str__ = '.'.join(str(x) for x in __version__)
+
+
 config = JSONConfig('plugins/lesefortschritt')
 config.defaults['ziel_datum'] = '2050-09-04'
 config.defaults['abbau_faktor'] = 0.5
@@ -12,7 +17,7 @@ class LesefortschrittPlugin(InterfaceActionBase):
     description = 'Zeigt den Lesefortschritt als Burn-up-Chart an'
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Daniel'
-    version = (1, 0, 0)
+    version = __version__
     minimum_calibre_version = (5, 0, 0)
 
     actual_plugin = 'calibre_plugins.lesefortschritt.main:LesefortschrittAction'

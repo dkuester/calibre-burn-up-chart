@@ -28,3 +28,6 @@ lesefortschritt.png
 # --- Gebaute Plugin-Archive ---
 # Falls du das Plugin mal manuell zippst statt über calibre-customize.
 Lesefortschritt*.zip
+
+# --- Release-Artefakte ---
+dist/
