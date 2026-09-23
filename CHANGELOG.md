@@ -1,64 +1,62 @@
 # Changelog
 
-Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei
-dokumentiert. Das Format orientiert sich an
-[Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
-die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
+*[Deutsche Version](CHANGELOG.de.md)*
+
+All notable changes to this project are documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [1.2.0] – 2026-09-23
 
-### Hinzugefügt
+### Added
 
-- Benutzerdefinierte Spaltennamen (`#gelesen`, `#last_read`) sind jetzt
-  über den Einstellungsdialog konfigurierbar. Damit funktioniert das
-  Plugin auch für Nutzer, deren Calibre-Spalten anders heißen.
-- Automatische Suche nach einem Python-3-Interpreter mit matplotlib.
-  Unterstützt Homebrew (Apple Silicon und Intel), System-Python und
-  `PATH`.
-- Klarere Fehlermeldung, wenn matplotlib fehlt.
+- Custom column names (`#gelesen`, `#last_read`) are now configurable
+  through the settings dialog. This allows the plugin to work for users
+  whose Calibre columns have different names.
+- Automatic detection of a Python 3 interpreter with matplotlib.
+  Supports Homebrew (Apple Silicon and Intel), system Python, and `PATH`.
+- Clearer error message when matplotlib is missing.
 
-### Geändert
+### Changed
 
-- Alle temporären Dateien (CSV, PNG, Cache) liegen jetzt in
-  `tempfile.gettempdir()`. Das Plugin läuft damit auch unter Windows.
-- Datumsformat in Chart und Einstellungsdialog passt sich der Sprache
-  an: `TT.MM.JJJJ` auf Deutsch, `JJJJ-MM-TT` sonst.
-- `.mo`-Cache-Dateinamen enthalten einen Hash der Quell-ZIP, um
-  Kollisionen bei parallel installierten Versionen zu vermeiden.
-- `SyntaxWarning`-Filter greift nur noch für das Kobo-Plugin statt
-  prozessweit.
+- All temporary files (CSV, PNG, cache) now live in
+  `tempfile.gettempdir()`. The plugin therefore also works on Windows.
+- Date format in chart and settings dialog adapts to the language:
+  `DD.MM.YYYY` for German, `YYYY-MM-DD` otherwise.
+- `.mo` cache filenames include a hash of the source ZIP to avoid
+  collisions when multiple versions are installed side by side.
+- `SyntaxWarning` filter now only targets the Kobo plugin instead of
+  applying process-wide.
 
-### Entfernt
+### Removed
 
-- Hardcodierte Pfade (`/Users/daniel/...`, `/opt/homebrew/bin/python3`)
-  sind aus `main.py` verschwunden.
+- Hardcoded paths (`/Users/daniel/...`, `/opt/homebrew/bin/python3`)
+  have been removed from `main.py`.
 
 ## [1.1.0] – 2026-09-23
 
-### Hinzugefügt
+### Added
 
-- Mehrsprachigkeit über gettext. Englisch ist die Quellsprache,
-  Deutsch als erste Übersetzung enthalten.
-- Übersetzungsdatei `translations/de/LC_MESSAGES/lesefortschritt.po`
-  mit den deutschen Strings für Plugin-Oberfläche, Dialoge und Chart.
+- Multilingual support via gettext. English is the source language,
+  German is included as the first translation.
+- Translation file `translations/de/LC_MESSAGES/lesefortschritt.po`
+  with the German strings for plugin UI, dialogs, and chart.
 
-### Geändert
+### Changed
 
-- Alle benutzersichtbaren Strings in `main.py`, `config_dialog.py`,
-  `chart_dialog.py` und `zeichne_chart.py` sind jetzt über `_()`
-  übersetzbar.
-- `zeichne_chart.py` nimmt optional `--translation-mo` entgegen, damit
-  die Chart-Beschriftungen in der von Calibre gewählten Sprache
-  erscheinen.
+- All user-visible strings in `main.py`, `config_dialog.py`,
+  `chart_dialog.py`, and `zeichne_chart.py` are now translatable via `_()`.
+- `zeichne_chart.py` optionally accepts `--translation-mo` so that
+  chart labels appear in the language selected in Calibre.
 
 ## [1.0.0] – 2026-09-23
 
-### Hinzugefügt
+### Added
 
-- Historische Zeitreihe des Lesestatus aus der Calibre-Bibliothek,
-  monatliche Snapshots rückwirkend bis zum ältesten Buch.
-- Burn-up-Chart mit Gesamtbestand, kumuliert Gelesenem und SuB.
-- Konfigurierbares Zieldatum und Abbau-Faktor über die Plugin-Einstellungen.
-- Chart-Dialog mit automatischer Skalierung auf die Bildschirmgröße.
-- Eigenes Plugin-Icon (Burn-up-Motiv).
-- Toolbar-Integration über Calibres InterfaceAction-API.
+- Historical time series of reading status derived from the Calibre
+  library, with monthly snapshots going back to the oldest book.
+- Burn-up chart with total library, cumulative books read, and backlog.
+- Configurable target date and reduction factor via plugin settings.
+- Chart dialog with automatic scaling to screen size.
+- Custom plugin icon (burn-up motif).
+- Toolbar integration via Calibre's InterfaceAction API.
