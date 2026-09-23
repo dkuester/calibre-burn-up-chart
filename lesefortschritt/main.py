@@ -2,6 +2,8 @@ import os
 import subprocess
 import zipfile
 
+from qt.core import QIcon, QPixmap
+
 from calibre.gui2.actions import InterfaceAction
 
 from calibre_plugins.lesefortschritt import config
@@ -17,12 +19,7 @@ CHART_PNG = '/tmp/lesefortschritt.png'
 
 
 def _hole_zeichne_skript():
-    """Liefert den Dateisystempfad zu zeichne_chart.py.
-
-    Im installierten Plugin (ZIP) wird die Datei aus dem ZIP extrahiert
-    und als Cache-Datei abgelegt. Im Entwicklungsbetrieb (Ordner) wird
-    sie direkt aus dem Plugin-Verzeichnis verwendet.
-    """
+    """Liefert den Dateisystempfad zu zeichne_chart.py."""
     plugin_dir = os.path.dirname(os.path.abspath(__file__))
 
     if plugin_dir.endswith('.zip'):
@@ -39,6 +36,30 @@ def _hole_zeichne_skript():
     return None
 
 
+def _lade_icon():
+    """Lädt das Plugin-Icon aus images/icon.png – Ordner oder ZIP."""
+    plugin_dir = os.path.dirname(os.path.abspath(__file__))
+
+    if plugin_dir.endswith('.zip'):
+        with zipfile.ZipFile(plugin_dir) as z:
+            try:
+                daten = z.read('images/icon.png')
+            except KeyError:
+                return None
+        pixmap = QPixmap()
+        if not pixmap.loadFromData(daten):
+            return None
+        return QIcon(pixmap)
+
+    pfad = os.path.join(plugin_dir, 'images', 'icon.png')
+    if not os.path.exists(pfad):
+        return None
+    pixmap = QPixmap(pfad)
+    if pixmap.isNull():
+        return None
+    return QIcon(pixmap)
+
+
 class LesefortschrittAction(InterfaceAction):
 
     name = 'Lesefortschritt'
@@ -47,7 +68,19 @@ class LesefortschrittAction(InterfaceAction):
     action_type = 'current'
 
     def genesis(self):
+        # ZUERST die Verbindung — damit der Klick immer funktioniert
         self.qaction.triggered.connect(self.show_chart)
+
+        # DANN das Icon — Fehler hier dürfen den Button nicht lahmlegen
+        try:
+            icon = _lade_icon()
+            if icon is not None:
+                self.qaction.setIcon(icon)
+            else:
+                print('Lesefortschritt: Icon nicht gefunden '
+                      '(images/icon.png fehlt oder ist ungültig).')
+        except Exception as e:
+            print(f'Lesefortschritt: Icon konnte nicht geladen werden: {e}')
 
     def show_chart(self):
         from calibre_plugins.lesefortschritt.export_lesestatus import exportiere

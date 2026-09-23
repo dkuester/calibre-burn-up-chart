@@ -2,8 +2,6 @@ from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 
 
-# Konfiguration des Plugins – wird von Calibre unter
-# ~/Library/Preferences/calibre/plugins/lesefortschritt.json gespeichert
 config = JSONConfig('plugins/lesefortschritt')
 config.defaults['ziel_datum'] = '2050-09-04'
 config.defaults['abbau_faktor'] = 0.5
