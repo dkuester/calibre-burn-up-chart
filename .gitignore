@@ -1,0 +1,30 @@
+# --- Betriebssystem ---
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- Vom Plugin generierte Dateien ---
+# Cache für zeichne_chart.py (wird aus dem Plugin-ZIP extrahiert)
+.zeichne_chart_cache.py
+
+# Sicherheitsnetz: falls die CSV oder das PNG doch mal im Projektordner
+# landen (z.B. bei Debug-Läufen), gehören sie nicht ins Repo.
+burndown_log.csv
+burndown_log.csv.tmp
+lesefortschritt.png
+
+# --- Gebaute Plugin-Archive ---
+# Falls du das Plugin mal manuell zippst statt über calibre-customize.
+Lesefortschritt*.zip
