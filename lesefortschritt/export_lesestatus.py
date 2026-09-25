@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-Liest den Lesestatus aus einer Calibre-Bibliothek und schreibt monatliche
-Snapshots als CSV.
+Liest den Lesestatus aus einer Calibre-Bibliothek.
 
 Als Modul:   from ... import exportiere;  exportiere(db_api, ...)
 Standalone:  calibre-debug -e export_lesestatus.py
+
+Die Funktion exportiere() liefert die monatlichen Snapshots als Liste
+von (date, gesamt, gelesen, backlog)-Tupeln zurück. Eine CSV-Datei wird
+nur geschrieben, wenn explizit ein log_pfad übergeben wird.
 """
 
 import csv
@@ -14,19 +17,17 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime
 
-# Gezielt nur die störende Warnung des Kobo-Plugins unterdrücken,
-# nicht alle SyntaxWarnings im Prozess.
 warnings.filterwarnings(
     "ignore", category=SyntaxWarning,
     module=r"calibre_plugins\.kobo_metadata")
 
 # --- Konfiguration ---
-LOG              = "/tmp/burndown_log.csv"
 SPALTE_GELESEN   = "#gelesen"
 SPALTE_LAST_READ = "#last_read"
 
 # Nur für den Standalone-Betrieb via calibre-debug -e
 STANDALONE_LIBRARY = os.path.expanduser("~/Calibre-Bibliothek")
+STANDALONE_LOG     = "/tmp/burndown_log.csv"
 
 
 def to_date(v):
@@ -43,18 +44,31 @@ def monatsende(jahr, monat):
     return date(jahr, monat, monthrange(jahr, monat)[1])
 
 
-def exportiere(db_api, log_pfad=None,
-               spalte_gelesen=None, spalte_last_read=None):
+def _schreibe_csv(log_pfad, rows):
+    """Schreibt die Snapshots als CSV (für Debug-Zwecke)."""
+    ziel_dir = os.path.dirname(log_pfad)
+    if ziel_dir:
+        os.makedirs(ziel_dir, exist_ok=True)
+    tmp = log_pfad + ".tmp"
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["datum", "gesamt", "gelesen", "backlog"])
+        for r in rows:
+            w.writerow([r[0].isoformat(), r[1], r[2], r[3]])
+    os.replace(tmp, log_pfad)
+
+
+def exportiere(db_api, spalte_gelesen=None, spalte_last_read=None,
+               log_pfad=None):
     """
-    Liest die Bibliothek und schreibt die CSV.
+    Liest die Bibliothek und liefert die monatlichen Snapshots.
 
     :param db_api:           Calibre ``new_api``-Instanz
-    :param log_pfad:         Zielpfad der CSV
     :param spalte_gelesen:   Name der Ja/Nein-Spalte (Default: '#gelesen')
     :param spalte_last_read: Name der Datum-Spalte (Default: '#last_read')
+    :param log_pfad:         Optionaler CSV-Pfad (nur für Debug)
+    :return: dict mit 'rows' (Liste von Tupeln) und Diagnosezählern
     """
-    if log_pfad is None:
-        log_pfad = LOG
     if spalte_gelesen is None:
         spalte_gelesen = SPALTE_GELESEN
     if spalte_last_read is None:
@@ -127,20 +141,12 @@ def exportiere(db_api, log_pfad=None,
         rows.append((ende, current_added, current_read,
                      current_added - current_read))
 
-    ziel_dir = os.path.dirname(log_pfad)
-    if ziel_dir:
-        os.makedirs(ziel_dir, exist_ok=True)
-    tmp = log_pfad + ".tmp"
-    with open(tmp, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["datum", "gesamt", "gelesen", "backlog"])
-        for r in rows:
-            w.writerow([r[0].isoformat(), r[1], r[2], r[3]])
-    os.replace(tmp, log_pfad)
+    if log_pfad:
+        _schreibe_csv(log_pfad, rows)
 
     letzter = rows[-1]
     return {
-        "log_pfad":           log_pfad,
+        "rows":               rows,
         "monatswerte":        len(rows),
         "gesamt":             letzter[1],
         "gelesen":            letzter[2],
@@ -155,9 +161,10 @@ if __name__ == "__main__":
     from calibre.library import db as calibre_db_factory
 
     api = calibre_db_factory(STANDALONE_LIBRARY).new_api
-    info = exportiere(api)
+    info = exportiere(api, log_pfad=STANDALONE_LOG)
 
-    print(f"{info['monatswerte']} Monatswerte geschrieben nach {info['log_pfad']}")
+    print(f"{info['monatswerte']} Monatswerte geschrieben nach "
+          f"{STANDALONE_LOG}")
     print(f"Aktuell: {info['gelesen']}/{info['gesamt']} gelesen "
           f"| Backlog: {info['backlog']}")
     if info["ohne_timestamp"]:

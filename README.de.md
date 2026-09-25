@@ -26,7 +26,7 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 ## Voraussetzungen
 
 - Calibre 5.0 oder neuer
-- Homebrew-Python 3 mit matplotlib (`brew install python-matplotlib`)
+- Keine externe Python-Installation nötig. Alles läuft innerhalb von Calibre.
 - Zwei benutzerdefinierte Spalten in Calibre:
   - `#gelesen` (Ja/Nein) – markiert gelesene Bücher
   - `#last_read` (Datum) – Datum des letzten Lesens
@@ -57,8 +57,7 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 Nach dem Klick auf den Button **„Burn-up Chart"** in der Haupttoolbar
 läuft folgender Ablauf:
 
-1. Die CSV mit den monatlichen Snapshots wird erzeugt
-   (`/tmp/burndown_log.csv`).
+1. Der Lesestatus wird aus der Live-Datenbank von Calibre gelesen.
 2. Das Chart wird gezeichnet (`/tmp/lesefortschritt.png`).
 3. Ein Dialog öffnet sich mit dem fertigen Chart.
 
@@ -117,7 +116,6 @@ calibre-burn-up-chart/
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_dialog.py                      # Chart-Anzeigedialog
     ├── export_lesestatus.py                 # Datenbeschaffung aus Calibre
-    ├── zeichne_chart.py                     # Chart-Erzeugung (matplotlib)
     ├── images/
     │   └── icon.png                         # Plugin-Icon
     └── translations/
@@ -130,11 +128,6 @@ calibre-burn-up-chart/
 
 - `export_lesestatus.py` läuft **innerhalb** des Calibre-Prozesses und
   nutzt die Live-Datenbank (`self.gui.current_db.new_api`).
-- `zeichne_chart.py` läuft **außerhalb** als Subprozess unter
-  Homebrew-Python, weil Calibres eingebettetes Python kein matplotlib
-  enthält.
-- Die Kommunikation zwischen beiden läuft über `/tmp`-Dateien:
-  `/tmp/burndown_log.csv` (Daten) und `/tmp/lesefortschritt.png` (Chart).
 
 ## Lizenz
 
