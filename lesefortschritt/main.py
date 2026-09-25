@@ -1,8 +1,4 @@
-import json
 import os
-import shutil
-import subprocess
-import tempfile
 import zipfile
 
 from qt.core import QIcon, QPixmap
@@ -11,30 +7,7 @@ from calibre.gui2.actions import InterfaceAction
 from calibre.utils.localization import get_lang
 
 from calibre_plugins.lesefortschritt import config
-from calibre_plugins.lesefortschritt.localization import _, finde_mo
-
-
-TEMP_DIR     = tempfile.gettempdir()
-CHART_PNG    = os.path.join(TEMP_DIR, 'lesefortschritt.png')
-CACHE_SKRIPT = os.path.join(TEMP_DIR, '.zeichne_chart_cache.py')
-
-
-def _hole_zeichne_skript():
-    """Liefert den Dateisystempfad zu zeichne_chart.py."""
-    plugin_dir = os.path.dirname(os.path.abspath(__file__))
-
-    if plugin_dir.endswith('.zip'):
-        with zipfile.ZipFile(plugin_dir) as z:
-            quelle = z.read('zeichne_chart.py')
-        with open(CACHE_SKRIPT, 'wb') as f:
-            f.write(quelle)
-        return CACHE_SKRIPT
-
-    direkt = os.path.join(plugin_dir, 'zeichne_chart.py')
-    if os.path.exists(direkt):
-        return direkt
-
-    return None
+from calibre_plugins.lesefortschritt.localization import _
 
 
 def _lade_icon():
@@ -61,32 +34,6 @@ def _lade_icon():
     return QIcon(pixmap)
 
 
-def _finde_python3():
-    """Sucht einen Python-3-Interpreter mit matplotlib."""
-    kandidaten = [
-        '/opt/homebrew/bin/python3',
-        '/usr/local/bin/python3',
-        '/usr/bin/python3',
-    ]
-    pfad_im_path = shutil.which('python3')
-    if pfad_im_path and pfad_im_path not in kandidaten:
-        kandidaten.append(pfad_im_path)
-
-    for pfad in kandidaten:
-        if not pfad or not os.path.exists(pfad):
-            continue
-        try:
-            result = subprocess.run(
-                [pfad, '-c', 'import matplotlib'],
-                capture_output=True, timeout=15,
-            )
-            if result.returncode == 0:
-                return pfad
-        except (subprocess.SubprocessError, OSError):
-            continue
-    return None
-
-
 class LesefortschrittAction(InterfaceAction):
 
     name = 'Lesefortschritt'
@@ -105,10 +52,11 @@ class LesefortschrittAction(InterfaceAction):
             print(f'Lesefortschritt: icon error: {e}')
 
     def show_chart(self):
+        from datetime import datetime
         from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
         from calibre_plugins.lesefortschritt.chart_dialog import ChartDialog
 
-        # 1. Daten aus der Bibliothek holen (keine CSV mehr)
+        # 1. Daten aus der Live-Bibliothek holen
         try:
             info = exportiere(
                 db_api=self.gui.current_db.new_api,
@@ -120,80 +68,24 @@ class LesefortschrittAction(InterfaceAction):
                 _('Export failed: {}').format(e), 5000)
             return
 
-        # 2. Zeichen-Skript lokalisieren
+        # 2. Konfiguration lesen
         try:
-            skript = _hole_zeichne_skript()
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Could not extract drawing script: {}').format(e), 8000)
-            return
+            ziel_datum = datetime.fromisoformat(config['ziel_datum']).date()
+        except ValueError:
+            ziel_datum = datetime(2050, 9, 4).date()
+        abbau_faktor = float(config['abbau_faktor'])
 
-        if not skript or not os.path.exists(skript):
-            self.gui.status_bar.show_message(
-                _('zeichne_chart.py not found.'), 8000)
-            return
-
-        # 3. Python 3 mit matplotlib suchen
-        python3 = _finde_python3()
-        if python3 is None:
-            self.gui.status_bar.show_message(
-                _('Python 3 with matplotlib not found. Install it with: '
-                  'brew install python-matplotlib'), 10000)
-            return
-
-        ziel_datum   = config['ziel_datum']
-        abbau_faktor = config['abbau_faktor']
-
-        try:
-            mo_pfad = finde_mo(get_lang())
-        except Exception:
-            mo_pfad = None
-
+        # 3. Datumsformat abhängig von der Sprache
         sprache = get_lang().split('_')[0]
+        datum_format = '%d.%m.%Y' if sprache == 'de' else '%Y-%m-%d'
 
-        cmd = [python3, skript,
-               '--ziel-datum', ziel_datum,
-               '--abbau-faktor', str(abbau_faktor),
-               '--ausgabe-pfad', CHART_PNG,
-               '--sprache', sprache]
-        if mo_pfad:
-            cmd += ['--translation-mo', mo_pfad]
-
-        # 4. Daten als JSON via stdin an den Subprozess übergeben
-        daten_json = json.dumps([
-            {"datum":   r[0].isoformat(),
-             "gesamt":  r[1],
-             "gelesen": r[2],
-             "backlog": r[3]}
-            for r in info["rows"]
-        ])
-
-        try:
-            subprocess.run(
-                cmd,
-                input=daten_json,
-                check=True, capture_output=True,
-                text=True, encoding='utf-8',
-                cwd=TEMP_DIR,
-            )
-        except FileNotFoundError:
-            self.gui.status_bar.show_message(
-                _('Python not found: {}').format(python3), 5000)
-            return
-        except subprocess.CalledProcessError as e:
-            msg = (e.stderr or e.stdout or '').strip().splitlines()
-            fehler = msg[-1] if msg else 'unknown error'
-            if 'matplotlib' in fehler:
-                fehler = _('matplotlib is missing in Python. '
-                           'Install it with: brew install python-matplotlib')
-            self.gui.status_bar.show_message(
-                _('Chart rendering failed: {}').format(fehler), 8000)
-            return
-
+        # 4. Statusmeldung
         self.gui.status_bar.show_message(
             _('Reading status: {read}/{total} read, backlog {backlog}').format(
                 read=info['gelesen'], total=info['gesamt'],
                 backlog=info['backlog']), 5000)
 
-        dlg = ChartDialog(CHART_PNG, self.gui)
+        # 5. Chart-Dialog öffnen
+        dlg = ChartDialog(info['rows'], ziel_datum, abbau_faktor,
+                          datum_format, self.gui)
         dlg.exec_()

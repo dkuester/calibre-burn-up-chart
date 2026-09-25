@@ -26,7 +26,7 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 ## Voraussetzungen
 
 - Calibre 5.0 oder neuer
-- Homebrew-Python 3 mit matplotlib (`brew install python-matplotlib`)
+- Keine externe Python-Installation nötig. Alles läuft innerhalb von Calibre.
 - Zwei benutzerdefinierte Spalten in Calibre:
   - `#gelesen` (Ja/Nein) – markiert gelesene Bücher
   - `#last_read` (Datum) – Datum des letzten Lesens
@@ -116,7 +116,6 @@ calibre-burn-up-chart/
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_dialog.py                      # Chart-Anzeigedialog
     ├── export_lesestatus.py                 # Datenbeschaffung aus Calibre
-    ├── zeichne_chart.py                     # Chart-Erzeugung (matplotlib)
     ├── images/
     │   └── icon.png                         # Plugin-Icon
     └── translations/
@@ -129,12 +128,6 @@ calibre-burn-up-chart/
 
 - `export_lesestatus.py` läuft **innerhalb** des Calibre-Prozesses und
   nutzt die Live-Datenbank (`self.gui.current_db.new_api`).
-- `zeichne_chart.py` läuft **außerhalb** als Subprozess unter
-  Homebrew-Python, weil Calibres eingebettetes Python kein matplotlib
-  enthält.
-- Die Kommunikation zwischen beiden läuft über JSON via stdin an den
-  Subprozess. Nur das fertige Chart wird nach `/tmp/lesefortschritt.png` 
-  geschrieben.
 
 ## Lizenz
 

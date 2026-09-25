@@ -26,7 +26,7 @@ library size, books read, and backlog (TBR).
 ## Requirements
 
 - Calibre 5.0 or newer
-- Homebrew Python 3 with matplotlib (`brew install python-matplotlib`)
+- No external Python installation required. Everything runs inside Calibre.
 - Two custom columns in Calibre:
   - `#gelesen` (Yes/No) – marks books as read
   - `#last_read` (Date) – date of the last reading
@@ -57,7 +57,7 @@ After clicking the **"Burn-up Chart"** button in the main toolbar, the
 following happens:
 
 1. The reading status is read from the live Calibre database.
-2. The chart is rendered (`/tmp/lesefortschritt.png`).
+2. The chart opens directly in a dialog.
 3. A dialog opens showing the finished chart.
 
 ### Configuration
@@ -114,7 +114,6 @@ calibre-burn-up-chart/
     ├── config_dialog.py                     # Settings dialog
     ├── chart_dialog.py                      # Chart display dialog
     ├── export_lesestatus.py                 # Data retrieval from Calibre
-    ├── zeichne_chart.py                     # Chart rendering (matplotlib)
     ├── images/
     │   └── icon.png                         # Plugin icon
     └── translations/
@@ -127,11 +126,8 @@ calibre-burn-up-chart/
 
 - `export_lesestatus.py` runs **inside** the Calibre process and uses
   the live database (`self.gui.current_db.new_api`).
-- `zeichne_chart.py` runs **outside** as a subprocess under Homebrew
-  Python, because Calibre's embedded Python does not include matplotlib.
-- Communication between the two runs: the snapshots are passed as JSON
-  via stdin to the subprocess. Only the rendered chart is written to
-  `/tmp/lesefortschritt.png`.
+- All processing runs inside Calibre's embedded Python. The chart is 
+  drawn directly using Qt's QPainter API.
 
 ## License
 

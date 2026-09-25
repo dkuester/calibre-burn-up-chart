@@ -29,17 +29,11 @@ def _sprachcodes(lang):
 
 
 def _cache_name(zip_pfad, code):
-    """Eindeutiger Cache-Name pro ZIP-Datei und Sprache.
-
-    Verhindert, dass zwei parallel installierte Versionen des Plugins
-    sich denselben Cache-Eintrag teilen und überschreiben.
-    """
     kurz = hashlib.md5(zip_pfad.encode('utf-8')).hexdigest()[:8]
     return f'lesefortschritt_{code}_{kurz}.mo'
 
 
 def _mo_aus_zip(zip_pfad, codes):
-    """Extrahiert die passende .mo aus dem ZIP und gibt den Pfad zurück."""
     with zipfile.ZipFile(zip_pfad) as z:
         for code in codes:
             rel = f'translations/{code}/LC_MESSAGES/lesefortschritt.mo'
@@ -56,7 +50,6 @@ def _mo_aus_zip(zip_pfad, codes):
 
 
 def _mo_aus_ordner(ordner, codes):
-    """Sucht die .mo im Dateisystem (Entwicklungsbetrieb)."""
     for code in codes:
         pfad = os.path.join(ordner, 'translations', code,
                             'LC_MESSAGES', 'lesefortschritt.mo')
@@ -65,12 +58,7 @@ def _mo_aus_ordner(ordner, codes):
     return None
 
 
-def finde_mo(lang):
-    """Liefert einen Dateisystempfad zur passenden .mo-Datei oder None.
-
-    Öffentliche Funktion, damit main.py denselben Pfad für den
-    zeichne_chart.py-Subprozess wiederverwenden kann.
-    """
+def _finde_mo(lang):
     codes = _sprachcodes(lang)
     pdir = _plugin_dir()
 
@@ -82,7 +70,7 @@ def finde_mo(lang):
 
 def _install():
     try:
-        mo_pfad = finde_mo(get_lang())
+        mo_pfad = _finde_mo(get_lang())
         if mo_pfad is None:
             return gettext.NullTranslations().gettext
         with open(mo_pfad, 'rb') as f:

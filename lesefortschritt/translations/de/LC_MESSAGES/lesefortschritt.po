@@ -112,3 +112,7 @@ msgstr "Python 3 mit matplotlib nicht gefunden. Installation mit: brew install p
 
 msgid "matplotlib is missing in Python. Install it with: brew install python-matplotlib"
 msgstr "matplotlib fehlt in Python. Installation mit: brew install python-matplotlib"
+
+# Chart widget
+msgid "No data"
+msgstr "Keine Daten"
