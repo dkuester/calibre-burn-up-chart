@@ -9,6 +9,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.3.0] – 2026-09-25
+
+### Geändert
+
+- Die Zwischen-CSV ist entfallen. `export_lesestatus.py` liefert die
+  monatlichen Snapshots jetzt direkt, und `main.py` übergibt sie als
+  JSON über stdin an `zeichne_chart.py`. Damit entfällt der letzte
+  Schreib-Lese-Umweg über das Dateisystem.
+
+### Entfernt
+
+- `--log-pfad`-Parameter von `zeichne_chart.py` (ersetzt durch
+  JSON-Eingabe über stdin).
+- Standardmäßig wird keine CSV mehr geschrieben. `exportiere()` schreibt
+  nur dann eine, wenn explizit ein `log_pfad` übergeben wird (genutzt
+  vom Standalone-Modus `calibre-debug -e` zum Debuggen).
+
 ## [1.2.0] – 2026-09-23
 
 ### Hinzugefügt

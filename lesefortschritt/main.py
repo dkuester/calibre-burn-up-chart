@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -14,7 +15,6 @@ from calibre_plugins.lesefortschritt.localization import _, finde_mo
 
 
 TEMP_DIR     = tempfile.gettempdir()
-CSV_PFAD     = os.path.join(TEMP_DIR, 'burndown_log.csv')
 CHART_PNG    = os.path.join(TEMP_DIR, 'lesefortschritt.png')
 CACHE_SKRIPT = os.path.join(TEMP_DIR, '.zeichne_chart_cache.py')
 
@@ -62,16 +62,11 @@ def _lade_icon():
 
 
 def _finde_python3():
-    """Sucht einen Python-3-Interpreter mit matplotlib.
-
-    Probiert der Reihe nach die üblichen Installationspfade und
-    zuletzt die PATH-Suche. Gibt None zurück, wenn keiner gefunden
-    wird oder keiner matplotlib importieren kann.
-    """
+    """Sucht einen Python-3-Interpreter mit matplotlib."""
     kandidaten = [
-        '/opt/homebrew/bin/python3',   # Homebrew Apple Silicon
-        '/usr/local/bin/python3',       # Homebrew Intel
-        '/usr/bin/python3',             # System-Python
+        '/opt/homebrew/bin/python3',
+        '/usr/local/bin/python3',
+        '/usr/bin/python3',
     ]
     pfad_im_path = shutil.which('python3')
     if pfad_im_path and pfad_im_path not in kandidaten:
@@ -113,11 +108,10 @@ class LesefortschrittAction(InterfaceAction):
         from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
         from calibre_plugins.lesefortschritt.chart_dialog import ChartDialog
 
-        # 1. CSV schreiben — mit den konfigurierten Spaltennamen
+        # 1. Daten aus der Bibliothek holen (keine CSV mehr)
         try:
             info = exportiere(
                 db_api=self.gui.current_db.new_api,
-                log_pfad=CSV_PFAD,
                 spalte_gelesen=config['spalte_gelesen'],
                 spalte_last_read=config['spalte_last_read'],
             )
@@ -150,7 +144,6 @@ class LesefortschrittAction(InterfaceAction):
         ziel_datum   = config['ziel_datum']
         abbau_faktor = config['abbau_faktor']
 
-        # Sprachdatei für den Subprozess – dieselbe Quelle wie für den Dialog
         try:
             mo_pfad = finde_mo(get_lang())
         except Exception:
@@ -159,7 +152,6 @@ class LesefortschrittAction(InterfaceAction):
         sprache = get_lang().split('_')[0]
 
         cmd = [python3, skript,
-               '--log-pfad', CSV_PFAD,
                '--ziel-datum', ziel_datum,
                '--abbau-faktor', str(abbau_faktor),
                '--ausgabe-pfad', CHART_PNG,
@@ -167,9 +159,23 @@ class LesefortschrittAction(InterfaceAction):
         if mo_pfad:
             cmd += ['--translation-mo', mo_pfad]
 
+        # 4. Daten als JSON via stdin an den Subprozess übergeben
+        daten_json = json.dumps([
+            {"datum":   r[0].isoformat(),
+             "gesamt":  r[1],
+             "gelesen": r[2],
+             "backlog": r[3]}
+            for r in info["rows"]
+        ])
+
         try:
-            subprocess.run(cmd, check=True, capture_output=True,
-                           text=True, cwd=TEMP_DIR)
+            subprocess.run(
+                cmd,
+                input=daten_json,
+                check=True, capture_output=True,
+                text=True, encoding='utf-8',
+                cwd=TEMP_DIR,
+            )
         except FileNotFoundError:
             self.gui.status_bar.show_message(
                 _('Python not found: {}').format(python3), 5000)

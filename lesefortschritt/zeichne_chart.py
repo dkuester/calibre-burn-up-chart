@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 """
-Zeichnet das Burn-up-Chart aus der CSV burndown_log.csv.
+Zeichnet das Burn-up-Chart aus JSON-Daten, die über stdin übergeben werden.
 
-Ausführen mit: python3 zeichne_chart.py [--log-pfad PFAD]
-                                        [--ziel-datum YYYY-MM-DD]
+Ausführen mit: python3 zeichne_chart.py [--ziel-datum YYYY-MM-DD]
                                         [--abbau-faktor 0.0..1.0]
                                         [--ausgabe-pfad PFAD]
                                         [--translation-mo PFAD]
                                         [--sprache CODE]
+Die Daten kommen als JSON-Array von Objekten mit den Schlüsseln
+'datum' (ISO), 'gesamt', 'gelesen', 'backlog' über stdin.
+
+Beispiel:
+    echo '[{"datum":"2024-01-31","gesamt":100,"gelesen":40,"backlog":60},
+           {"datum":"2024-02-29","gesamt":105,"gelesen":42,"backlog":63}]' \\
+        | python3 zeichne_chart.py
+
 Voraussetzung: matplotlib (brew install python-matplotlib)
 """
 
 import argparse
-import csv
 import gettext
+import json
 import os
+import sys
 from datetime import date, datetime
 
 import matplotlib
@@ -23,16 +31,12 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 # --- Konfiguration (Defaults, per CLI überschreibbar) ---
-LOG_DEFAULT          = "/tmp/burndown_log.csv"
 CHART_DEFAULT        = "/tmp/lesefortschritt.png"
 ZIEL_DATUM_DEFAULT   = date(2050, 9, 4)
 ABBAU_FAKTOR_DEFAULT = 0.5
 
 # --- Kommandozeilenargumente ---
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--log-pfad', default=LOG_DEFAULT,
-    help='Pfad zur CSV-Datei (Default: %(default)s)')
 parser.add_argument(
     '--ziel-datum', default=ZIEL_DATUM_DEFAULT.isoformat(),
     help='Zieldatum im Format YYYY-MM-DD (Default: %(default)s)')
@@ -65,28 +69,27 @@ if args.sprache == 'de':
 else:
     DATUM_FORMAT = '%Y-%m-%d'
 
-
-LOG          = args.log_pfad
 ZIEL_DATUM   = datetime.fromisoformat(args.ziel_datum).date()
 ABBAU_FAKTOR = args.abbau_faktor
 CHART        = args.ausgabe_pfad
 
-# --- CSV einlesen ---
-if not os.path.exists(LOG):
-    raise SystemExit(f"Log file not found: {LOG}")
+# --- JSON-Daten von stdin lesen ---
+try:
+    rohdaten = json.load(sys.stdin)
+except json.JSONDecodeError as e:
+    raise SystemExit(f"Invalid JSON input: {e}")
 
-daten = []
-with open(LOG, newline="", encoding="utf-8") as f:
-    for row in csv.DictReader(f):
-        daten.append((
-            datetime.fromisoformat(row["datum"]).date(),
-            int(row["gesamt"]),
-            int(row["gelesen"]),
-            int(row["backlog"]),
-        ))
-
-if len(daten) < 2:
+if not isinstance(rohdaten, list) or len(rohdaten) < 2:
     raise SystemExit("Not enough data points for a chart.")
+
+try:
+    daten = [
+        (datetime.fromisoformat(r["datum"]).date(),
+         int(r["gesamt"]), int(r["gelesen"]), int(r["backlog"]))
+        for r in rohdaten
+    ]
+except (KeyError, ValueError, TypeError) as e:
+    raise SystemExit(f"Invalid data in JSON input: {e}")
 
 tage    = [d[0] for d in daten]
 gesamt  = [d[1] for d in daten]

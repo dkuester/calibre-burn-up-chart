@@ -2,7 +2,7 @@ from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 
 
-__version__ = (1, 2, 0)
+__version__ = (1, 3, 0)
 __version_str__ = '.'.join(str(x) for x in __version__)
 
 

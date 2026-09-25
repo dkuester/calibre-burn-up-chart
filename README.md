@@ -56,7 +56,7 @@ library size, books read, and backlog (TBR).
 After clicking the **"Burn-up Chart"** button in the main toolbar, the
 following happens:
 
-1. The CSV with monthly snapshots is written (`/tmp/burndown_log.csv`).
+1. The reading status is read from the live Calibre database.
 2. The chart is rendered (`/tmp/lesefortschritt.png`).
 3. A dialog opens showing the finished chart.
 
@@ -129,8 +129,9 @@ calibre-burn-up-chart/
   the live database (`self.gui.current_db.new_api`).
 - `zeichne_chart.py` runs **outside** as a subprocess under Homebrew
   Python, because Calibre's embedded Python does not include matplotlib.
-- Communication between the two runs via `/tmp` files:
-  `/tmp/burndown_log.csv` (data) and `/tmp/lesefortschritt.png` (chart).
+- Communication between the two runs: the snapshots are passed as JSON
+  via stdin to the subprocess. Only the rendered chart is written to
+  `/tmp/lesefortschritt.png`.
 
 ## License
 

@@ -6,6 +6,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [1.3.0] – 2026-09-25
+
+### Changed
+
+- The intermediate CSV file has been removed. `export_lesestatus.py`
+  now returns the monthly snapshots directly, and `main.py` passes them
+  to `zeichne_chart.py` as JSON via stdin. This eliminates the last
+  write-and-read round trip through the filesystem.
+
+### Removed
+
+- `--log-pfad` parameter of `zeichne_chart.py` (replaced by JSON input
+  via stdin).
+- CSV output is no longer written by default. `exportiere()` only
+  writes a CSV if `log_pfad` is explicitly passed (used by the
+  standalone `calibre-debug -e` mode for debugging).
+
 ## [1.2.0] – 2026-09-23
 
 ### Added
