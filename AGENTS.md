@@ -15,18 +15,22 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
 
 ## Architektur-Constraints
 
-- **Zwei Python-Umgebungen:** `export_lesestatus.py` und `main.py` laufen in
-  Calibres eingebettetem Python (kein `pip`, kein `matplotlib`).
-  `zeichne_chart.py` läuft als Subprozess unter `/opt/homebrew/bin/python3`
-  und ist die **einzige** Datei, die matplotlib importieren darf.
+- **Eine Python-Umgebung:** Das gesamte Plugin läuft in Calibres
+  eingebettetem Python (kein `pip`, kein `matplotlib`). Das Chart wird
+  direkt mit Qt `QPainter` in `chart_dialog.py` gezeichnet – es gibt
+  keinen Subprozess und keine externen Abhängigkeiten.
 - **Keine neuen Abhängigkeiten** in `main.py`, `chart_dialog.py`,
-  `config_dialog.py` oder `export_lesestatus.py` – Calibres Python hat
-  keinen Paketmanager.
+  `config_dialog.py`, `export_lesestatus.py` oder `localization.py` –
+  Calibres Python hat keinen Paketmanager.
 - **`plugin-import-name-lesefortschritt.txt` darf nicht gelöscht werden.**
   Sie ist leer, aber essenziell für den Plugin-Import.
 
 ## Dateien nicht anfassen
 
 - `.DS_Store` – macOS-Systemdatei
-- `/tmp/burndown_log.csv`, `/tmp/lesefortschritt.png` – generiert
-- `.zeichne_chart_cache.py` – wird aus dem Plugin-ZIP extrahiert
+- `/tmp/burndown_log.csv`, `/tmp/burndown_log.csv.tmp` – generiert
+  (nur im Standalone-Debug von `export_lesestatus.py`)
+- `/tmp/lesefortschritt_paint_error.log` – generiert (Fehlerprotokoll
+  aus `chart_dialog.py`)
+- `lesefortschritt_*.mo` im tempdir – generierter Lokalisierungs-Cache
+  (`localization.py`)
