@@ -96,6 +96,8 @@ Releases are marked in Git as annotated tags with a `v` prefix
    git tag -a v1.0.1 -m "Short description"
    ```
 
+Planned features and ideas are tracked in [ROADMAP.md](ROADMAP.md).
+
 ## Project structure
 
 ```
@@ -107,6 +109,8 @@ calibre-burn-up-chart/
 ├── AGENTS.md
 ├── CHANGELOG.md
 ├── CHANGELOG.de.md
+├── ROADMAP.md
+├── ROADMAP.de.md
 ├── make_icon.py
 └── lesefortschritt/
     ├── __init__.py                          # Plugin metadata, version

@@ -99,6 +99,8 @@ Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
    git tag -a v1.0.1 -m "Kurze Beschreibung"
    ```
 
+Geplante Features und Ideen stehen in [ROADMAP.de.md](ROADMAP.de.md).
+
 ## Projektstruktur
 
 ```
@@ -111,6 +113,8 @@ calibre-burn-up-chart/
 ├── CHANGELOG.md
 ├── CHANGELOG.de.md
 ├── make_icon.py
+├── ROADMAP.md
+├── ROADMAP.de.md
 └── lesefortschritt/
     ├── __init__.py                          # Plugin-Metadaten, Version
     ├── plugin-import-name-lesefortschritt.txt
