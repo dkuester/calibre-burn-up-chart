@@ -176,3 +176,66 @@ if __name__ == "__main__":
     if info["last_read_vor_added"]:
         print(f"Hinweis: {info['last_read_vor_added']} Bücher mit "
               f"last_read < timestamp am timestamp verbucht.")
+
+def berechne_lesezeit(db_api, spalte_gelesen=None, spalte_last_read=None):
+    """
+    Berechnet für jedes gelesene Buch die Zeitspanne zwischen Hinzufügen
+    (timestamp) und Lesen (#last_read).
+
+    :return: dict mit
+        - punkte: Liste von (lese_datum, tage_bis_gelesen, book_id)
+        - statistik: dict(anzahl, mittel, median, min, max) oder None
+        - ohne_daten: Anzahl gelesener Bücher ohne verwertbare Daten
+    """
+    if spalte_gelesen is None:
+        spalte_gelesen = SPALTE_GELESEN
+    if spalte_last_read is None:
+        spalte_last_read = SPALTE_LAST_READ
+
+    alle_ids = db_api.all_book_ids()
+    added_map     = db_api.all_field_for("timestamp", alle_ids)
+    gelesen_map   = db_api.all_field_for(spalte_gelesen, alle_ids)
+    last_read_map = db_api.all_field_for(spalte_last_read, alle_ids)
+
+    punkte = []
+    ohne_daten = 0
+
+    for book_id in alle_ids:
+        if gelesen_map.get(book_id) is not True:
+            continue
+        added     = to_date(added_map.get(book_id))
+        last_read = to_date(last_read_map.get(book_id))
+        if added is None or last_read is None:
+            ohne_daten += 1
+            continue
+        if last_read < added:
+            # Inkonsistenz – überspringen
+            ohne_daten += 1
+            continue
+        tage = (last_read - added).days
+        punkte.append((last_read, tage, book_id))
+
+    punkte.sort()
+
+    if not punkte:
+        return {"punkte": [], "statistik": None, "ohne_daten": ohne_daten}
+
+    werte = sorted(p[1] for p in punkte)
+    n = len(werte)
+    if n % 2 == 1:
+        median = float(werte[n // 2])
+    else:
+        median = (werte[n // 2 - 1] + werte[n // 2]) / 2.0
+
+    statistik = {
+        "anzahl": n,
+        "mittel": sum(werte) / n,
+        "median": median,
+        "min":    werte[0],
+        "max":    werte[-1],
+    }
+    return {
+        "punkte":    punkte,
+        "statistik": statistik,
+        "ohne_daten": ohne_daten,
+    }

@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: lesefortschritt 1.3.0\n"
+"Project-Id-Version: lesefortschritt 1.4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-23 17:00+0200\n"
 "PO-Revision-Date: 2026-09-23 17:00+0200\n"
@@ -116,3 +116,41 @@ msgstr "matplotlib fehlt in Python. Installation mit: brew install python-matplo
 # Chart widget
 msgid "No data"
 msgstr "Keine Daten"
+
+# Menu entries
+msgid "Burn-up chart"
+msgstr "Burn-up-Chart"
+
+msgid "Time between purchase and reading"
+msgstr "Zeit zwischen Kauf und Lesen"
+
+msgid "Reading statistics for your library"
+msgstr "Lesestatistik für deine Bibliothek"
+
+# Delay chart
+msgid "Median: {med} days · Mean: {mean} days · Range: {min}–{max} days · n = {n}"
+msgstr "Median: {med} Tage · Mittel: {mean} Tage · Spanne: {min}–{max} Tage · n = {n}"
+
+msgid "Days until read"
+msgstr "Tage bis zum Lesen"
+
+msgid "Months until read"
+msgstr "Monate bis zum Lesen"
+
+msgid "Years until read"
+msgstr "Jahre bis zum Lesen"
+
+msgid "Read on"
+msgstr "Gelesen am"
+
+msgid "Median"
+msgstr "Median"
+
+msgid "Mean"
+msgstr "Mittel"
+
+msgid "No data available for this analysis."
+msgstr "Keine Daten für diese Auswertung verfügbar."
+
+msgid "Median: {med} days, mean: {mean} days (n={n})"
+msgstr "Median: {med} Tage, Mittel: {mean} Tage (n={n})"

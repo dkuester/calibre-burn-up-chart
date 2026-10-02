@@ -1,7 +1,7 @@
 import os
 import zipfile
 
-from qt.core import QIcon, QPixmap
+from qt.core import QIcon, QMenu, QPixmap, QToolButton, QTimer
 
 from calibre.gui2.actions import InterfaceAction
 from calibre.utils.localization import get_lang
@@ -38,12 +38,11 @@ class LesefortschrittAction(InterfaceAction):
 
     name = 'Lesefortschritt'
     action_spec = (_('Burn-up Chart'), None,
-                   _('Display reading progress as a burn-up chart'), None)
+                   _('Reading statistics for your library'), None)
     action_type = 'current'
 
     def genesis(self):
-        self.qaction.triggered.connect(self.show_chart)
-
+        # Icon setzen (Fehler dürfen nichts lahmlegen)
         try:
             icon = _lade_icon()
             if icon is not None:
@@ -51,12 +50,39 @@ class LesefortschrittAction(InterfaceAction):
         except Exception as e:
             print(f'Lesefortschritt: icon error: {e}')
 
+        # Standardaktion bei Klick auf den Hauptbereich des Buttons
+        self.qaction.triggered.connect(self.show_chart)
+
+        # Menü mit beiden Optionen – erscheint beim Klick auf den Pfeil
+        menu = QMenu(self.gui)
+        menu.addAction(_('Burn-up chart'), self.show_chart)
+        menu.addAction(_('Time between purchase and reading'),
+                       self.show_delay)
+        self.qaction.setMenu(menu)
+
+        # Nach der Toolbar-Erstellung den QToolButton umkonfigurieren:
+        # MenuButtonPopup = Klick auf Hauptbereich = Standardaktion,
+        # kleiner Pfeil rechts = Menü
+        QTimer.singleShot(0, self._aktiviere_popup_modus)
+
+    def _aktiviere_popup_modus(self):
+        """Setzt den QToolButton auf MenuButtonPopup."""
+        try:
+            for tb in self.gui.findChildren(QToolButton):
+                if tb.defaultAction() is self.qaction:
+                    tb.setPopupMode(QToolButton.MenuButtonPopup)
+                    return
+        except Exception as e:
+            print(f'Lesefortschritt: PopupMode error: {e}')
+
+    # ------------------------------------------------------------------
+    # Aktionen
+    # ------------------------------------------------------------------
     def show_chart(self):
         from datetime import datetime
         from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
         from calibre_plugins.lesefortschritt.chart_dialog import ChartDialog
 
-        # 1. Daten aus der Live-Bibliothek holen
         try:
             info = exportiere(
                 db_api=self.gui.current_db.new_api,
@@ -68,24 +94,55 @@ class LesefortschrittAction(InterfaceAction):
                 _('Export failed: {}').format(e), 5000)
             return
 
-        # 2. Konfiguration lesen
         try:
             ziel_datum = datetime.fromisoformat(config['ziel_datum']).date()
         except ValueError:
             ziel_datum = datetime(2050, 9, 4).date()
         abbau_faktor = float(config['abbau_faktor'])
 
-        # 3. Datumsformat abhängig von der Sprache
         sprache = get_lang().split('_')[0]
         datum_format = '%d.%m.%Y' if sprache == 'de' else '%Y-%m-%d'
 
-        # 4. Statusmeldung
         self.gui.status_bar.show_message(
             _('Reading status: {read}/{total} read, backlog {backlog}').format(
                 read=info['gelesen'], total=info['gesamt'],
                 backlog=info['backlog']), 5000)
 
-        # 5. Chart-Dialog öffnen
         dlg = ChartDialog(info['rows'], ziel_datum, abbau_faktor,
                           datum_format, self.gui)
+        dlg.exec_()
+
+    def show_delay(self):
+        from calibre_plugins.lesefortschritt.export_lesestatus import berechne_lesezeit
+        from calibre_plugins.lesefortschritt.delay_dialog import DelayChartDialog
+
+        try:
+            info = berechne_lesezeit(
+                db_api=self.gui.current_db.new_api,
+                spalte_gelesen=config['spalte_gelesen'],
+                spalte_last_read=config['spalte_last_read'],
+            )
+        except Exception as e:
+            self.gui.status_bar.show_message(
+                _('Export failed: {}').format(e), 5000)
+            return
+
+        if not info['punkte']:
+            self.gui.status_bar.show_message(
+                _('No data available for this analysis.'), 8000)
+            return
+
+        sprache = get_lang().split('_')[0]
+        datum_format = '%d.%m.%Y' if sprache == 'de' else '%Y-%m-%d'
+
+        s = info['statistik']
+        self.gui.status_bar.show_message(
+            _('Median: {med} days, mean: {mean} days (n={n})').format(
+                med=int(round(s['median'])),
+                mean=int(round(s['mittel'])),
+                n=s['anzahl']), 5000)
+
+        dlg = DelayChartDialog(
+            info['punkte'], info['statistik'],
+            datum_format, sprache, self.gui)
         dlg.exec_()

@@ -22,6 +22,9 @@ library size, books read, and backlog (TBR).
 - **Bilingual:** German and English interface, depending on Calibre's
   language setting. Additional languages can be added via
   `translations/<lang>/`.
+- **Reading delay analysis:** For each book marked as read, the time
+  between adding it to Calibre and reading it is computed. The result
+  is shown as a scatter plot with median and mean lines.
 
 ## Requirements
 
@@ -53,12 +56,11 @@ library size, books read, and backlog (TBR).
 
 ## Usage
 
-After clicking the **"Burn-up Chart"** button in the main toolbar, the
-following happens:
+Clicking the toolbar button opens a dropdown menu with two options:
 
-1. The reading status is read from the live Calibre database.
-2. The chart opens directly in a dialog.
-3. A dialog opens showing the finished chart.
+- **Burn-up chart** – the historical progression of library size,
+  books read, and backlog.
+- **Time between purchase and reading** – delay statistics per book.
 
 ### Configuration
 
