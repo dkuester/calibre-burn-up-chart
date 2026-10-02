@@ -22,6 +22,9 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 - **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
   Calibres Spracheinstellung. Weitere Sprachen können über
   `translations/<lang>/` ergänzt werden.
+- **Lese-Verzögerung:** Für jedes gelesene Buch wird die Zeitspanne
+  zwischen Hinzufügen und Lesen berechnet. Das Ergebnis wird als
+  Streudiagramm mit Median- und Mittelwertlinie dargestellt.
 
 ## Voraussetzungen
 
@@ -54,12 +57,12 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 
 ## Benutzung
 
-Nach dem Klick auf den Button **„Burn-up Chart"** in der Haupttoolbar
-läuft folgender Ablauf:
+Ein Klick auf den Toolbar-Button öffnet ein Dropdown-Menü mit zwei
+Optionen:
 
-1. Der Lesestatus wird aus der Live-Datenbank von Calibre gelesen.
-2. Das Chart wird gezeichnet (`/tmp/lesefortschritt.png`).
-3. Ein Dialog öffnet sich mit dem fertigen Chart.
+- **Burn-up-Chart** – der historische Verlauf von Bestand, gelesenen
+  Büchern und SuB.
+- **Zeit zwischen Kauf und Lesen** – Verzögerungsstatistik pro Buch.
 
 ### Konfiguration
 
