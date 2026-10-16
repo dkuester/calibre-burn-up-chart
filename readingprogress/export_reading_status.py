@@ -223,7 +223,7 @@ def forecast_backlog(rows, months=12):
     }
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
     from calibre.library import db as calibre_db_factory
 
     api = calibre_db_factory(STANDALONE_LIBRARY).new_api

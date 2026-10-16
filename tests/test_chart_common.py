@@ -89,6 +89,42 @@ def test_pan_view_clamps_to_fit():
     assert (nx_max - nx_min).days == (view_max - view_min).days
 
 
+def test_zoom_view_empty_fit_range():
+    fit = date(2024, 1, 1)
+    result = cc.zoom_view(fit, fit, 100.0, fit, fit, 100.0, fx=0.5, factor=0.8)
+    assert result == (fit, fit, 100.0)
+
+
+def test_zoom_view_left_clamp():
+    # zooming out with the cursor right of the left edge pulls the window
+    # past fit_x_min -> the left edge is clamped back to the fit range.
+    fit_x_min = date(2024, 1, 1)
+    fit_x_max = date(2025, 1, 1)          # 366 days
+    view_min = date(2024, 1, 1)           # == fit_x_min
+    view_max = date(2024, 7, 1)           # 182 days
+    result = cc.zoom_view(
+        view_min, view_max, 100.0,
+        fit_x_min, fit_x_max, 100.0, fx=0.3, factor=0.8)
+    assert result.x_min == fit_x_min            # clamped
+    assert result.x_max < fit_x_max             # not a full fit
+    assert (result.x_max - result.x_min).days == round(182 / 0.8)
+
+
+def test_zoom_view_right_clamp():
+    # zooming out with the cursor left of the right edge pulls the window
+    # past fit_x_max -> the right edge is clamped back to the fit range.
+    fit_x_min = date(2024, 1, 1)
+    fit_x_max = date(2025, 1, 1)          # 366 days
+    view_min = date(2024, 7, 1)
+    view_max = date(2025, 1, 1)           # == fit_x_max, 184 days
+    result = cc.zoom_view(
+        view_min, view_max, 100.0,
+        fit_x_min, fit_x_max, 100.0, fx=0.7, factor=0.8)
+    assert result.x_max == fit_x_max            # clamped
+    assert result.x_min > fit_x_min             # not a full fit
+    assert (result.x_max - result.x_min).days == round(184 / 0.8)
+
+
 def test_default_colors_keys_and_format():
     assert list(cc.DEFAULT_COLORS) == ['total', 'read', 'backlog', 'goal',
                                        'stable', 'soft', 'forecast']

@@ -142,11 +142,13 @@ calibre-burn-up-chart/
 ├── requirements-dev.txt
 ├── tests/
 │   ├── conftest.py
-│   ├── test_helpers.py
 │   ├── test_chart_common.py
 │   ├── test_compute_reading_time.py
+│   ├── test_config_helpers.py
 │   ├── test_export_snapshots.py
-│   └── test_forecast.py
+│   ├── test_forecast.py
+│   ├── test_helpers.py
+│   └── test_integration.py
 └── readingprogress/
     ├── __init__.py                          # Plugin-Metadaten, Version
     ├── plugin-import-name-readingprogress.txt
@@ -154,6 +156,7 @@ calibre-burn-up-chart/
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_common.py                      # Qt-freie Chart-Mathematik + Farben
+    ├── config_helpers.py                    # Qt-freie Config-/Locale- + Migrations-Helfer
     ├── chart_dialog.py                      # Chart-Anzeigedialog
     ├── delay_dialog.py                      # Verzögerungs-Chart-Dialog
     ├── export_reading_status.py             # Datenbeschaffung aus Calibre
