@@ -1,5 +1,9 @@
 from calibre_plugins.readingprogress import config
-from calibre_plugins.readingprogress.chart_common import DEFAULT_COLORS
+from calibre_plugins.readingprogress.chart_common import (
+    DARK_DEFAULT_COLORS,
+    DEFAULT_COLORS,
+    is_dark_background,
+)
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QCheckBox,
@@ -11,6 +15,7 @@ from qt.core import (
     QFormLayout,
     QLabel,
     QLineEdit,
+    QPalette,
     QPushButton,
     QWidget,
 )
@@ -51,6 +56,7 @@ class ConfigWidget(QWidget):
 
         # --- Colors (keys come from chart_common.DEFAULT_COLORS) ---
         self._color_buttons = {}
+        self._color_modified = {key: False for key in DEFAULT_COLORS}
         color_labels = {
             'total': _('Total library color:'),
             'read': _('Read (cumulative) color:'),
@@ -63,11 +69,16 @@ class ConfigWidget(QWidget):
         for key in DEFAULT_COLORS:
             btn = QPushButton()
             btn.setFixedWidth(90)
-            self._update_color_button(btn, config[f'color_{key}'])
+            self._update_color_button(
+                btn, config[f'color_{key}'] or self._theme_default(key))
             btn.clicked.connect(
                 lambda checked=False, k=key: self._pick_color(k))
             layout.addRow(color_labels[key], btn)
             self._color_buttons[key] = btn
+
+        reset_btn = QPushButton(_('Reset colors to theme defaults'))
+        reset_btn.clicked.connect(self._reset_colors)
+        layout.addRow(reset_btn)
 
         # --- Custom columns ---
         self.read_column_edit = QLineEdit()
@@ -103,7 +114,9 @@ class ConfigWidget(QWidget):
         config['reduction_factor'] = float(self.factor_edit.value())
         config['show_forecast'] = bool(self.forecast_check.isChecked())
         for key, btn in self._color_buttons.items():
-            config[f'color_{key}'] = btn.text()
+            config[f'color_{key}'] = (
+                btn.text() if self._color_modified[key] else ''
+            )
         config['read_column'] = (
             self.read_column_edit.text().strip() or '#gelesen'
         )
@@ -121,8 +134,19 @@ class ConfigWidget(QWidget):
         )
         btn.setText(color.name())
 
+    def _theme_default(self, key):
+        bg = self.palette().color(QPalette.Window)
+        dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
+        return DARK_DEFAULT_COLORS[key] if dark else DEFAULT_COLORS[key]
+
     def _pick_color(self, key):
         current = QColor(self._color_buttons[key].text())
         color = QColorDialog.getColor(current, self)
         if color.isValid():
             self._update_color_button(self._color_buttons[key], color.name())
+            self._color_modified[key] = True
+
+    def _reset_colors(self):
+        for key, btn in self._color_buttons.items():
+            self._update_color_button(btn, self._theme_default(key))
+            self._color_modified[key] = False

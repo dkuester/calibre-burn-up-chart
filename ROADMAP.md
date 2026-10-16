@@ -59,6 +59,14 @@ double-click resets the view to fit.
 The colors of all data series and reference lines can be changed in the
 plugin settings (with sensible defaults).
 
+### Dark mode support
+
+The charts adapt to Calibre's current theme. On a dark palette the
+chart chrome (background, axes, grid, text, legend/annotation boxes)
+switches to light-on-dark colors, and the configurable series colors
+fall back to higher-contrast dark-theme defaults unless the user
+explicitly picked a color.
+
 ## Planned
 
 Features we intend to build, but without a fixed target version.
@@ -68,12 +76,6 @@ Features we intend to build, but without a fixed target version.
 Two lines showing how many books are added per month and how many are
 read per month. Complements the burn-up chart by showing the underlying
 dynamics.
-
-### Dark mode support
-
-Adapt the chart colors to Calibre's current theme using
-`palette().color(QPalette.Window)` and friends. Currently the chart
-assumes a light theme.
 
 ### PNG export
 

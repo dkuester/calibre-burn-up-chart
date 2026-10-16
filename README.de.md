@@ -27,6 +27,10 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
   zurück.
 - **Konfigurierbare Farben (Burn-up-Chart):** Jede Datenreihe und Referenzlinie lässt
   sich in den Einstellungen umfärben.
+- **Dunkelmodus:** Die Charts folgen dem aktuellen Calibre-Theme. Bei
+  dunkler Farbpalette wechseln die Chart-Optik und die (nicht
+  angepassten) Serienfarben automatisch auf helle, kontrastreiche
+  Standardwerte.
 - **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
   automatischer Skalierung auf die Bildschirmgröße.
 - **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
@@ -85,7 +89,9 @@ Anpassen* lassen sich einstellen:
 - **Prognoselinie anzeigen:** Ob die Prognoselinie gezeichnet wird
   (standardmäßig an).
 - **Farben:** Farbe jeder Datenreihe und Referenzlinie (Gesamt, Gelesen,
-  SuB, Ziel, Stabil, Sanfter Abbau, Prognose).
+  SuB, Ziel, Stabil, Sanfter Abbau, Prognose). Farben folgen
+  standardmäßig dem Theme und lassen sich auf die Theme-Standards
+  zurücksetzen.
 
 Die Werte werden in
 `~/Library/Preferences/calibre/plugins/readingprogress.json` gespeichert

@@ -106,3 +106,41 @@ def test_view_is_namedtuple():
     assert result.x_min == fit_x_min                   # named fields
     assert result.x_max == fit_x_max
     assert result.y_max == 100.0
+
+
+def test_is_dark_background():
+    assert cc.is_dark_background((255, 255, 255)) is False
+    assert cc.is_dark_background((200, 200, 200)) is False
+    assert cc.is_dark_background((0, 0, 0)) is True
+    assert cc.is_dark_background((40, 40, 40)) is True
+
+
+def test_chrome_colors():
+    light = cc.chrome_colors((255, 255, 255))
+    dark = cc.chrome_colors((20, 20, 20))
+    assert light['text'] == '#222222'
+    assert light['box_bg'] == (255, 255, 255)
+    assert dark['text'] == '#dddddd'
+    assert dark['box_bg'] == (58, 58, 58)
+    assert dark['grid'] == '#404040'
+
+
+def test_delay_colors():
+    light = cc.delay_colors((255, 255, 255))
+    dark = cc.delay_colors((20, 20, 20))
+    assert light['median'] == '#264653'
+    assert dark['median'] == '#8fc3d9'
+
+
+def test_resolve_series_colors():
+    # no overrides -> theme defaults
+    assert cc.resolve_series_colors(False, {})['goal'] == '#264653'
+    assert cc.resolve_series_colors(True, {})['goal'] == '#8fc3d9'
+    # empty-string override = follow theme
+    assert cc.resolve_series_colors(True, {'goal': ''})['goal'] == '#8fc3d9'
+    # explicit override wins
+    assert cc.resolve_series_colors(True, {'goal': '#123456'})['goal'] == '#123456'
+    # missing override key -> theme default
+    assert cc.resolve_series_colors(True, {'goal': '#123456'})['total'] == '#b8b8b8'
+    # light theme, explicit override
+    assert cc.resolve_series_colors(False, {'total': '#000000'})['total'] == '#000000'

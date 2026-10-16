@@ -63,6 +63,15 @@ Ansicht zurück.
 Die Farben aller Datenreihen und Referenzlinien lassen sich in den
 Plugin-Einstellungen ändern (mit sinnvollen Standardwerten).
 
+### Dunkelmodus
+
+Die Charts passen sich dem aktuellen Calibre-Theme an. Bei dunkler
+Farbpalette wechselt die Chart-Optik (Hintergrund, Achsen, Raster,
+Text, Legenden-/Hinweis-Boxen) auf helle Farben auf dunklem Grund, und
+die konfigurierbaren Serienfarben fallen auf kontrastreichere
+Dunkeltheme-Standards zurück – außer der Nutzer hat eine Farbe
+explizit gewählt.
+
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
@@ -71,12 +80,6 @@ Features, die wir bauen wollen, aber ohne feste Zielversion.
 
 Zwei Linien: Wie viele Bücher kommen pro Monat dazu, wie viele werden
 gelesen. Ergänzt das Burn-up-Chart um die zugrunde liegende Dynamik.
-
-### Dunkelmodus
-
-Anpassung der Chart-Farben an das aktuelle Calibre-Theme über
-`palette().color(QPalette.Window)` und Verwandte. Aktuell geht das
-Chart von einem hellen Theme aus.
 
 ### PNG-Export
 

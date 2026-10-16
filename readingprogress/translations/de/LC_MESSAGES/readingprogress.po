@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: readingprogress 1.4.0\n"
+"Project-Id-Version: readingprogress 1.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-16 12:00+0200\n"
 "PO-Revision-Date: 2026-10-16 12:00+0200\n"
@@ -76,6 +76,9 @@ msgstr "Farbe Linie sanfter Abbau:"
 
 msgid "Forecast line color:"
 msgstr "Farbe Prognoselinie:"
+
+msgid "Reset colors to theme defaults"
+msgstr "Farben auf Theme-Standard zurücksetzen"
 
 msgid "Custom column \"read\":"
 msgstr "Benutzerdefinierte Spalte \"gelesen\":"
