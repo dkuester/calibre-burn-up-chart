@@ -9,41 +9,32 @@ Priorities follow a simple rule: **maintenance and quality before new
 features**. A feature that breaks existing code costs more than it is
 worth.
 
-## Next
+## Done
 
-The immediate next steps. Aimed at v1.5.0.
+Completed in the current development cycle, shipping with the next
+release:
 
 ### Unit tests
 
-Automated tests for the two data-processing entry points:
+A `pytest` suite (28 tests) covers the two data-processing entry points:
 
-- `compute_reading_time()` – median, mean, outlier handling, empty input
+- `compute_reading_time()` – median, mean, empty input, edge cases
 - `export_snapshots()` – snapshot generation, month boundaries, edge cases
 
-Run with `pytest`. Use synthetic Calibre-style dictionaries, no
-real database needed.
+It runs against synthetic Calibre-style dictionaries, no real database.
 
 ### CI on Codeberg
 
-Forgejo Actions workflow that runs on every push:
-
-- Linting with `ruff`
-- Unit tests with `pytest`
-- Ideally: fail the run if lint or tests fail
-
-Workflow file goes into `.forgejo/workflows/`.
+A Forgejo Actions workflow (`.forgejo/workflows/ci.yml`) runs `ruff` and
+`pytest` on every push and pull request.
 
 ### Refactoring `ChartWidget`
 
-`ChartWidget` in `chart_dialog.py` has grown into a single class with
-many responsibilities. Split the drawing into smaller units:
-
-- `AxesRenderer` – axes, grid, tick labels
-- `SeriesRenderer` – data series lines
-- `LegendRenderer` – the legend box
-- `AnnotationRenderer` – "Today: X unread" and similar
-
-`ChartWidget` keeps only the orchestration.
+`ChartWidget` in `chart_dialog.py` is now split into renderer classes:
+`AxesRenderer` (axes, grid, tick labels), `SeriesRenderer` (data series
+lines), `LegendRenderer` (the legend box) and `AnnotationRenderer`
+("Today: X unread" and similar). `ChartWidget` keeps only the
+orchestration.
 
 ## Planned
 

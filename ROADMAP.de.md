@@ -10,41 +10,34 @@ Die Reihenfolge folgt einer einfachen Regel: **Pflege und Qualität vor
 neuen Features.** Ein Feature, das bestehenden Code bricht, kostet mehr,
 als es wert ist.
 
-## Als Nächstes
+## Erledigt
 
-Die unmittelbar anstehenden Schritte. Zielversion: v1.5.0.
+Im aktuellen Entwicklungszyklus abgeschlossen, kommt mit der nächsten
+Version:
 
 ### Unit-Tests
 
-Automatisierte Tests für die beiden Datenverarbeitungs-Einstiegspunkte:
+Eine `pytest`-Suite (28 Tests) deckt die beiden
+Datenverarbeitungs-Einstiegspunkte ab:
 
-- `compute_reading_time()` – Median, Mittel, Ausreißer, leere Eingabe
+- `compute_reading_time()` – Median, Mittel, leere Eingabe, Randfälle
 - `export_snapshots()` – Snapshot-Erzeugung, Monatsgrenzen, Randfälle
 
-Ausführung mit `pytest`. Synthetische Calibre-artige Wörterbücher, keine
-echte Datenbank nötig.
+Sie läuft gegen synthetische Calibre-artige Wörterbücher, keine echte
+Datenbank nötig.
 
 ### CI auf Codeberg
 
-Forgejo-Actions-Workflow, der bei jedem Push läuft:
-
-- Linting mit `ruff`
-- Unit-Tests mit `pytest`
-- Idealerweise: Workflow schlägt fehl, wenn Lint oder Tests fehlschlagen
-
-Workflow-Datei liegt unter `.forgejo/workflows/`.
+Ein Forgejo-Actions-Workflow (`.forgejo/workflows/ci.yml`) führt `ruff`
+und `pytest` bei jedem Push und Pull Request aus.
 
 ### Refactoring `ChartWidget`
 
-`ChartWidget` in `chart_dialog.py` ist zu einer einzelnen Klasse mit
-vielen Verantwortlichkeiten gewachsen. Aufteilung in kleinere Einheiten:
-
-- `AxesRenderer` – Achsen, Raster, Achsenbeschriftungen
-- `SeriesRenderer` – Datenlinien
-- `LegendRenderer` – die Legendenbox
-- `AnnotationRenderer` – „Heute: X ungelesen" und ähnliches
-
-`ChartWidget` behält nur die Orchestrierung.
+`ChartWidget` in `chart_dialog.py` ist jetzt in Renderer-Klassen
+aufgeteilt: `AxesRenderer` (Achsen, Raster, Achsenbeschriftungen),
+`SeriesRenderer` (Datenlinien), `LegendRenderer` (die Legendenbox) und
+`AnnotationRenderer` („Heute: X ungelesen" und ähnliches). `ChartWidget`
+behält nur die Orchestrierung.
 
 ## Geplant
 

@@ -2,7 +2,7 @@
 
 *[English version](README.md)*
 
-Ein Calibre-Plugin, das den Reading Progress als Burn-up-Chart anzeigt.
+Ein Calibre-Plugin, das den Lesefortschritt als Burn-up-Chart anzeigt.
 Es rekonstruiert die historische Zeitreihe aus den Calibre-Metadaten
 (`timestamp` und benutzerdefinierte Spalten) und zeichnet den Verlauf
 von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
@@ -105,6 +105,9 @@ Geplante Features und Ideen stehen in [ROADMAP.de.md](ROADMAP.de.md).
 
 ```
 calibre-burn-up-chart/
+├── .forgejo/
+│   └── workflows/
+│       └── ci.yml
 ├── .gitignore
 ├── README.md
 ├── README.de.md
@@ -112,9 +115,16 @@ calibre-burn-up-chart/
 ├── AGENTS.md
 ├── CHANGELOG.md
 ├── CHANGELOG.de.md
-├── make_icon.py
 ├── ROADMAP.md
 ├── ROADMAP.de.md
+├── make_icon.py
+├── pyproject.toml
+├── requirements-dev.txt
+├── tests/
+│   ├── conftest.py
+│   ├── test_helpers.py
+│   ├── test_compute_reading_time.py
+│   └── test_export_snapshots.py
 └── readingprogress/
     ├── __init__.py                          # Plugin-Metadaten, Version
     ├── plugin-import-name-readingprogress.txt
@@ -122,7 +132,8 @@ calibre-burn-up-chart/
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_dialog.py                      # Chart-Anzeigedialog
-    ├── export_reading_status.py            # Datenbeschaffung aus Calibre
+    ├── delay_dialog.py                      # Verzögerungs-Chart-Dialog
+    ├── export_reading_status.py             # Datenbeschaffung aus Calibre
     ├── images/
     │   └── icon.png                         # Plugin-Icon
     └── translations/
@@ -135,6 +146,20 @@ calibre-burn-up-chart/
 
 - `export_reading_status.py` läuft **innerhalb** des Calibre-Prozesses und
   nutzt die Live-Datenbank (`self.gui.current_db.new_api`).
+
+## Entwicklung
+
+Test-Suite und Linter in einer virtuellen Umgebung ausführen:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m pytest
+.venv/bin/ruff check .
+```
+
+Ein Forgejo-Actions-Workflow (`.forgejo/workflows/ci.yml`) führt dieselben
+Prüfungen bei jedem Push und Pull Request aus.
 
 ## Lizenz
 

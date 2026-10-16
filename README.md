@@ -102,6 +102,9 @@ Planned features and ideas are tracked in [ROADMAP.md](ROADMAP.md).
 
 ```
 calibre-burn-up-chart/
+├── .forgejo/
+│   └── workflows/
+│       └── ci.yml
 ├── .gitignore
 ├── README.md
 ├── README.de.md
@@ -112,6 +115,13 @@ calibre-burn-up-chart/
 ├── ROADMAP.md
 ├── ROADMAP.de.md
 ├── make_icon.py
+├── pyproject.toml
+├── requirements-dev.txt
+├── tests/
+│   ├── conftest.py
+│   ├── test_helpers.py
+│   ├── test_compute_reading_time.py
+│   └── test_export_snapshots.py
 └── readingprogress/
     ├── __init__.py                          # Plugin metadata, version
     ├── plugin-import-name-readingprogress.txt
@@ -119,7 +129,8 @@ calibre-burn-up-chart/
     ├── main.py                              # GUI integration
     ├── config_dialog.py                     # Settings dialog
     ├── chart_dialog.py                      # Chart display dialog
-    ├── export_reading_status.py            # Data retrieval from Calibre
+    ├── delay_dialog.py                      # Reading-delay chart dialog
+    ├── export_reading_status.py             # Data retrieval from Calibre
     ├── images/
     │   └── icon.png                         # Plugin icon
     └── translations/
@@ -134,6 +145,20 @@ calibre-burn-up-chart/
   the live database (`self.gui.current_db.new_api`).
 - All processing runs inside Calibre's embedded Python. The chart is 
   drawn directly using Qt's QPainter API.
+
+## Development
+
+Run the test suite and linter in a virtualenv:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m pytest
+.venv/bin/ruff check .
+```
+
+A Forgejo Actions workflow (`.forgejo/workflows/ci.yml`) runs the same
+checks on every push and pull request.
 
 ## License
 
