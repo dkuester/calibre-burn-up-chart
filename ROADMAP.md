@@ -44,6 +44,21 @@ reading rate continues. It is configurable ("Show forecast line", on by
 default) and annotates the realistic date the backlog reaches 0, next to
 the desired target date.
 
+### Interactive tooltips
+
+Hovering over a data point shows its date and the total/read/backlog
+values at that point.
+
+### Zoom and pan
+
+Mouse wheel zooms in and out around the cursor, dragging pans, and a
+double-click resets the view to fit.
+
+### Configurable colors
+
+The colors of all data series and reference lines can be changed in the
+plugin settings (with sensible defaults).
+
 ## Planned
 
 Features we intend to build, but without a fixed target version.
@@ -91,9 +106,6 @@ Broader ideas, none of them committed.
 
 ### UX improvements
 
-- Interactive tooltips on data points
-- Zoom and pan
-- Configurable colors
 - Status bar widget showing current backlog permanently
 - Context menu on selected books: "how long has this book been unread?"
 - Automatic virtual shelf "long unread" (> 1000 days)

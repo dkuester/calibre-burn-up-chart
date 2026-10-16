@@ -56,6 +56,27 @@ msgstr "Sanfter Abbau (Faktor):"
 msgid "Show forecast line"
 msgstr "Prognoselinie anzeigen"
 
+msgid "Total library color:"
+msgstr "Farbe Gesamtbestand:"
+
+msgid "Read (cumulative) color:"
+msgstr "Farbe Gelesen (kumuliert):"
+
+msgid "Backlog (TBR) color:"
+msgstr "Farbe Backlog (SuB):"
+
+msgid "Goal line color:"
+msgstr "Farbe Ziellinie:"
+
+msgid "Constant library line color:"
+msgstr "Farbe stabile Bestandslinie:"
+
+msgid "Gentle reduction line color:"
+msgstr "Farbe Linie sanfter Abbau:"
+
+msgid "Forecast line color:"
+msgstr "Farbe Prognoselinie:"
+
 msgid "Custom column \"read\":"
 msgstr "Benutzerdefinierte Spalte \"gelesen\":"
 
@@ -98,6 +119,9 @@ msgstr "Prognose (letzte 12 Monate)"
 
 msgid "Realistic: TBR = 0 on {date}"
 msgstr "Realistisch: SuB = 0 am {date}"
+
+msgid "{date}\nTotal: {total}\nRead: {read}\nBacklog: {backlog}"
+msgstr "{date}\nGesamt: {total}\nGelesen: {read}\nSuB: {backlog}"
 
 msgid "Today: {count} unread"
 msgstr "Heute: {count} ungelesen"

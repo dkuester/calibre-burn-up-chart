@@ -48,6 +48,21 @@ wenn die aktuelle Leserate bleibt. Sie ist konfigurierbar
 realistische Datum, an dem der Backlog 0 erreicht, neben dem
 Wunsch-Zieldatum.
 
+### Interaktive Tooltips
+
+Beim Überfahren eines Datenpunkts erscheinen Datum und die Werte für
+Gesamt/Gelesen/SuB an diesem Punkt.
+
+### Zoom und Pan
+
+Mausrad zoomt um den Cursor, Ziehen verschiebt, Doppelklick setzt die
+Ansicht zurück.
+
+### Konfigurierbare Farben
+
+Die Farben aller Datenreihen und Referenzlinien lassen sich in den
+Plugin-Einstellungen ändern (mit sinnvollen Standardwerten).
+
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
@@ -97,9 +112,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 ### UX-Verbesserungen
 
-- Interaktive Tooltips an Datenpunkten
-- Zoom und Pan
-- Konfigurierbare Farben
 - Statusbar-Widget mit permanent sichtbarem Backlog
 - Kontextmenü für ausgewählte Bücher: „wie lange ist dieses Buch
   ungelesen?"

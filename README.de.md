@@ -21,6 +21,12 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
   über die letzten 12 Monate) als gestrichelte Linie und markiert das
   realistische Datum, an dem der SuB 0 erreicht. In den Einstellungen
   abschaltbar, standardmäßig an.
+- **Interaktive Tooltips:** Beim Überfahren eines Datenpunkts erscheinen
+  Datum und Werte.
+- **Zoom und Pan:** Mausrad zoomt, Ziehen verschiebt, Doppelklick setzt
+  zurück.
+- **Konfigurierbare Farben:** Jede Datenreihe und Referenzlinie lässt
+  sich in den Einstellungen umfärben.
 - **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
   automatischer Skalierung auf die Bildschirmgröße.
 - **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
@@ -78,6 +84,8 @@ Anpassen* lassen sich einstellen:
   übrig bleibt. `0.50` bedeutet: SuB halbiert bis zum Zieldatum.
 - **Prognoselinie anzeigen:** Ob die Prognoselinie gezeichnet wird
   (standardmäßig an).
+- **Farben:** Farbe jeder Datenreihe und Referenzlinie (Gesamt, Gelesen,
+  SuB, Ziel, Stabil, Sanfter Abbau, Prognose).
 
 Die Werte werden in
 `~/Library/Preferences/calibre/plugins/readingprogress.json` gespeichert

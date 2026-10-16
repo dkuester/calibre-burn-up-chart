@@ -5,7 +5,9 @@ Draws the burn-up chart directly with QPainter in a QWidget.
 No external dependencies besides Qt (bundled with Calibre).
 """
 
+import math
 import traceback
+from datetime import date, timedelta
 
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
@@ -20,6 +22,7 @@ from qt.core import (
     QPushButton,
     QRectF,
     Qt,
+    QToolTip,
     QVBoxLayout,
     QWidget,
 )
@@ -110,14 +113,17 @@ if RENDER_TEXT_ANTIALIASING is None:
     RENDER_TEXT_ANTIALIASING = 0x02
 
 
-# Colors
-COLOR_TOTAL    = QColor("#888888")
-COLOR_READ     = QColor("#2a9d8f")
-COLOR_BACKLOG  = QColor("#e76f51")
-COLOR_GOAL     = QColor("#264653")
-COLOR_STABLE   = QColor("#f4a261")
-COLOR_SOFT     = QColor("#8ecae6")
-COLOR_FORECAST = QColor("#8338ec")
+# Configurable colors (hex strings); axis/grid/text are fixed chrome.
+DEFAULT_COLORS = {
+    "total":    "#888888",
+    "read":     "#2a9d8f",
+    "backlog":  "#e76f51",
+    "goal":     "#264653",
+    "stable":   "#f4a261",
+    "soft":     "#8ecae6",
+    "forecast": "#8338ec",
+}
+
 COLOR_AXIS     = QColor("#333333")
 COLOR_GRID     = QColor("#e0e0e0")
 COLOR_TEXT     = QColor("#222222")
@@ -127,6 +133,20 @@ MARGIN_LEFT    = 85
 MARGIN_RIGHT   = 30
 MARGIN_TOP     = 60
 MARGIN_BOTTOM  = 60
+
+
+def _cursor_pos(event):
+    """Cursor position as QPointF, independent of the Qt5/Qt6 API."""
+    pos = getattr(event, 'position', None)
+    return QPointF(pos()) if pos is not None else QPointF(event.pos())
+
+
+def _global_pos(event):
+    """Global cursor position as QPoint, independent of the Qt5/Qt6 API."""
+    gp = getattr(event, 'globalPosition', None)
+    if gp is not None:
+        return gp().toPoint()
+    return event.globalPos()
 
 
 class PlotScale:
@@ -290,12 +310,13 @@ class AnnotationRenderer:
             ALIGN_CENTER, title,
         )
 
-    def draw_today(self, painter, scale, today, current_backlog):
+    def draw_today(self, painter, scale, today, current_backlog,
+                   backlog_color):
         x = scale.date_to_x(today)
         y = scale.value_to_y(current_backlog)
 
-        painter.setPen(QPen(COLOR_BACKLOG, 1))
-        painter.setBrush(COLOR_BACKLOG)
+        painter.setPen(QPen(backlog_color, 1))
+        painter.setBrush(backlog_color)
         painter.drawEllipse(QPointF(x, y), 5, 5)
 
         text = _("Today: {count} unread").format(count=current_backlog)
@@ -362,7 +383,7 @@ class LegendRenderer:
     """Draws the legend."""
 
     def draw(self, painter, plot, target_date, date_format, target_soft,
-             show_forecast=False):
+             show_forecast=False, colors=None):
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -373,20 +394,20 @@ class LegendRenderer:
         target_soft_i = round(target_soft)
 
         entries = [
-            (_("Total library"), COLOR_TOTAL, PEN_SOLID),
-            (_("Read (cumulative)"), COLOR_READ, PEN_SOLID),
-            (_("Backlog (TBR)"), COLOR_BACKLOG, PEN_SOLID),
+            (_("Total library"), colors['total'], PEN_SOLID),
+            (_("Read (cumulative)"), colors['read'], PEN_SOLID),
+            (_("Backlog (TBR)"), colors['backlog'], PEN_SOLID),
             (_("Goal: TBR = 0 on {date}").format(date=date_str),
-             COLOR_GOAL, PEN_DASH),
+             colors['goal'], PEN_DASH),
             (_("Constant library (buy rate = read rate)"),
-             COLOR_STABLE, PEN_DOT),
+             colors['stable'], PEN_DOT),
             (_("Gentle reduction to TBR = {tbr} by {year}").format(
                 tbr=target_soft_i, year=year_str),
-             COLOR_SOFT, PEN_DASHDOT),
+             colors['soft'], PEN_DASHDOT),
         ]
         if show_forecast:
             entries.append((_("Forecast (last 12 months)"),
-                            COLOR_FORECAST, PEN_DASH))
+                            colors['forecast'], PEN_DASH))
 
         line_width = 30
         padding = 10
@@ -425,7 +446,7 @@ class ChartWidget(QWidget):
     """Draws the burn-up chart; holds only the orchestration."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None, show_forecast=True, forecast=None):
+                 parent=None, show_forecast=True, forecast=None, colors=None):
         super().__init__(parent)
         self.rows = rows
         self.target_date = target_date
@@ -433,11 +454,16 @@ class ChartWidget(QWidget):
         self.date_format = date_format
         self.show_forecast = show_forecast
         self.forecast = forecast
+        self.colors = self._build_colors(colors)
+        self._view = None          # None = auto-fit; else {x_min,x_max,y_max}
+        self._pan_start = None     # pixel position while panning
+        self._pan_view = None      # view captured at drag start
         self._axes = AxesRenderer()
         self._series = SeriesRenderer()
         self._legend = LegendRenderer()
         self._annotation = AnnotationRenderer()
         self.setMinimumSize(700, 450)
+        self.setMouseTracking(True)
 
     # ------------------------------------------------------------------
     # Drawing (with error handling, so an error does not kill Calibre)
@@ -484,19 +510,19 @@ class ChartWidget(QWidget):
             max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
         )
 
-        x_min = self.rows[0][0]
-        x_max = self.target_date
+        if self._view is None:
+            x_min = self.rows[0][0]
+            x_max = self.target_date
+            y_step, y_max = self._compute_y_axis(self._data_y_max())
+        else:
+            x_min = self._view['x_min']
+            x_max = self._view['x_max']
+            y_max = self._view['y_max']
+            y_step = self._nice_step(y_max)
         x_days = (x_max - x_min).days
         if x_days <= 0:
             painter.end()
             return
-
-        y_max_data = max(
-            max(r[1] for r in self.rows),
-            max(r[2] for r in self.rows),
-            max(r[3] for r in self.rows),
-        )
-        y_step, y_max = self._compute_y_axis(y_max_data)
 
         scale = PlotScale(plot, x_min, x_days, y_max)
 
@@ -512,32 +538,34 @@ class ChartWidget(QWidget):
         self._series.draw_reference_line(
             painter, scale, start=(today, current_backlog),
             end=(self.target_date, 0),
-            color=COLOR_GOAL, style=PEN_DASH, width=2,
+            color=self.colors['goal'], style=PEN_DASH, width=2,
         )
         self._series.draw_reference_line(
             painter, scale, start=(today, current_backlog),
             end=(self.target_date, target_soft),
-            color=COLOR_SOFT, style=PEN_DASHDOT, width=2,
+            color=self.colors['soft'], style=PEN_DASHDOT, width=2,
         )
         self._series.draw_reference_line(
             painter, scale, start=(today, current_backlog),
             end=(self.target_date, current_backlog),
-            color=COLOR_STABLE, style=PEN_DOT, width=2,
+            color=self.colors['stable'], style=PEN_DOT, width=2,
         )
 
         self._series.draw_series(painter, scale, self.rows,
-                                 index=1, color=COLOR_TOTAL, width=2)
+                                 index=1, color=self.colors['total'], width=2)
         self._series.draw_series(painter, scale, self.rows,
-                                 index=2, color=COLOR_READ, width=2.5)
+                                 index=2, color=self.colors['read'], width=2.5)
         self._series.draw_series(painter, scale, self.rows,
-                                 index=3, color=COLOR_BACKLOG, width=3)
+                                 index=3, color=self.colors['backlog'],
+                                 width=3)
 
         if self.show_forecast:
             self._draw_forecast(painter, scale)
 
-        self._annotation.draw_today(painter, scale, today, current_backlog)
+        self._annotation.draw_today(painter, scale, today, current_backlog,
+                                    self.colors['backlog'])
         self._legend.draw(painter, plot, self.target_date, self.date_format,
-                           target_soft, self.show_forecast)
+                           target_soft, self.show_forecast, self.colors)
 
         painter.end()
 
@@ -564,7 +592,7 @@ class ChartWidget(QWidget):
         self._series.draw_reference_line(
             painter, scale, start=(anchor, intercept),
             end=(end_date, end_y),
-            color=COLOR_FORECAST, style=PEN_DASH, width=2)
+            color=self.colors['forecast'], style=PEN_DASH, width=2)
 
         if zero_date is not None:
             x_end = scale.date_to_x(end_date)
@@ -573,28 +601,200 @@ class ChartWidget(QWidget):
                 painter, scale, zero_date, self.date_format, x_end, y_end)
 
     # ------------------------------------------------------------------
-    # Scaling
+    # Scaling / view helpers
     # ------------------------------------------------------------------
-    def _compute_y_axis(self, max_value):
-        import math
+    def _build_colors(self, overrides):
+        result = {}
+        for key, default_hex in DEFAULT_COLORS.items():
+            hex_val = (overrides or {}).get(key) or default_hex
+            color = QColor(hex_val)
+            if not color.isValid():
+                color = QColor(default_hex)
+            result[key] = color
+        return result
+
+    def _plot_rect(self):
+        return QRectF(
+            MARGIN_LEFT,
+            MARGIN_TOP,
+            max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
+            max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
+        )
+
+    def _data_y_max(self):
+        return max(
+            max(r[1] for r in self.rows),
+            max(r[2] for r in self.rows),
+            max(r[3] for r in self.rows),
+        )
+
+    def _current_view(self):
+        """(x_min, x_max, y_max) of the current, possibly zoomed view."""
+        if self._view is not None:
+            return (self._view['x_min'], self._view['x_max'],
+                    self._view['y_max'])
+        _, y_max = self._compute_y_axis(self._data_y_max())
+        return (self.rows[0][0], self.target_date, y_max)
+
+    def _scale_for(self, plot):
+        x_min, x_max, y_max = self._current_view()
+        x_days = (x_max - x_min).days
+        if x_days <= 0:
+            x_days = 1
+        return PlotScale(plot, x_min, x_days, y_max)
+
+    def _nice_step(self, max_value):
         if max_value <= 0:
-            return 1, 1
+            return 1
         raw = max_value / 5.0
         magnitude = 10 ** math.floor(math.log10(raw))
-        step = magnitude
         for factor in (1, 2, 2.5, 5, 10):
             step = factor * magnitude
             if step >= raw:
-                break
+                return step
+        return 10 * magnitude
+
+    def _compute_y_axis(self, max_value):
+        step = self._nice_step(max_value)
         y_max = math.ceil(max_value / step) * step
         return step, y_max
+
+    # ------------------------------------------------------------------
+    # Interaction: zoom, pan, tooltips
+    # ------------------------------------------------------------------
+    def wheelEvent(self, event):
+        try:
+            delta = event.angleDelta().y()
+            if delta == 0:
+                return
+            self._zoom_at(_cursor_pos(event), 1.25 if delta > 0 else 0.8)
+            self.update()
+        except Exception:
+            pass
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._pan_start = _cursor_pos(event)
+            self._pan_view = self._current_view()
+
+    def mouseMoveEvent(self, event):
+        if self._pan_start is not None:
+            self._pan_to(_cursor_pos(event))
+            self.update()
+        else:
+            self._show_tooltip(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._pan_start = None
+            self._pan_view = None
+
+    def mouseDoubleClickEvent(self, event):
+        self._view = None
+        self.update()
+
+    def _zoom_at(self, pos, factor):
+        """factor > 1 zooms in (narrower range), < 1 zooms out."""
+        plot = self._plot_rect()
+        if plot.width() <= 0 or plot.height() <= 0:
+            return
+        x_min, x_max, y_max = self._current_view()
+        fit_x_min = self.rows[0][0]
+        fit_x_max = self.target_date
+        _, fit_y_max = self._compute_y_axis(self._data_y_max())
+        full_x_days = (fit_x_max - fit_x_min).days
+        if full_x_days <= 0:
+            return
+
+        fx = min(max((pos.x() - plot.left()) / plot.width(), 0.0), 1.0)
+
+        x_days = (x_max - x_min).days
+        new_x_days = x_days / factor
+        min_x_days = min(30, full_x_days)
+        new_x_days = max(min(new_x_days, full_x_days), min_x_days)
+
+        if new_x_days >= full_x_days:
+            new_x_min, new_x_max = fit_x_min, fit_x_max
+        else:
+            anchor_ord = x_min.toordinal() + fx * x_days
+            new_x_min_ord = round(anchor_ord - fx * new_x_days)
+            new_x_min = date.fromordinal(new_x_min_ord)
+            new_x_max = date.fromordinal(new_x_min_ord + round(new_x_days))
+            if new_x_min < fit_x_min:
+                new_x_min = fit_x_min
+                new_x_max = date.fromordinal(new_x_min.toordinal()
+                                             + round(new_x_days))
+            if new_x_max > fit_x_max:
+                new_x_max = fit_x_max
+                new_x_min = date.fromordinal(new_x_max.toordinal()
+                                             - round(new_x_days))
+
+        new_y_max = max(y_max / factor, 1.0)
+        if new_y_max > fit_y_max:
+            new_y_max = fit_y_max
+
+        self._view = {'x_min': new_x_min, 'x_max': new_x_max,
+                      'y_max': new_y_max}
+
+    def _pan_to(self, pos):
+        if self._pan_start is None or self._pan_view is None:
+            return
+        x_min, x_max, y_max = self._pan_view
+        plot = self._plot_rect()
+        if plot.width() <= 0:
+            return
+        x_days = (x_max - x_min).days
+        if x_days <= 0:
+            return
+        days_per_pixel = x_days / plot.width()
+        shift_days = -(pos.x() - self._pan_start.x()) * days_per_pixel
+
+        new_x_min = x_min + timedelta(days=shift_days)
+        new_x_max = x_max + timedelta(days=shift_days)
+
+        fit_x_min = self.rows[0][0]
+        fit_x_max = self.target_date
+        if new_x_min < fit_x_min:
+            drift = (fit_x_min - new_x_min).days
+            new_x_min = fit_x_min
+            new_x_max = new_x_max + timedelta(days=drift)
+        if new_x_max > fit_x_max:
+            drift = (new_x_max - fit_x_max).days
+            new_x_max = fit_x_max
+            new_x_min = new_x_min - timedelta(days=drift)
+
+        self._view = {'x_min': new_x_min, 'x_max': new_x_max, 'y_max': y_max}
+
+    def _show_tooltip(self, event):
+        pos = _cursor_pos(event)
+        plot = self._plot_rect()
+        if not plot.contains(pos):
+            QToolTip.hideText()
+            return
+        scale = self._scale_for(plot)
+
+        best = None
+        best_dist = 14.0
+        for row in self.rows:
+            dist = abs(scale.date_to_x(row[0]) - pos.x())
+            if dist < best_dist:
+                best_dist = dist
+                best = row
+        if best is None:
+            QToolTip.hideText()
+            return
+
+        text = _("{date}\nTotal: {total}\nRead: {read}\nBacklog: {backlog}") \
+            .format(date=best[0].strftime(self.date_format),
+                    total=best[1], read=best[2], backlog=best[3])
+        QToolTip.showText(_global_pos(event), text, self)
 
 
 class ChartDialog(QDialog):
     """Dialog that holds the chart widget and a Close button."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None, show_forecast=True, forecast=None):
+                 parent=None, show_forecast=True, forecast=None, colors=None):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
@@ -603,7 +803,7 @@ class ChartDialog(QDialog):
         self.chart = ChartWidget(rows, target_date, reduction_factor,
                                  date_format, self,
                                  show_forecast=show_forecast,
-                                 forecast=forecast)
+                                 forecast=forecast, colors=colors)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
