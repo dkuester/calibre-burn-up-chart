@@ -8,6 +8,7 @@ mean.
 
 from calibre_plugins.readingprogress.chart_common import (
     compute_y_axis,
+    delay_colors,
     year_tick_step,
 )
 from calibre_plugins.readingprogress.chart_dialog import (
@@ -19,6 +20,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     PEN_DOT,
     RENDER_ANTIALIASING,
     RENDER_TEXT_ANTIALIASING,
+    chrome_for,
     show_paint_error,
 )
 from calibre_plugins.readingprogress.localization import _
@@ -41,13 +43,6 @@ from qt.core import (
 class DelayChartWidget(QWidget):
     """Scatter plot with median and mean lines."""
 
-    COLOR_POINTS = QColor("#2a9d8f")
-    COLOR_MEDIAN = QColor("#264653")
-    COLOR_MEAN   = QColor("#f4a261")
-    COLOR_AXIS   = QColor("#333333")
-    COLOR_GRID   = QColor("#e0e0e0")
-    COLOR_TEXT   = QColor("#222222")
-
     MARGIN_LEFT    = 95
     MARGIN_RIGHT   = 30
     MARGIN_TOP     = 95
@@ -57,6 +52,12 @@ class DelayChartWidget(QWidget):
         super().__init__(parent)
         self.points = points
         self.statistics = statistics
+        self.chrome = chrome_for(self)
+        bg = self.chrome['background']
+        series = delay_colors((bg.red(), bg.green(), bg.blue()))
+        self.color_points = QColor(series['points'])
+        self.color_median = QColor(series['median'])
+        self.color_mean = QColor(series['mean'])
         self.setMinimumSize(700, 450)
 
         # Adapt the Y unit to the magnitude
@@ -85,10 +86,10 @@ class DelayChartWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(RENDER_ANTIALIASING, True)
         painter.setRenderHint(RENDER_TEXT_ANTIALIASING, True)
-        painter.fillRect(self.rect(), QColor("#ffffff"))
+        painter.fillRect(self.rect(), self.chrome['background'])
 
         if not self.points:
-            painter.setPen(self.COLOR_TEXT)
+            painter.setPen(self.chrome['text'])
             painter.drawText(self.rect(), ALIGN_CENTER,
                              _("No data available for this analysis."))
             painter.end()
@@ -149,7 +150,7 @@ class DelayChartWidget(QWidget):
         title_font.setPointSize(14)
         title_font.setBold(True)
         painter.setFont(title_font)
-        painter.setPen(self.COLOR_TEXT)
+        painter.setPen(self.chrome['text'])
         painter.drawText(
             QRectF(plot.left(), 15, plot.width(), 30),
             ALIGN_CENTER, _("Time between purchase and reading"),
@@ -170,7 +171,7 @@ class DelayChartWidget(QWidget):
         font_stats = QFont()
         font_stats.setPointSize(11)
         painter.setFont(font_stats)
-        painter.setPen(QColor("#555555"))
+        painter.setPen(self.chrome['muted'])
         painter.drawText(
             QRectF(plot.left(), 50, plot.width(), 22),
             ALIGN_CENTER, text,
@@ -179,7 +180,7 @@ class DelayChartWidget(QWidget):
     # ------------------------------------------------------------------
     def _draw_axes(self, painter, plot, x_min_d, x_max_d, x_span,
                         y_max, y_step):
-        painter.setPen(QPen(self.COLOR_AXIS, 1))
+        painter.setPen(QPen(self.chrome['axis'], 1))
         painter.drawLine(QPointF(plot.left(),  plot.top()),
                          QPointF(plot.left(),  plot.bottom()))
         painter.drawLine(QPointF(plot.left(),  plot.bottom()),
@@ -194,13 +195,13 @@ class DelayChartWidget(QWidget):
         y_value = 0.0
         while y_value <= y_max + 0.001:
             y_pix = self._value_to_y(y_value, y_max, plot)
-            pen = QPen(self.COLOR_GRID, 1)
+            pen = QPen(self.chrome['grid'], 1)
             pen.setStyle(PEN_DOT)
             painter.setPen(pen)
             painter.drawLine(QPointF(plot.left(),  y_pix),
                              QPointF(plot.right(), y_pix))
 
-            painter.setPen(self.COLOR_TEXT)
+            painter.setPen(self.chrome['text'])
             text = f"{y_value:.{self.y_decimals}f}"
             width = fm.horizontalAdvance(text)
             painter.drawText(
@@ -224,10 +225,10 @@ class DelayChartWidget(QWidget):
             x_pix = self._date_to_x(d, x_min_d, x_span, plot)
             if x_pix < plot.left() or x_pix > plot.right():
                 continue
-            painter.setPen(QPen(self.COLOR_AXIS, 1))
+            painter.setPen(QPen(self.chrome['axis'], 1))
             painter.drawLine(QPointF(x_pix, plot.bottom()),
                              QPointF(x_pix, plot.bottom() + 5))
-            painter.setPen(self.COLOR_TEXT)
+            painter.setPen(self.chrome['text'])
             t = str(year)
             b = fm.horizontalAdvance(t)
             painter.drawText(
@@ -239,7 +240,7 @@ class DelayChartWidget(QWidget):
         title_font = QFont()
         title_font.setPointSize(11)
         painter.setFont(title_font)
-        painter.setPen(self.COLOR_TEXT)
+        painter.setPen(self.chrome['text'])
 
         # X axis title
         painter.drawText(
@@ -268,7 +269,7 @@ class DelayChartWidget(QWidget):
         # Median
         median_unit = self.statistics["median"] * self.y_factor
         y_med = self._value_to_y(median_unit, y_max, plot)
-        pen = QPen(self.COLOR_MEDIAN, 2)
+        pen = QPen(self.color_median, 2)
         pen.setStyle(PEN_DASH)
         if CAP_ROUND is not None:
             pen.setCapStyle(CAP_ROUND)
@@ -279,7 +280,7 @@ class DelayChartWidget(QWidget):
         # Mean
         mean_unit = self.statistics["mean"] * self.y_factor
         y_mean = self._value_to_y(mean_unit, y_max, plot)
-        pen = QPen(self.COLOR_MEAN, 2)
+        pen = QPen(self.color_mean, 2)
         pen.setStyle(PEN_DOT)
         if CAP_ROUND is not None:
             pen.setCapStyle(CAP_ROUND)
@@ -295,24 +296,24 @@ class DelayChartWidget(QWidget):
 
         self._draw_line_label(
             painter, plot, y_med, _("Median"),
-            self.COLOR_MEDIAN, fm)
+            self.color_median, fm)
         self._draw_line_label(
             painter, plot, y_mean, _("Mean"),
-            self.COLOR_MEAN, fm)
+            self.color_mean, fm)
 
     def _draw_line_label(self, painter, plot, y, text, color, fm):
         tw = fm.horizontalAdvance(text) + 12
         th = fm.height() + 4
         box = QRectF(plot.left() + 8, y - th / 2, tw, th)
         painter.setPen(QPen(color, 1))
-        painter.setBrush(QColor(255, 255, 255, 235))
+        painter.setBrush(QColor(*self.chrome['box_bg'], 235))
         painter.drawRoundedRect(box, 4, 4)
         painter.setPen(color)
         painter.drawText(box, ALIGN_CENTER, text)
 
     # ------------------------------------------------------------------
     def _draw_points(self, painter, plot, x_min, x_span, y_max):
-        color = QColor(self.COLOR_POINTS)
+        color = QColor(self.color_points)
         color.setAlpha(150)
         painter.setPen(QPen(color, 1))
         painter.setBrush(color)

@@ -11,7 +11,7 @@ import math
 from collections import namedtuple
 from datetime import date, timedelta
 
-# Configurable colors (hex strings); axis/grid/text are fixed chrome.
+# Configurable series colors, light-theme defaults (hex strings).
 DEFAULT_COLORS = {
     "total":    "#888888",
     "read":     "#2a9d8f",
@@ -21,6 +21,86 @@ DEFAULT_COLORS = {
     "soft":     "#8ecae6",
     "forecast": "#8338ec",
 }
+
+# Series colors tuned for a dark theme (higher luminance for contrast).
+DARK_DEFAULT_COLORS = {
+    "total":    "#b8b8b8",
+    "read":     "#3fd0b0",
+    "backlog":  "#ff8a75",
+    "goal":     "#8fc3d9",
+    "stable":   "#ffb066",
+    "soft":     "#a5d8f0",
+    "forecast": "#b18cf0",
+}
+
+# Non-configurable "chrome" (axis/grid/text/boxes) per theme. Values are
+# hex strings except ``box_bg`` (an RGB tuple; alpha is applied at the
+# QColor call site).
+CHROME = {
+    False: {
+        "axis":   "#333333",
+        "grid":   "#e0e0e0",
+        "text":   "#222222",
+        "border": "#cccccc",
+        "muted":  "#555555",
+        "error":  "#cc0000",
+        "box_bg": (255, 255, 255),
+    },
+    True: {
+        "axis":   "#b5b5b5",
+        "grid":   "#404040",
+        "text":   "#dddddd",
+        "border": "#555555",
+        "muted":  "#a0a0a0",
+        "error":  "#ff6b6b",
+        "box_bg": (58, 58, 58),
+    },
+}
+
+# Fixed series colors for the reading-delay scatter chart (not user
+# configurable), per theme.
+DELAY_COLORS = {
+    False: {
+        "points": "#2a9d8f",
+        "median": "#264653",
+        "mean":   "#f4a261",
+    },
+    True: {
+        "points": "#3fd0b0",
+        "median": "#8fc3d9",
+        "mean":   "#ffb066",
+    },
+}
+
+
+def is_dark_background(rgb):
+    """True if the (r, g, b) background is dark (needs light chrome)."""
+    r, g, b = rgb
+    luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+    return luminance < 0.5
+
+
+def chrome_colors(rgb):
+    """Chrome palette (axis/grid/text/boxes) for a background color."""
+    return CHROME[is_dark_background(rgb)]
+
+
+def delay_colors(rgb):
+    """Fixed series colors for the delay chart, for a background color."""
+    return DELAY_COLORS[is_dark_background(rgb)]
+
+
+def resolve_series_colors(dark, overrides):
+    """Series colors as hex, from theme defaults plus explicit overrides.
+
+    ``overrides`` maps key -> hex, or '' (empty = follow theme).
+    """
+    defaults = DARK_DEFAULT_COLORS if dark else DEFAULT_COLORS
+    resolved = {}
+    for key, default_hex in defaults.items():
+        hex_val = (overrides or {}).get(key) or default_hex
+        resolved[key] = hex_val
+    return resolved
 
 
 def nice_step(max_value):

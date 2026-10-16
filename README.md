@@ -25,6 +25,9 @@ library size, books read, and backlog (TBR).
 - **Zoom and pan (burn-up chart):** Mouse wheel zooms, drag to pan, double-click resets.
 - **Configurable colors (burn-up chart):** Recolor every series and reference line in the
   settings.
+- **Dark mode:** Charts follow Calibre's current theme. On a dark
+  palette, the chart chrome and (uncustomized) series colors switch to
+  high-contrast light-on-dark defaults automatically.
 - **In-GUI display:** The chart opens as a dialog inside Calibre, with
   automatic scaling to screen size.
 - **Bilingual:** German and English interface, depending on Calibre's
@@ -81,7 +84,8 @@ you can adjust:
 - **Show forecast line:** Whether the forecast line is drawn (on by
   default).
 - **Colors:** The color of each data series and reference line (total,
-  read, backlog, goal, constant, gentle, forecast).
+  read, backlog, goal, constant, gentle, forecast). Colors follow the
+  theme by default and can be reset to the theme defaults.
 
 The values are stored in
 `~/Library/Preferences/calibre/plugins/readingprogress.json` and persist

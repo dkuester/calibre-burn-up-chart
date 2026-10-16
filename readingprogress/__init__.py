@@ -12,9 +12,10 @@ config.defaults['reduction_factor'] = 0.5
 config.defaults['read_column'] = '#gelesen'
 config.defaults['last_read_column'] = '#last_read'
 config.defaults['show_forecast'] = True
-for color_key, default_hex in DEFAULT_COLORS.items():
-    config.defaults[f'color_{color_key}'] = default_hex
+for color_key in DEFAULT_COLORS:
+    config.defaults[f'color_{color_key}'] = ''   # '' = follow theme
 config.defaults['_migrated_keys'] = False
+config.defaults['_migrated_colors_auto'] = False
 
 # One-time migration from the legacy German config keys to English ones:
 # reads the interim German keys from this config, falling back to the
@@ -37,6 +38,14 @@ if not config['_migrated_keys']:
             value = legacy[old_key]
         config[new_key] = value
     config['_migrated_keys'] = True
+
+# One-time migration: colors previously defaulted to the light-theme hexes.
+# If none were customized, reset them to '' (auto) so dark mode applies.
+if not config['_migrated_colors_auto']:
+    if all(config[f'color_{k}'] == DEFAULT_COLORS[k] for k in DEFAULT_COLORS):
+        for k in DEFAULT_COLORS:
+            config[f'color_{k}'] = ''
+    config['_migrated_colors_auto'] = True
 
 
 class ReadingProgressPlugin(InterfaceActionBase):

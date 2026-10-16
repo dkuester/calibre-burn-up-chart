@@ -8,11 +8,15 @@ No external dependencies besides Qt (bundled with Calibre).
 import traceback
 
 from calibre_plugins.readingprogress.chart_common import (
+    DARK_DEFAULT_COLORS,
     DEFAULT_COLORS,
     View,
+    chrome_colors,
     compute_y_axis,
+    is_dark_background,
     nice_step,
     pan_view,
+    resolve_series_colors,
     year_tick_step,
     zoom_view,
 )
@@ -24,6 +28,7 @@ from qt.core import (
     QFontMetrics,
     QHBoxLayout,
     QPainter,
+    QPalette,
     QPen,
     QPointF,
     QPushButton,
@@ -120,10 +125,6 @@ if RENDER_TEXT_ANTIALIASING is None:
     RENDER_TEXT_ANTIALIASING = 0x02
 
 
-COLOR_AXIS     = QColor("#333333")
-COLOR_GRID     = QColor("#e0e0e0")
-COLOR_TEXT     = QColor("#222222")
-
 # Plot area margins (in pixels)
 MARGIN_LEFT    = 85
 MARGIN_RIGHT   = 30
@@ -150,6 +151,22 @@ def _global_pos(event):
     return event.globalPos()
 
 
+def chrome_for(widget):
+    """Chrome QColor dict for ``widget``'s current palette (light/dark)."""
+    bg = widget.palette().color(QPalette.Window)
+    pal = chrome_colors((bg.red(), bg.green(), bg.blue()))
+    return {
+        'background': bg,
+        'axis': QColor(pal['axis']),
+        'grid': QColor(pal['grid']),
+        'text': QColor(pal['text']),
+        'border': QColor(pal['border']),
+        'muted': QColor(pal['muted']),
+        'error': QColor(pal['error']),
+        'box_bg': pal['box_bg'],
+    }
+
+
 def show_paint_error(widget, error):
     """Logs the error to LOG_ERROR and draws a fallback message.
 
@@ -163,8 +180,9 @@ def show_paint_error(widget, error):
         pass
     try:
         painter = QPainter(widget)
-        painter.fillRect(widget.rect(), QColor("#ffffff"))
-        painter.setPen(QPen(QColor("#cc0000"), 1))
+        chrome = chrome_for(widget)
+        painter.fillRect(widget.rect(), chrome['background'])
+        painter.setPen(QPen(chrome['error'], 1))
         message = _("Error drawing:\n{type}: {error}\n\nDetails: {log}").format(
             type=type(error).__name__, error=error, log=LOG_ERROR)
         painter.drawText(widget.rect(), ALIGN_CENTER, message)
@@ -193,9 +211,9 @@ class PlotScale:
 class AxesRenderer:
     """Draws axes, grid, tick labels and axis titles."""
 
-    def draw(self, painter, scale, x_max, y_max, y_step):
+    def draw(self, painter, scale, x_max, y_max, y_step, chrome):
         plot = scale.plot
-        painter.setPen(QPen(COLOR_AXIS, 1))
+        painter.setPen(QPen(chrome['axis'], 1))
         painter.drawLine(QPointF(plot.left(),  plot.top()),
                          QPointF(plot.left(),  plot.bottom()))
         painter.drawLine(QPointF(plot.left(),  plot.bottom()),
@@ -210,12 +228,12 @@ class AxesRenderer:
         y_value = 0
         while y_value <= y_max + 0.01:
             y_pix = scale.value_to_y(y_value)
-            pen = QPen(COLOR_GRID, 1)
+            pen = QPen(chrome['grid'], 1)
             pen.setStyle(PEN_DOT)
             painter.setPen(pen)
             painter.drawLine(QPointF(plot.left(),  y_pix),
                              QPointF(plot.right(), y_pix))
-            painter.setPen(COLOR_TEXT)
+            painter.setPen(chrome['text'])
             text = str(int(y_value))
             width = fm.horizontalAdvance(text)
             painter.drawText(
@@ -239,10 +257,10 @@ class AxesRenderer:
             x_pix = scale.date_to_x(d)
             if x_pix < plot.left() or x_pix > plot.right():
                 continue
-            painter.setPen(QPen(COLOR_AXIS, 1))
+            painter.setPen(QPen(chrome['axis'], 1))
             painter.drawLine(QPointF(x_pix, plot.bottom()),
                              QPointF(x_pix, plot.bottom() + 5))
-            painter.setPen(COLOR_TEXT)
+            painter.setPen(chrome['text'])
             text = str(year)
             width = fm.horizontalAdvance(text)
             painter.drawText(
@@ -254,7 +272,7 @@ class AxesRenderer:
         title_font = QFont()
         title_font.setPointSize(11)
         painter.setFont(title_font)
-        painter.setPen(COLOR_TEXT)
+        painter.setPen(chrome['text'])
         painter.drawText(
             QRectF(plot.left(), plot.bottom() + 28, plot.width(), 20),
             ALIGN_CENTER, _("Year"),
@@ -310,12 +328,12 @@ class AnnotationRenderer:
     """Draws the title and the 'Today' annotation."""
 
     def draw_title(self, painter, plot, rows, target_date, reduction_factor,
-                   date_format):
+                   date_format, chrome):
         font = QFont()
         font.setPointSize(14)
         font.setBold(True)
         painter.setFont(font)
-        painter.setPen(COLOR_TEXT)
+        painter.setPen(chrome['text'])
 
         current_backlog = rows[-1][3]
         target_soft_i = round(current_backlog * reduction_factor)
@@ -328,7 +346,7 @@ class AnnotationRenderer:
         )
 
     def draw_today(self, painter, scale, today, current_backlog,
-                   backlog_color):
+                   backlog_color, chrome):
         x = scale.date_to_x(today)
         y = scale.value_to_y(current_backlog)
 
@@ -354,20 +372,20 @@ class AnnotationRenderer:
             by = y + 15
 
         box = QRectF(bx, by, tw, th)
-        painter.setBrush(QColor(255, 255, 255, 235))
-        painter.setPen(QPen(QColor("#cccccc"), 1))
+        painter.setBrush(QColor(*chrome['box_bg'], 235))
+        painter.setPen(QPen(chrome['border'], 1))
         painter.drawRoundedRect(box, 5, 5)
 
-        painter.setPen(COLOR_TEXT)
+        painter.setPen(chrome['text'])
         painter.drawText(box, ALIGN_CENTER, text)
 
-        painter.setPen(QPen(COLOR_AXIS, 1))
+        painter.setPen(QPen(chrome['axis'], 1))
         start = QPointF(box.left() + 5 if bx > x else box.right() - 5,
                         box.center().y())
         painter.drawLine(start, QPointF(x, y))
 
     def draw_forecast_note(self, painter, scale, date, date_format,
-                           x_end, y_end):
+                           x_end, y_end, chrome):
         """Small label near the end of the forecast line."""
         plot = scale.plot
         text = _("Realistic: TBR = 0 on {date}").format(
@@ -389,10 +407,10 @@ class AnnotationRenderer:
             by = y_end + 15
 
         box = QRectF(bx, by, tw, th)
-        painter.setBrush(QColor(255, 255, 255, 235))
-        painter.setPen(QPen(QColor("#cccccc"), 1))
+        painter.setBrush(QColor(*chrome['box_bg'], 235))
+        painter.setPen(QPen(chrome['border'], 1))
         painter.drawRoundedRect(box, 5, 5)
-        painter.setPen(COLOR_TEXT)
+        painter.setPen(chrome['text'])
         painter.drawText(box, ALIGN_CENTER, text)
 
 
@@ -400,7 +418,7 @@ class LegendRenderer:
     """Draws the legend."""
 
     def draw(self, painter, plot, target_date, date_format, target_soft,
-             show_forecast=False, colors=None):
+             show_forecast=False, colors=None, chrome=None):
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -436,8 +454,8 @@ class LegendRenderer:
         box_x = plot.right() - box_width - 10
         box_y = plot.top() + 10
 
-        painter.setPen(QPen(QColor("#cccccc"), 1))
-        painter.setBrush(QColor(255, 255, 255, 230))
+        painter.setPen(QPen(chrome['border'], 1))
+        painter.setBrush(QColor(*chrome['box_bg'], 230))
         painter.drawRoundedRect(
             QRectF(box_x, box_y, box_width, box_height), 5, 5)
 
@@ -450,7 +468,7 @@ class LegendRenderer:
                 QPointF(box_x + padding, row_y),
                 QPointF(box_x + padding + line_width, row_y),
             )
-            painter.setPen(COLOR_TEXT)
+            painter.setPen(chrome['text'])
             painter.drawText(
                 QRectF(box_x + padding + line_width + 8,
                        row_y - row_height / 2,
@@ -471,6 +489,9 @@ class ChartWidget(QWidget):
         self.date_format = date_format
         self.show_forecast = show_forecast
         self.forecast = forecast
+        self.chrome = chrome_for(self)
+        bg = self.chrome['background']
+        self._dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         self.colors = self._build_colors(colors)
         self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
@@ -496,10 +517,10 @@ class ChartWidget(QWidget):
         painter.setRenderHint(RENDER_ANTIALIASING, True)
         painter.setRenderHint(RENDER_TEXT_ANTIALIASING, True)
 
-        painter.fillRect(self.rect(), QColor("#ffffff"))
+        painter.fillRect(self.rect(), self.chrome['background'])
 
         if not self.rows or len(self.rows) < 2:
-            painter.setPen(COLOR_TEXT)
+            painter.setPen(self.chrome['text'])
             painter.drawText(self.rect(), ALIGN_CENTER, _("No data"))
             painter.end()
             return
@@ -527,10 +548,10 @@ class ChartWidget(QWidget):
 
         scale = PlotScale(plot, x_min, x_days, y_max)
 
-        self._axes.draw(painter, scale, x_max, y_max, y_step)
+        self._axes.draw(painter, scale, x_max, y_max, y_step, self.chrome)
         self._annotation.draw_title(painter, plot, self.rows,
                                     self.target_date, self.reduction_factor,
-                                    self.date_format)
+                                    self.date_format, self.chrome)
 
         current_backlog = self.rows[-1][3]
         today = self.rows[-1][0]
@@ -564,9 +585,10 @@ class ChartWidget(QWidget):
             self._draw_forecast(painter, scale)
 
         self._annotation.draw_today(painter, scale, today, current_backlog,
-                                    self.colors['backlog'])
+                                    self.colors['backlog'], self.chrome)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
-                           target_soft, self.show_forecast, self.colors)
+                           target_soft, self.show_forecast, self.colors,
+                           self.chrome)
 
         painter.end()
 
@@ -599,18 +621,21 @@ class ChartWidget(QWidget):
             x_end = scale.date_to_x(end_date)
             y_end = scale.value_to_y(end_y)
             self._annotation.draw_forecast_note(
-                painter, scale, zero_date, self.date_format, x_end, y_end)
+                painter, scale, zero_date, self.date_format, x_end, y_end,
+                self.chrome)
 
     # ------------------------------------------------------------------
     # Scaling / view helpers
     # ------------------------------------------------------------------
     def _build_colors(self, overrides):
+        resolved_hex = resolve_series_colors(self._dark, overrides)
         result = {}
-        for key, default_hex in DEFAULT_COLORS.items():
-            hex_val = (overrides or {}).get(key) or default_hex
+        for key, hex_val in resolved_hex.items():
             color = QColor(hex_val)
             if not color.isValid():
-                color = QColor(default_hex)
+                fallback = (DARK_DEFAULT_COLORS[key] if self._dark
+                            else DEFAULT_COLORS[key])
+                color = QColor(fallback)
             result[key] = color
         return result
 
