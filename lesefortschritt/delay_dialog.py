@@ -8,19 +8,31 @@ Median und Mittelwert.
 
 import traceback
 
-from qt.core import (
-    QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QPainter, QPen, QColor, QFont, QFontMetrics, QRectF,
-    QPointF, Qt
-)
-
-from calibre_plugins.lesefortschritt.localization import _
 from calibre_plugins.lesefortschritt.chart_dialog import (
-    ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_VCENTER,
-    PEN_SOLID, PEN_DASH, PEN_DOT,
+    ALIGN_CENTER,
+    ALIGN_RIGHT,
+    ALIGN_VCENTER,
     CAP_ROUND,
-    RENDER_ANTIALIASING, RENDER_TEXT_ANTIALIASING,
     LOG_FEHLER,
+    PEN_DASH,
+    PEN_DOT,
+    RENDER_ANTIALIASING,
+    RENDER_TEXT_ANTIALIASING,
+)
+from calibre_plugins.lesefortschritt.localization import _
+from qt.core import (
+    QColor,
+    QDialog,
+    QFont,
+    QFontMetrics,
+    QHBoxLayout,
+    QPainter,
+    QPen,
+    QPointF,
+    QPushButton,
+    QRectF,
+    QVBoxLayout,
+    QWidget,
 )
 
 

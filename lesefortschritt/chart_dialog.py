@@ -7,14 +7,22 @@ Keine externen Abhängigkeiten außer Qt (in Calibre enthalten).
 
 import traceback
 
-from qt.core import (
-    QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QPainter, QPen, QColor, QFont, QFontMetrics, QRectF,
-    QPointF, Qt
-)
-
 from calibre_plugins.lesefortschritt.localization import _
-
+from qt.core import (
+    QColor,
+    QDialog,
+    QFont,
+    QFontMetrics,
+    QHBoxLayout,
+    QPainter,
+    QPen,
+    QPointF,
+    QPushButton,
+    QRectF,
+    Qt,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Fehlerprotokoll für paintEvent (zum Debuggen)
 LOG_FEHLER = '/tmp/lesefortschritt_paint_error.log'

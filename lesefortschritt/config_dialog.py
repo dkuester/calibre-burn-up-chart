@@ -1,10 +1,14 @@
-from qt.core import (
-    QWidget, QFormLayout, QDateEdit, QDoubleSpinBox, QLabel, QDate,
-    QLineEdit
-)
-
 from calibre_plugins.lesefortschritt import config
 from calibre_plugins.lesefortschritt.localization import _
+from qt.core import (
+    QDate,
+    QDateEdit,
+    QDoubleSpinBox,
+    QFormLayout,
+    QLabel,
+    QLineEdit,
+    QWidget,
+)
 
 
 class ConfigWidget(QWidget):

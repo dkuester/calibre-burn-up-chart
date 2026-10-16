@@ -1,13 +1,11 @@
 import os
 import zipfile
 
-from qt.core import QIcon, QMenu, QPixmap, QToolButton, QTimer
-
 from calibre.gui2.actions import InterfaceAction
 from calibre.utils.localization import get_lang
-
 from calibre_plugins.lesefortschritt import config
 from calibre_plugins.lesefortschritt.localization import _
+from qt.core import QIcon, QMenu, QPixmap, QTimer, QToolButton
 
 
 def _lade_icon():
@@ -80,8 +78,9 @@ class LesefortschrittAction(InterfaceAction):
     # ------------------------------------------------------------------
     def show_chart(self):
         from datetime import datetime
-        from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
+
         from calibre_plugins.lesefortschritt.chart_dialog import ChartDialog
+        from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
 
         try:
             info = exportiere(
@@ -113,8 +112,8 @@ class LesefortschrittAction(InterfaceAction):
         dlg.exec_()
 
     def show_delay(self):
-        from calibre_plugins.lesefortschritt.export_lesestatus import berechne_lesezeit
         from calibre_plugins.lesefortschritt.delay_dialog import DelayChartDialog
+        from calibre_plugins.lesefortschritt.export_lesestatus import berechne_lesezeit
 
         try:
             info = berechne_lesezeit(
