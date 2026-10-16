@@ -6,8 +6,6 @@ the book sat unread on the shelf. Horizontal lines mark the median and
 mean.
 """
 
-import traceback
-
 from calibre_plugins.readingprogress.chart_common import (
     compute_y_axis,
     year_tick_step,
@@ -17,11 +15,11 @@ from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_RIGHT,
     ALIGN_VCENTER,
     CAP_ROUND,
-    LOG_ERROR,
     PEN_DASH,
     PEN_DOT,
     RENDER_ANTIALIASING,
     RENDER_TEXT_ANTIALIASING,
+    show_paint_error,
 )
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
@@ -55,13 +53,10 @@ class DelayChartWidget(QWidget):
     MARGIN_TOP     = 95
     MARGIN_BOTTOM  = 65
 
-    def __init__(self, points, statistics, date_format, language,
-                 parent=None):
+    def __init__(self, points, statistics, parent=None):
         super().__init__(parent)
         self.points = points
         self.statistics = statistics
-        self.date_format = date_format
-        self.language = language
         self.setMinimumSize(700, 450)
 
         # Adapt the Y unit to the magnitude
@@ -84,23 +79,7 @@ class DelayChartWidget(QWidget):
         try:
             self._do_paint()
         except Exception as e:
-            error = traceback.format_exc()
-            try:
-                with open(LOG_ERROR, 'w', encoding='utf-8') as f:
-                    f.write(error)
-            except Exception:
-                pass
-            try:
-                painter = QPainter(self)
-                painter.fillRect(self.rect(), QColor("#ffffff"))
-                painter.setPen(QPen(QColor("#cc0000"), 1))
-                message = _(
-                    "Error drawing:\n{type}: {error}\n\nDetails: {log}"
-                ).format(type=type(e).__name__, error=e, log=LOG_ERROR)
-                painter.drawText(self.rect(), ALIGN_CENTER, message)
-                painter.end()
-            except Exception:
-                pass
+            show_paint_error(self, e)
 
     def _do_paint(self):
         painter = QPainter(self)
@@ -349,15 +328,13 @@ class DelayChartWidget(QWidget):
 class DelayChartDialog(QDialog):
     """Dialog that shows the delay chart and a Close button."""
 
-    def __init__(self, points, statistics, date_format, language,
-                 parent=None):
+    def __init__(self, points, statistics, parent=None):
         super().__init__(parent)
         self.setWindowTitle(_("Time between purchase and reading"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
-        self.chart = DelayChartWidget(points, statistics, date_format,
-                                      language, self)
+        self.chart = DelayChartWidget(points, statistics, self)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()

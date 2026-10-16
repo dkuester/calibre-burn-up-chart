@@ -144,6 +144,29 @@ def _global_pos(event):
     return event.globalPos()
 
 
+def show_paint_error(widget, error):
+    """Logs the error to LOG_ERROR and draws a fallback message.
+
+    Shared by all chart widgets so a drawing failure never crashes Calibre.
+    """
+    trace_text = traceback.format_exc()
+    try:
+        with open(LOG_ERROR, 'w', encoding='utf-8') as f:
+            f.write(trace_text)
+    except Exception:
+        pass
+    try:
+        painter = QPainter(widget)
+        painter.fillRect(widget.rect(), QColor("#ffffff"))
+        painter.setPen(QPen(QColor("#cc0000"), 1))
+        message = _("Error drawing:\n{type}: {error}\n\nDetails: {log}").format(
+            type=type(error).__name__, error=error, log=LOG_ERROR)
+        painter.drawText(widget.rect(), ALIGN_CENTER, message)
+        painter.end()
+    except Exception:
+        pass
+
+
 class PlotScale:
     """Maps data coordinates to pixel coordinates."""
 
@@ -460,23 +483,7 @@ class ChartWidget(QWidget):
         try:
             self._do_paint()
         except Exception as e:
-            error = traceback.format_exc()
-            try:
-                with open(LOG_ERROR, 'w', encoding='utf-8') as f:
-                    f.write(error)
-            except Exception:
-                pass
-            try:
-                painter = QPainter(self)
-                painter.fillRect(self.rect(), QColor("#ffffff"))
-                painter.setPen(QPen(QColor("#cc0000"), 1))
-                message = _(
-                    "Error drawing:\n{type}: {error}\n\nDetails: {log}"
-                ).format(type=type(e).__name__, error=e, log=LOG_ERROR)
-                painter.drawText(self.rect(), ALIGN_CENTER, message)
-                painter.end()
-            except Exception:
-                pass
+            show_paint_error(self, e)
 
     def _do_paint(self):
         painter = QPainter(self)

@@ -32,6 +32,12 @@ def _load_icon():
     return QIcon(pixmap)
 
 
+def _date_format():
+    """Locale date format for the current Calibre UI language."""
+    language = get_lang().split('_')[0]
+    return '%d.%m.%Y' if language == 'de' else '%Y-%m-%d'
+
+
 class ReadingProgressAction(InterfaceAction):
 
     name = 'Reading Progress'
@@ -103,8 +109,7 @@ class ReadingProgressAction(InterfaceAction):
             target_date = datetime(2050, 9, 4).date()
         reduction_factor = float(config['reduction_factor'])
 
-        language = get_lang().split('_')[0]
-        date_format = '%d.%m.%Y' if language == 'de' else '%Y-%m-%d'
+        date_format = _date_format()
 
         self.gui.status_bar.show_message(
             _('Reading status: {read}/{total} read, backlog {backlog}').format(
@@ -143,9 +148,6 @@ class ReadingProgressAction(InterfaceAction):
                 _('No data available for this analysis.'), 8000)
             return
 
-        language = get_lang().split('_')[0]
-        date_format = '%d.%m.%Y' if language == 'de' else '%Y-%m-%d'
-
         s = info['statistics']
         self.gui.status_bar.show_message(
             _('Median: {med} days, mean: {mean} days (n={n})').format(
@@ -154,6 +156,5 @@ class ReadingProgressAction(InterfaceAction):
                 n=s['count']), 5000)
 
         dlg = DelayChartDialog(
-            info['points'], info['statistics'],
-            date_format, language, self.gui)
+            info['points'], info['statistics'], self.gui)
         dlg.exec_()
