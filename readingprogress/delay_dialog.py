@@ -8,6 +8,10 @@ mean.
 
 import traceback
 
+from calibre_plugins.readingprogress.chart_common import (
+    compute_y_axis,
+    year_tick_step,
+)
 from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_CENTER,
     ALIGN_RIGHT,
@@ -133,7 +137,7 @@ class DelayChartWidget(QWidget):
         # Y range in days; then convert to the chosen unit
         y_max_days = max(self.statistics["max"], 1)
         y_max_unit = y_max_days * self.y_factor
-        y_step, y_max = self._compute_y_axis(y_max_unit)
+        y_step, y_max = compute_y_axis(y_max_unit)
 
         # Title and key figures
         self._draw_header(painter, plot)
@@ -152,20 +156,6 @@ class DelayChartWidget(QWidget):
         painter.end()
 
     # ------------------------------------------------------------------
-    def _compute_y_axis(self, max_value):
-        import math
-        if max_value <= 0:
-            return 1, 1
-        raw = max_value / 5.0
-        magnitude = 10 ** math.floor(math.log10(raw))
-        step = magnitude
-        for factor in (1, 2, 2.5, 5, 10):
-            step = factor * magnitude
-            if step >= raw:
-                break
-        y_max = math.ceil(max_value / step) * step
-        return step, y_max
-
     def _date_to_x(self, date, x_min, x_span, plot):
         days = (date - x_min).days
         return plot.left() + plot.width() * days / x_span
@@ -242,14 +232,7 @@ class DelayChartWidget(QWidget):
 
         # X axis: years
         year_span = (x_max_d - x_min_d).days / 365.25
-        if year_span <= 5:
-            step = 1
-        elif year_span <= 15:
-            step = 2
-        elif year_span <= 40:
-            step = 5
-        else:
-            step = 10
+        step = year_tick_step(year_span)
 
         from datetime import date as _date
         for year in range(x_min_d.year, x_max_d.year + 1):

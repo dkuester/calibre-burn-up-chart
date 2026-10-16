@@ -5,10 +5,16 @@ Draws the burn-up chart directly with QPainter in a QWidget.
 No external dependencies besides Qt (bundled with Calibre).
 """
 
-import math
 import traceback
-from datetime import date, timedelta
 
+from calibre_plugins.readingprogress.chart_common import (
+    DEFAULT_COLORS,
+    compute_y_axis,
+    nice_step,
+    pan_view,
+    year_tick_step,
+    zoom_view,
+)
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QColor,
@@ -113,17 +119,6 @@ if RENDER_TEXT_ANTIALIASING is None:
     RENDER_TEXT_ANTIALIASING = 0x02
 
 
-# Configurable colors (hex strings); axis/grid/text are fixed chrome.
-DEFAULT_COLORS = {
-    "total":    "#888888",
-    "read":     "#2a9d8f",
-    "backlog":  "#e76f51",
-    "goal":     "#264653",
-    "stable":   "#f4a261",
-    "soft":     "#8ecae6",
-    "forecast": "#8338ec",
-}
-
 COLOR_AXIS     = QColor("#333333")
 COLOR_GRID     = QColor("#e0e0e0")
 COLOR_TEXT     = QColor("#222222")
@@ -202,14 +197,7 @@ class AxesRenderer:
 
         # X axis: year markers
         year_span = (x_max - scale.x_min).days / 365.25
-        if year_span <= 5:
-            step = 1
-        elif year_span <= 15:
-            step = 2
-        elif year_span <= 40:
-            step = 5
-        else:
-            step = 10
+        step = year_tick_step(year_span)
 
         from datetime import date as _date
         for year in range(scale.x_min.year + 1, x_max.year + 1):
@@ -513,12 +501,12 @@ class ChartWidget(QWidget):
         if self._view is None:
             x_min = self.rows[0][0]
             x_max = self.target_date
-            y_step, y_max = self._compute_y_axis(self._data_y_max())
+            y_step, y_max = compute_y_axis(self._data_y_max())
         else:
             x_min = self._view['x_min']
             x_max = self._view['x_max']
             y_max = self._view['y_max']
-            y_step = self._nice_step(y_max)
+            y_step = nice_step(y_max)
         x_days = (x_max - x_min).days
         if x_days <= 0:
             painter.end()
@@ -633,7 +621,7 @@ class ChartWidget(QWidget):
         if self._view is not None:
             return (self._view['x_min'], self._view['x_max'],
                     self._view['y_max'])
-        _, y_max = self._compute_y_axis(self._data_y_max())
+        _, y_max = compute_y_axis(self._data_y_max())
         return (self.rows[0][0], self.target_date, y_max)
 
     def _scale_for(self, plot):
@@ -642,22 +630,6 @@ class ChartWidget(QWidget):
         if x_days <= 0:
             x_days = 1
         return PlotScale(plot, x_min, x_days, y_max)
-
-    def _nice_step(self, max_value):
-        if max_value <= 0:
-            return 1
-        raw = max_value / 5.0
-        magnitude = 10 ** math.floor(math.log10(raw))
-        for factor in (1, 2, 2.5, 5, 10):
-            step = factor * magnitude
-            if step >= raw:
-                return step
-        return 10 * magnitude
-
-    def _compute_y_axis(self, max_value):
-        step = self._nice_step(max_value)
-        y_max = math.ceil(max_value / step) * step
-        return step, y_max
 
     # ------------------------------------------------------------------
     # Interaction: zoom, pan, tooltips
@@ -701,40 +673,14 @@ class ChartWidget(QWidget):
         x_min, x_max, y_max = self._current_view()
         fit_x_min = self.rows[0][0]
         fit_x_max = self.target_date
-        _, fit_y_max = self._compute_y_axis(self._data_y_max())
-        full_x_days = (fit_x_max - fit_x_min).days
-        if full_x_days <= 0:
-            return
+        _, fit_y_max = compute_y_axis(self._data_y_max())
 
         fx = min(max((pos.x() - plot.left()) / plot.width(), 0.0), 1.0)
 
-        x_days = (x_max - x_min).days
-        new_x_days = x_days / factor
-        min_x_days = min(30, full_x_days)
-        new_x_days = max(min(new_x_days, full_x_days), min_x_days)
+        nx_min, nx_max, ny_max = zoom_view(
+            x_min, x_max, y_max, fit_x_min, fit_x_max, fit_y_max, fx, factor)
 
-        if new_x_days >= full_x_days:
-            new_x_min, new_x_max = fit_x_min, fit_x_max
-        else:
-            anchor_ord = x_min.toordinal() + fx * x_days
-            new_x_min_ord = round(anchor_ord - fx * new_x_days)
-            new_x_min = date.fromordinal(new_x_min_ord)
-            new_x_max = date.fromordinal(new_x_min_ord + round(new_x_days))
-            if new_x_min < fit_x_min:
-                new_x_min = fit_x_min
-                new_x_max = date.fromordinal(new_x_min.toordinal()
-                                             + round(new_x_days))
-            if new_x_max > fit_x_max:
-                new_x_max = fit_x_max
-                new_x_min = date.fromordinal(new_x_max.toordinal()
-                                             - round(new_x_days))
-
-        new_y_max = max(y_max / factor, 1.0)
-        if new_y_max > fit_y_max:
-            new_y_max = fit_y_max
-
-        self._view = {'x_min': new_x_min, 'x_max': new_x_max,
-                      'y_max': new_y_max}
+        self._view = {'x_min': nx_min, 'x_max': nx_max, 'y_max': ny_max}
 
     def _pan_to(self, pos):
         if self._pan_start is None or self._pan_view is None:
@@ -749,21 +695,11 @@ class ChartWidget(QWidget):
         days_per_pixel = x_days / plot.width()
         shift_days = -(pos.x() - self._pan_start.x()) * days_per_pixel
 
-        new_x_min = x_min + timedelta(days=shift_days)
-        new_x_max = x_max + timedelta(days=shift_days)
+        nx_min, nx_max, ny_max = pan_view(
+            x_min, x_max, y_max, self.rows[0][0], self.target_date,
+            shift_days)
 
-        fit_x_min = self.rows[0][0]
-        fit_x_max = self.target_date
-        if new_x_min < fit_x_min:
-            drift = (fit_x_min - new_x_min).days
-            new_x_min = fit_x_min
-            new_x_max = new_x_max + timedelta(days=drift)
-        if new_x_max > fit_x_max:
-            drift = (new_x_max - fit_x_max).days
-            new_x_max = fit_x_max
-            new_x_min = new_x_min - timedelta(days=drift)
-
-        self._view = {'x_min': new_x_min, 'x_max': new_x_max, 'y_max': y_max}
+        self._view = {'x_min': nx_min, 'x_max': nx_max, 'y_max': ny_max}
 
     def _show_tooltip(self, event):
         pos = _cursor_pos(event)

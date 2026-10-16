@@ -1,4 +1,5 @@
 from calibre_plugins.readingprogress import config
+from calibre_plugins.readingprogress.chart_common import DEFAULT_COLORS
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QCheckBox,
@@ -48,24 +49,24 @@ class ConfigWidget(QWidget):
         self.forecast_check.setChecked(bool(config['show_forecast']))
         layout.addRow(self.forecast_check)
 
-        # --- Colors ---
+        # --- Colors (keys come from chart_common.DEFAULT_COLORS) ---
         self._color_buttons = {}
-        color_options = [
-            ('total', _('Total library color:')),
-            ('read', _('Read (cumulative) color:')),
-            ('backlog', _('Backlog (TBR) color:')),
-            ('goal', _('Goal line color:')),
-            ('stable', _('Constant library line color:')),
-            ('soft', _('Gentle reduction line color:')),
-            ('forecast', _('Forecast line color:')),
-        ]
-        for key, label in color_options:
+        color_labels = {
+            'total': _('Total library color:'),
+            'read': _('Read (cumulative) color:'),
+            'backlog': _('Backlog (TBR) color:'),
+            'goal': _('Goal line color:'),
+            'stable': _('Constant library line color:'),
+            'soft': _('Gentle reduction line color:'),
+            'forecast': _('Forecast line color:'),
+        }
+        for key in DEFAULT_COLORS:
             btn = QPushButton()
             btn.setFixedWidth(90)
             self._update_color_button(btn, config[f'color_{key}'])
             btn.clicked.connect(
                 lambda checked=False, k=key: self._pick_color(k))
-            layout.addRow(label, btn)
+            layout.addRow(color_labels[key], btn)
             self._color_buttons[key] = btn
 
         # --- Custom columns ---

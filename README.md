@@ -132,6 +132,7 @@ calibre-burn-up-chart/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_helpers.py
+│   ├── test_chart_common.py
 │   ├── test_compute_reading_time.py
 │   ├── test_export_snapshots.py
 │   └── test_forecast.py
@@ -141,6 +142,7 @@ calibre-burn-up-chart/
     ├── localization.py                      # gettext setup
     ├── main.py                              # GUI integration
     ├── config_dialog.py                     # Settings dialog
+    ├── chart_common.py                      # Shared Qt-free chart math + colors
     ├── chart_dialog.py                      # Chart display dialog
     ├── delay_dialog.py                      # Reading-delay chart dialog
     ├── export_reading_status.py             # Data retrieval from Calibre

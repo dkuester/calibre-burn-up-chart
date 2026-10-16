@@ -79,10 +79,8 @@ class ReadingProgressAction(InterfaceAction):
     def show_chart(self):
         from datetime import datetime
 
-        from calibre_plugins.readingprogress.chart_dialog import (
-            DEFAULT_COLORS,
-            ChartDialog,
-        )
+        from calibre_plugins.readingprogress.chart_common import DEFAULT_COLORS
+        from calibre_plugins.readingprogress.chart_dialog import ChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
             export_snapshots,
             forecast_backlog,
