@@ -6,18 +6,20 @@ the book sat unread on the shelf. Horizontal lines mark the median and
 mean.
 """
 
-import traceback
-
+from calibre_plugins.readingprogress.chart_common import (
+    compute_y_axis,
+    year_tick_step,
+)
 from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_CENTER,
     ALIGN_RIGHT,
     ALIGN_VCENTER,
     CAP_ROUND,
-    LOG_ERROR,
     PEN_DASH,
     PEN_DOT,
     RENDER_ANTIALIASING,
     RENDER_TEXT_ANTIALIASING,
+    show_paint_error,
 )
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
@@ -51,13 +53,10 @@ class DelayChartWidget(QWidget):
     MARGIN_TOP     = 95
     MARGIN_BOTTOM  = 65
 
-    def __init__(self, points, statistics, date_format, language,
-                 parent=None):
+    def __init__(self, points, statistics, parent=None):
         super().__init__(parent)
         self.points = points
         self.statistics = statistics
-        self.date_format = date_format
-        self.language = language
         self.setMinimumSize(700, 450)
 
         # Adapt the Y unit to the magnitude
@@ -80,23 +79,7 @@ class DelayChartWidget(QWidget):
         try:
             self._do_paint()
         except Exception as e:
-            error = traceback.format_exc()
-            try:
-                with open(LOG_ERROR, 'w', encoding='utf-8') as f:
-                    f.write(error)
-            except Exception:
-                pass
-            try:
-                painter = QPainter(self)
-                painter.fillRect(self.rect(), QColor("#ffffff"))
-                painter.setPen(QPen(QColor("#cc0000"), 1))
-                message = _(
-                    "Error drawing:\n{type}: {error}\n\nDetails: {log}"
-                ).format(type=type(e).__name__, error=e, log=LOG_ERROR)
-                painter.drawText(self.rect(), ALIGN_CENTER, message)
-                painter.end()
-            except Exception:
-                pass
+            show_paint_error(self, e)
 
     def _do_paint(self):
         painter = QPainter(self)
@@ -133,7 +116,7 @@ class DelayChartWidget(QWidget):
         # Y range in days; then convert to the chosen unit
         y_max_days = max(self.statistics["max"], 1)
         y_max_unit = y_max_days * self.y_factor
-        y_step, y_max = self._compute_y_axis(y_max_unit)
+        y_step, y_max = compute_y_axis(y_max_unit)
 
         # Title and key figures
         self._draw_header(painter, plot)
@@ -152,20 +135,6 @@ class DelayChartWidget(QWidget):
         painter.end()
 
     # ------------------------------------------------------------------
-    def _compute_y_axis(self, max_value):
-        import math
-        if max_value <= 0:
-            return 1, 1
-        raw = max_value / 5.0
-        magnitude = 10 ** math.floor(math.log10(raw))
-        step = magnitude
-        for factor in (1, 2, 2.5, 5, 10):
-            step = factor * magnitude
-            if step >= raw:
-                break
-        y_max = math.ceil(max_value / step) * step
-        return step, y_max
-
     def _date_to_x(self, date, x_min, x_span, plot):
         days = (date - x_min).days
         return plot.left() + plot.width() * days / x_span
@@ -242,14 +211,7 @@ class DelayChartWidget(QWidget):
 
         # X axis: years
         year_span = (x_max_d - x_min_d).days / 365.25
-        if year_span <= 5:
-            step = 1
-        elif year_span <= 15:
-            step = 2
-        elif year_span <= 40:
-            step = 5
-        else:
-            step = 10
+        step = year_tick_step(year_span)
 
         from datetime import date as _date
         for year in range(x_min_d.year, x_max_d.year + 1):
@@ -366,15 +328,13 @@ class DelayChartWidget(QWidget):
 class DelayChartDialog(QDialog):
     """Dialog that shows the delay chart and a Close button."""
 
-    def __init__(self, points, statistics, date_format, language,
-                 parent=None):
+    def __init__(self, points, statistics, parent=None):
         super().__init__(parent)
         self.setWindowTitle(_("Time between purchase and reading"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
-        self.chart = DelayChartWidget(points, statistics, date_format,
-                                      language, self)
+        self.chart = DelayChartWidget(points, statistics, self)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()

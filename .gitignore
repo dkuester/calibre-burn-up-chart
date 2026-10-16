@@ -18,8 +18,8 @@ venv/
 .ruff_cache/
 
 # --- Vom Plugin generierte Dateien ---
-burndown_log.csv
-burndown_log.csv.tmp
+readingprogress_log.csv
+readingprogress_log.csv.tmp
 .readingprogress_cache.mo
 
 # --- Gebaute Plugin-Archive ---

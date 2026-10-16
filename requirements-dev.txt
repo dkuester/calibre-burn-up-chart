@@ -1,2 +1,5 @@
 pytest==9.1.1
 ruff==0.17.1
+
+# make_icon.py additionally requires matplotlib; it is run with the
+# Homebrew Python (see its module docstring), not from this venv.

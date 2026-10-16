@@ -2,6 +2,9 @@
 """
 Creates the plugin icon (burn-up chart motif) as a PNG.
 
+Requires matplotlib (not part of the dev venv — run with the Homebrew
+Python installation shown below).
+
 Run with: /opt/homebrew/bin/python3 make_icon.py
 Result:   readingprogress/images/icon.png (256×256)
 """

@@ -21,11 +21,11 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
   über die letzten 12 Monate) als gestrichelte Linie und markiert das
   realistische Datum, an dem der SuB 0 erreicht. In den Einstellungen
   abschaltbar, standardmäßig an.
-- **Interaktive Tooltips:** Beim Überfahren eines Datenpunkts erscheinen
+- **Interaktive Tooltips (Burn-up-Chart):** Beim Überfahren eines Datenpunkts erscheinen
   Datum und Werte.
-- **Zoom und Pan:** Mausrad zoomt, Ziehen verschiebt, Doppelklick setzt
+- **Zoom und Pan (Burn-up-Chart):** Mausrad zoomt, Ziehen verschiebt, Doppelklick setzt
   zurück.
-- **Konfigurierbare Farben:** Jede Datenreihe und Referenzlinie lässt
+- **Konfigurierbare Farben (Burn-up-Chart):** Jede Datenreihe und Referenzlinie lässt
   sich in den Einstellungen umfärben.
 - **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
   automatischer Skalierung auf die Bildschirmgröße.
@@ -137,6 +137,7 @@ calibre-burn-up-chart/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_helpers.py
+│   ├── test_chart_common.py
 │   ├── test_compute_reading_time.py
 │   ├── test_export_snapshots.py
 │   └── test_forecast.py
@@ -146,6 +147,7 @@ calibre-burn-up-chart/
     ├── localization.py                      # gettext-Setup
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
+    ├── chart_common.py                      # Qt-freie Chart-Mathematik + Farben
     ├── chart_dialog.py                      # Chart-Anzeigedialog
     ├── delay_dialog.py                      # Verzögerungs-Chart-Dialog
     ├── export_reading_status.py             # Datenbeschaffung aus Calibre

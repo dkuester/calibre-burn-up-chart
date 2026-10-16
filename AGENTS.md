@@ -28,7 +28,7 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
 ## Dateien nicht anfassen
 
 - `.DS_Store` – macOS-Systemdatei
-- `/tmp/burndown_log.csv`, `/tmp/burndown_log.csv.tmp` – generiert
+- `/tmp/readingprogress_log.csv`, `/tmp/readingprogress_log.csv.tmp` – generiert
   (nur im Standalone-Debug von `export_reading_status.py`)
 - `/tmp/readingprogress_paint_error.log` – generiert (Fehlerprotokoll
   aus `chart_dialog.py`)
