@@ -30,13 +30,13 @@ def _sprachcodes(lang):
 
 def _cache_name(zip_pfad, code):
     kurz = hashlib.md5(zip_pfad.encode('utf-8')).hexdigest()[:8]
-    return f'lesefortschritt_{code}_{kurz}.mo'
+    return f'readingprogress_{code}_{kurz}.mo'
 
 
 def _mo_aus_zip(zip_pfad, codes):
     with zipfile.ZipFile(zip_pfad) as z:
         for code in codes:
-            rel = f'translations/{code}/LC_MESSAGES/lesefortschritt.mo'
+            rel = f'translations/{code}/LC_MESSAGES/readingprogress.mo'
             try:
                 daten = z.read(rel)
             except KeyError:
@@ -52,7 +52,7 @@ def _mo_aus_zip(zip_pfad, codes):
 def _mo_aus_ordner(ordner, codes):
     for code in codes:
         pfad = os.path.join(ordner, 'translations', code,
-                            'LC_MESSAGES', 'lesefortschritt.mo')
+                            'LC_MESSAGES', 'readingprogress.mo')
         if os.path.exists(pfad):
             return pfad
     return None
@@ -76,7 +76,7 @@ def _install():
         with open(mo_pfad, 'rb') as f:
             return gettext.GNUTranslations(f).gettext
     except Exception as e:
-        print(f'Lesefortschritt: localization error: {e}')
+        print(f'ReadingProgress: localization error: {e}')
         return gettext.NullTranslations().gettext
 
 

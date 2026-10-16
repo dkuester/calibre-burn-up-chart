@@ -1,9 +1,9 @@
 """Gemeinsame Fixtures und Import-Pfad für die Tests.
 
 ``export_lesestatus.py`` kommt ohne Calibre-Abhängigkeiten aus und wird hier
-als flaches Modul importiert. ``lesefortschritt/__init__.py`` darf nicht als
+als flaches Modul importiert. ``readingprogress/__init__.py`` darf nicht als
 Paket geladen werden, weil es ``calibre.customize`` importiert – deshalb wird
-``lesefortschritt/`` als Verzeichnis (nicht als Paket) auf ``sys.path`` gelegt.
+``readingprogress/`` als Verzeichnis (nicht als Paket) auf ``sys.path`` gelegt.
 """
 
 import sys
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-_PLUGIN_DIR = Path(__file__).resolve().parent.parent / "lesefortschritt"
+_PLUGIN_DIR = Path(__file__).resolve().parent.parent / "readingprogress"
 if str(_PLUGIN_DIR) not in sys.path:
     sys.path.insert(0, str(_PLUGIN_DIR))
 

@@ -8,7 +8,7 @@ Median und Mittelwert.
 
 import traceback
 
-from calibre_plugins.lesefortschritt.chart_dialog import (
+from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_CENTER,
     ALIGN_RIGHT,
     ALIGN_VCENTER,
@@ -19,7 +19,7 @@ from calibre_plugins.lesefortschritt.chart_dialog import (
     RENDER_ANTIALIASING,
     RENDER_TEXT_ANTIALIASING,
 )
-from calibre_plugins.lesefortschritt.localization import _
+from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QColor,
     QDialog,
@@ -90,11 +90,10 @@ class DelayChartWidget(QWidget):
                 painter = QPainter(self)
                 painter.fillRect(self.rect(), QColor("#ffffff"))
                 painter.setPen(QPen(QColor("#cc0000"), 1))
-                painter.drawText(
-                    self.rect(), ALIGN_CENTER,
-                    f"Fehler beim Zeichnen:\n{type(e).__name__}: {e}\n\n"
-                    f"Details: {LOG_FEHLER}",
-                )
+                message = _(
+                    "Error drawing:\n{type}: {error}\n\nDetails: {log}"
+                ).format(type=type(e).__name__, error=e, log=LOG_FEHLER)
+                painter.drawText(self.rect(), ALIGN_CENTER, message)
                 painter.end()
             except Exception:
                 pass

@@ -1,5 +1,5 @@
 """
-Chart-Dialog für das Lesefortschritt-Plugin.
+Chart-Dialog für das ReadingProgress-Plugin.
 
 Zeichnet das Burn-up-Chart direkt mit QPainter in einem QWidget.
 Keine externen Abhängigkeiten außer Qt (in Calibre enthalten).
@@ -7,7 +7,7 @@ Keine externen Abhängigkeiten außer Qt (in Calibre enthalten).
 
 import traceback
 
-from calibre_plugins.lesefortschritt.localization import _
+from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QColor,
     QDialog,
@@ -25,7 +25,7 @@ from qt.core import (
 )
 
 # Fehlerprotokoll für paintEvent (zum Debuggen)
-LOG_FEHLER = '/tmp/lesefortschritt_paint_error.log'
+LOG_FEHLER = '/tmp/readingprogress_paint_error.log'
 
 
 def _qt_enum(*pfade):
@@ -420,11 +420,10 @@ class ChartWidget(QWidget):
                 painter = QPainter(self)
                 painter.fillRect(self.rect(), QColor("#ffffff"))
                 painter.setPen(QPen(QColor("#cc0000"), 1))
-                painter.drawText(
-                    self.rect(), ALIGN_CENTER,
-                    f"Fehler beim Zeichnen:\n{type(e).__name__}: {e}\n\n"
-                    f"Details: {LOG_FEHLER}",
-                )
+                message = _(
+                    "Error drawing:\n{type}: {error}\n\nDetails: {log}"
+                ).format(type=type(e).__name__, error=e, log=LOG_FEHLER)
+                painter.drawText(self.rect(), ALIGN_CENTER, message)
                 painter.end()
             except Exception:
                 pass

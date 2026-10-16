@@ -3,8 +3,8 @@ import zipfile
 
 from calibre.gui2.actions import InterfaceAction
 from calibre.utils.localization import get_lang
-from calibre_plugins.lesefortschritt import config
-from calibre_plugins.lesefortschritt.localization import _
+from calibre_plugins.readingprogress import config
+from calibre_plugins.readingprogress.localization import _
 from qt.core import QIcon, QMenu, QPixmap, QTimer, QToolButton
 
 
@@ -32,9 +32,9 @@ def _lade_icon():
     return QIcon(pixmap)
 
 
-class LesefortschrittAction(InterfaceAction):
+class ReadingProgressAction(InterfaceAction):
 
-    name = 'Lesefortschritt'
+    name = 'Reading Progress'
     action_spec = (_('Burn-up Chart'), None,
                    _('Reading statistics for your library'), None)
     action_type = 'current'
@@ -46,7 +46,7 @@ class LesefortschrittAction(InterfaceAction):
             if icon is not None:
                 self.qaction.setIcon(icon)
         except Exception as e:
-            print(f'Lesefortschritt: icon error: {e}')
+            print(f'ReadingProgress: icon error: {e}')
 
         # Standardaktion bei Klick auf den Hauptbereich des Buttons
         self.qaction.triggered.connect(self.show_chart)
@@ -71,7 +71,7 @@ class LesefortschrittAction(InterfaceAction):
                     tb.setPopupMode(QToolButton.MenuButtonPopup)
                     return
         except Exception as e:
-            print(f'Lesefortschritt: PopupMode error: {e}')
+            print(f'ReadingProgress: PopupMode error: {e}')
 
     # ------------------------------------------------------------------
     # Aktionen
@@ -79,8 +79,8 @@ class LesefortschrittAction(InterfaceAction):
     def show_chart(self):
         from datetime import datetime
 
-        from calibre_plugins.lesefortschritt.chart_dialog import ChartDialog
-        from calibre_plugins.lesefortschritt.export_lesestatus import exportiere
+        from calibre_plugins.readingprogress.chart_dialog import ChartDialog
+        from calibre_plugins.readingprogress.export_lesestatus import exportiere
 
         try:
             info = exportiere(
@@ -112,8 +112,8 @@ class LesefortschrittAction(InterfaceAction):
         dlg.exec_()
 
     def show_delay(self):
-        from calibre_plugins.lesefortschritt.delay_dialog import DelayChartDialog
-        from calibre_plugins.lesefortschritt.export_lesestatus import berechne_lesezeit
+        from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog
+        from calibre_plugins.readingprogress.export_lesestatus import berechne_lesezeit
 
         try:
             info = berechne_lesezeit(
