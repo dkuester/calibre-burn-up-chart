@@ -20,10 +20,10 @@ library size, books read, and backlog (TBR).
 - **Forecast line:** Extrapolates the backlog trend (linear regression
   over the last 12 months) as a dashed line, marking the realistic date
   the TBR reaches 0. Toggleable in the settings, on by default.
-- **Interactive tooltips:** Hover over a data point to see its date and
+- **Interactive tooltips (burn-up chart):** Hover over a data point to see its date and
   values.
-- **Zoom and pan:** Mouse wheel zooms, drag to pan, double-click resets.
-- **Configurable colors:** Recolor every series and reference line in the
+- **Zoom and pan (burn-up chart):** Mouse wheel zooms, drag to pan, double-click resets.
+- **Configurable colors (burn-up chart):** Recolor every series and reference line in the
   settings.
 - **In-GUI display:** The chart opens as a dialog inside Calibre, with
   automatic scaling to screen size.

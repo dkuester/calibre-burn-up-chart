@@ -48,17 +48,17 @@ wenn die aktuelle Leserate bleibt. Sie ist konfigurierbar
 realistische Datum, an dem der Backlog 0 erreicht, neben dem
 Wunsch-Zieldatum.
 
-### Interaktive Tooltips
+### Interaktive Tooltips (Burn-up-Chart)
 
 Beim Überfahren eines Datenpunkts erscheinen Datum und die Werte für
 Gesamt/Gelesen/SuB an diesem Punkt.
 
-### Zoom und Pan
+### Zoom und Pan (Burn-up-Chart)
 
 Mausrad zoomt um den Cursor, Ziehen verschiebt, Doppelklick setzt die
 Ansicht zurück.
 
-### Konfigurierbare Farben
+### Konfigurierbare Farben (Burn-up-Chart)
 
 Die Farben aller Datenreihen und Referenzlinien lassen sich in den
 Plugin-Einstellungen ändern (mit sinnvollen Standardwerten).
@@ -112,6 +112,8 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 ### UX-Verbesserungen
 
+- Parity für das Verzögerungs-Chart (Tooltips, Zoom/Pan, konfigurierbare
+  Farben), das derzeit feste Farben und keine Interaktion hat
 - Statusbar-Widget mit permanent sichtbarem Backlog
 - Kontextmenü für ausgewählte Bücher: „wie lange ist dieses Buch
   ungelesen?"
