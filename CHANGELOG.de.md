@@ -1,3 +1,25 @@
+## [1.6.0] – 2026-10-16
+
+### Hinzugefügt
+
+- **Dunkelmodus:** Beide Charts folgen jetzt dem aktuellen Calibre-Theme.
+  Bei dunkler Farbpalette wechselt die Chart-Optik (Hintergrund, Achsen,
+  Raster, Text, Legenden-/Hinweis-Boxen) auf helle Farben auf dunklem
+  Grund, und die konfigurierbaren Serienfarben fallen auf kontrastreichere
+  Dunkeltheme-Standards zurück – außer der Nutzer hat eine Farbe explizit
+  gewählt. Auch die festen Farben des Verzögerungs-Charts bekommen
+  dunkle Varianten.
+
+### Geändert
+
+- Serienfarben folgen jetzt standardmäßig dem Theme (leerer Wert) statt
+  festen Hex-Werten; nur explizit gewählte Farben werden gespeichert.
+  Ein neuer Button „Farben auf Theme-Standard zurücksetzen" setzt
+  eigene Farben zurück.
+- Einmal-Migration der Farben: Wer nie eine Farbe angepasst hat (noch
+  auf den alten Light-Standards), wird auf „auto" umgestellt, damit der
+  Dunkelmodus greift.
+
 ## [1.5.0] – 2026-10-16
 
 ### Hinzugefügt

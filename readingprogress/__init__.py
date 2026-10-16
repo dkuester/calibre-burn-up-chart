@@ -2,7 +2,7 @@ from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 from calibre_plugins.readingprogress.chart_common import DEFAULT_COLORS
 
-__version__ = (1, 5, 0)
+__version__ = (1, 6, 0)
 __version_str__ = '.'.join(str(x) for x in __version__)
 
 

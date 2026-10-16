@@ -1,3 +1,22 @@
+## [1.6.0] – 2026-10-16
+
+### Added
+
+- **Dark mode:** Both charts now follow Calibre's current theme. On a
+  dark palette the chart chrome (background, axes, grid, text,
+  legend/annotation boxes) switches to light-on-dark colors, and the
+  configurable series colors fall back to higher-contrast dark-theme
+  defaults unless the user explicitly picked a color. The reading-delay
+  chart's fixed colors get dark variants too.
+
+### Changed
+
+- Series colors now default to "follow theme" (empty value) instead of
+  fixed hex values; only explicitly picked colors are persisted. A new
+  "Reset colors to theme defaults" button clears custom colors.
+- One-time color migration: users who never customized a color (still on
+  the old light defaults) are switched to "auto" so dark mode applies.
+
 ## [1.5.0] – 2026-10-16
 
 ### Added
