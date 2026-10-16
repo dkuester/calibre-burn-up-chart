@@ -1,3 +1,34 @@
+## [1.5.0] – 2026-10-16
+
+### Hinzugefügt
+
+- **Prognoselinie:** Lineare Regression über die letzten 12 Monate des
+  Backlogs (SuB), als gestrichelte Linie gezeichnet, mit Angabe des
+  realistischen Datums, an dem der SuB 0 erreicht – neben dem
+  Wunsch-Zieldatum. Abschaltbar über „Prognoselinie anzeigen"
+  (standardmäßig an).
+- **Interaktive Tooltips:** Beim Überfahren eines Datenpunkts erscheinen
+  Datum und Gesamt/Gelesen/SuB.
+- **Zoom und Pan:** Mausrad zoomt um den Cursor, Ziehen verschiebt,
+  Doppelklick setzt die Ansicht zurück.
+- **Konfigurierbare Farben:** Jede Datenreihe und Referenzlinie lässt
+  sich in den Plugin-Einstellungen umfärben.
+- Unit-Test-Suite (`pytest`, 34 Tests) für die
+  Datenverarbeitungs-Funktionen.
+- Forgejo-Actions-CI-Workflow (`ruff` + `pytest` bei jedem Push und
+  Pull Request).
+
+### Geändert
+
+- Plugin umbenannt zu **„Reading Progress"** (vorher „Lesefortschritt").
+  Die Konfiguration wird automatisch vom alten Plugin übernommen.
+- Oberfläche vollständig internationalisiert: englische Bezeichner,
+  Docstrings und Kommentare; deutsche und englische UI-Texte.
+- `ChartWidget`-Zeichnung in Renderer-Klassen aufgeteilt
+  (`AxesRenderer`, `SeriesRenderer`, `LegendRenderer`,
+  `AnnotationRenderer`).
+- Version auf 1.5.0 angehoben.
+
 ## [1.4.0] – 2026-10-02
 
 ### Hinzugefügt

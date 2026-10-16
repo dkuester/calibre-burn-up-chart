@@ -1,3 +1,31 @@
+## [1.5.0] – 2026-10-16
+
+### Added
+
+- **Forecast line:** Linear regression over the last 12 months of the
+  backlog (TBR), drawn as a dashed line and annotating the realistic
+  date the TBR reaches 0, next to the desired target date. Toggleable
+  via "Show forecast line" (on by default).
+- **Interactive tooltips:** Hovering over a data point shows its date
+  and the total/read/backlog values.
+- **Zoom and pan:** Mouse wheel zooms around the cursor, dragging pans,
+  and a double-click resets the view.
+- **Configurable colors:** Every data series and reference line can be
+  recolored in the plugin settings.
+- Unit test suite (`pytest`, 34 tests) for the data-processing functions.
+- Forgejo Actions CI workflow (`ruff` + `pytest` on every push and pull
+  request).
+
+### Changed
+
+- Plugin renamed to **"Reading Progress"** (previously "Lesefortschritt").
+  The configuration is migrated automatically from the legacy plugin.
+- Interface fully internationalized: English identifiers, docstrings and
+  comments; German and English UI labels.
+- `ChartWidget` drawing split into renderer classes (`AxesRenderer`,
+  `SeriesRenderer`, `LegendRenderer`, `AnnotationRenderer`).
+- Version bumped to 1.5.0.
+
 ## [1.4.0] – 2026-10-02
 
 ### Added
