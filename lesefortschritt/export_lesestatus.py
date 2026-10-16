@@ -59,7 +59,7 @@ def _schreibe_csv(log_pfad, rows):
 
 
 def exportiere(db_api, spalte_gelesen=None, spalte_last_read=None,
-               log_pfad=None):
+               log_pfad=None, heute=None):
     """
     Liest die Bibliothek und liefert die monatlichen Snapshots.
 
@@ -67,6 +67,8 @@ def exportiere(db_api, spalte_gelesen=None, spalte_last_read=None,
     :param spalte_gelesen:   Name der Ja/Nein-Spalte (Default: '#gelesen')
     :param spalte_last_read: Name der Datum-Spalte (Default: '#last_read')
     :param log_pfad:         Optionaler CSV-Pfad (nur für Debug)
+    :param heute:            Referenzdatum (Default: date.today()); nur für
+                             Tests und Zeitraum-Auswahl nötig
     :return: dict mit 'rows' (Liste von Tupeln) und Diagnosezählern
     """
     if spalte_gelesen is None:
@@ -116,7 +118,8 @@ def exportiere(db_api, spalte_gelesen=None, spalte_last_read=None,
     if not events:
         raise RuntimeError("Keine verwertbaren Ereignisse gefunden.")
 
-    heute = date.today()
+    if heute is None:
+        heute = date.today()
 
     monat_keys = {(d.year, d.month) for (d, _, _) in events}
     monat_keys.add((heute.year, heute.month))
