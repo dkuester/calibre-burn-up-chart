@@ -94,3 +94,15 @@ def test_default_colors_keys_and_format():
                                        'stable', 'soft', 'forecast']
     for value in cc.DEFAULT_COLORS.values():
         assert re.match(r'^#[0-9a-fA-F]{6}$', value)
+
+
+def test_view_is_namedtuple():
+    fit_x_min = date(2024, 1, 1)
+    fit_x_max = date(2025, 1, 1)
+    result = cc.zoom_view(
+        fit_x_min, fit_x_max, 100.0,
+        fit_x_min, fit_x_max, 100.0, fx=0.5, factor=0.8)
+    assert result == (fit_x_min, fit_x_max, 100.0)   # tuple-compatible
+    assert result.x_min == fit_x_min                   # named fields
+    assert result.x_max == fit_x_max
+    assert result.y_max == 100.0

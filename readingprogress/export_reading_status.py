@@ -27,7 +27,7 @@ LAST_READ_COLUMN = "#last_read"
 
 # Only for standalone use via calibre-debug -e
 STANDALONE_LIBRARY = os.path.expanduser("~/Calibre-Bibliothek")
-STANDALONE_LOG     = "/tmp/burndown_log.csv"
+STANDALONE_LOG     = "/tmp/readingprogress_log.csv"
 
 
 def to_date(value):

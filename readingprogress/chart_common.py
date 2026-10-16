@@ -8,6 +8,7 @@ plugin code.
 """
 
 import math
+from collections import namedtuple
 from datetime import date, timedelta
 
 # Configurable colors (hex strings); axis/grid/text are fixed chrome.
@@ -55,6 +56,10 @@ def year_tick_step(year_span):
     return 10
 
 
+# A zoom/pan window: [x_min, x_max] date range plus the y-axis maximum.
+View = namedtuple('View', ['x_min', 'x_max', 'y_max'])
+
+
 def zoom_view(x_min, x_max, y_max, fit_x_min, fit_x_max, fit_y_max, fx,
               factor, min_window_days=30):
     """New (x_min, x_max, y_max) after zooming by ``factor`` around ``fx``.
@@ -65,7 +70,7 @@ def zoom_view(x_min, x_max, y_max, fit_x_min, fit_x_max, fit_y_max, fx,
     """
     full_x_days = (fit_x_max - fit_x_min).days
     if full_x_days <= 0:
-        return x_min, x_max, y_max
+        return View(x_min, x_max, y_max)
 
     fx = min(max(fx, 0.0), 1.0)
     x_days = (x_max - x_min).days
@@ -93,7 +98,7 @@ def zoom_view(x_min, x_max, y_max, fit_x_min, fit_x_max, fit_y_max, fx,
     if new_y_max > fit_y_max:
         new_y_max = fit_y_max
 
-    return new_x_min, new_x_max, new_y_max
+    return View(new_x_min, new_x_max, new_y_max)
 
 
 def pan_view(x_min, x_max, y_max, fit_x_min, fit_x_max, shift_days):
@@ -111,4 +116,4 @@ def pan_view(x_min, x_max, y_max, fit_x_min, fit_x_max, shift_days):
         new_x_max = fit_x_max
         new_x_min = new_x_min - timedelta(days=drift)
 
-    return new_x_min, new_x_max, y_max
+    return View(new_x_min, new_x_max, y_max)

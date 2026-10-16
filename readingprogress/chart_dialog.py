@@ -9,6 +9,7 @@ import traceback
 
 from calibre_plugins.readingprogress.chart_common import (
     DEFAULT_COLORS,
+    View,
     compute_y_axis,
     nice_step,
     pan_view,
@@ -128,6 +129,11 @@ MARGIN_LEFT    = 85
 MARGIN_RIGHT   = 30
 MARGIN_TOP     = 60
 MARGIN_BOTTOM  = 60
+
+# Interaction parameters
+ZOOM_IN_FACTOR  = 1.25
+ZOOM_OUT_FACTOR = 0.8
+TOOLTIP_RADIUS  = 14.0
 
 
 def _cursor_pos(event):
@@ -466,7 +472,7 @@ class ChartWidget(QWidget):
         self.show_forecast = show_forecast
         self.forecast = forecast
         self.colors = self._build_colors(colors)
-        self._view = None          # None = auto-fit; else {x_min,x_max,y_max}
+        self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
         self._pan_view = None      # view captured at drag start
         self._axes = AxesRenderer()
@@ -510,9 +516,9 @@ class ChartWidget(QWidget):
             x_max = self.target_date
             y_step, y_max = compute_y_axis(self._data_y_max())
         else:
-            x_min = self._view['x_min']
-            x_max = self._view['x_max']
-            y_max = self._view['y_max']
+            x_min = self._view.x_min
+            x_max = self._view.x_max
+            y_max = self._view.y_max
             y_step = nice_step(y_max)
         x_days = (x_max - x_min).days
         if x_days <= 0:
@@ -624,12 +630,11 @@ class ChartWidget(QWidget):
         )
 
     def _current_view(self):
-        """(x_min, x_max, y_max) of the current, possibly zoomed view."""
+        """`View` of the current, possibly zoomed view."""
         if self._view is not None:
-            return (self._view['x_min'], self._view['x_max'],
-                    self._view['y_max'])
+            return self._view
         _, y_max = compute_y_axis(self._data_y_max())
-        return (self.rows[0][0], self.target_date, y_max)
+        return View(self.rows[0][0], self.target_date, y_max)
 
     def _scale_for(self, plot):
         x_min, x_max, y_max = self._current_view()
@@ -646,7 +651,7 @@ class ChartWidget(QWidget):
             delta = event.angleDelta().y()
             if delta == 0:
                 return
-            self._zoom_at(_cursor_pos(event), 1.25 if delta > 0 else 0.8)
+            self._zoom_at(_cursor_pos(event), ZOOM_IN_FACTOR if delta > 0 else ZOOM_OUT_FACTOR)
             self.update()
         except Exception:
             pass
@@ -684,10 +689,8 @@ class ChartWidget(QWidget):
 
         fx = min(max((pos.x() - plot.left()) / plot.width(), 0.0), 1.0)
 
-        nx_min, nx_max, ny_max = zoom_view(
+        self._view = zoom_view(
             x_min, x_max, y_max, fit_x_min, fit_x_max, fit_y_max, fx, factor)
-
-        self._view = {'x_min': nx_min, 'x_max': nx_max, 'y_max': ny_max}
 
     def _pan_to(self, pos):
         if self._pan_start is None or self._pan_view is None:
@@ -702,11 +705,9 @@ class ChartWidget(QWidget):
         days_per_pixel = x_days / plot.width()
         shift_days = -(pos.x() - self._pan_start.x()) * days_per_pixel
 
-        nx_min, nx_max, ny_max = pan_view(
+        self._view = pan_view(
             x_min, x_max, y_max, self.rows[0][0], self.target_date,
             shift_days)
-
-        self._view = {'x_min': nx_min, 'x_max': nx_max, 'y_max': ny_max}
 
     def _show_tooltip(self, event):
         pos = _cursor_pos(event)
@@ -717,7 +718,7 @@ class ChartWidget(QWidget):
         scale = self._scale_for(plot)
 
         best = None
-        best_dist = 14.0
+        best_dist = TOOLTIP_RADIUS
         for row in self.rows:
             dist = abs(scale.date_to_x(row[0]) - pos.x())
             if dist < best_dist:
