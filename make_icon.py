@@ -3,7 +3,7 @@
 Erzeugt das Plugin-Icon (Burn-up-Chart-Motiv) als PNG.
 
 Ausführen mit: /opt/homebrew/bin/python3 make_icon.py
-Ergebnis:      lesefortschritt/images/icon.png (256×256)
+Ergebnis:      readingprogress/images/icon.png (256×256)
 """
 
 import os
@@ -15,7 +15,7 @@ from matplotlib.patches import FancyBboxPatch
 
 
 HIER = os.path.dirname(os.path.abspath(__file__))
-AUSGABE = os.path.join(HIER, 'lesefortschritt', 'images', 'icon.png')
+AUSGABE = os.path.join(HIER, 'readingprogress', 'images', 'icon.png')
 os.makedirs(os.path.dirname(AUSGABE), exist_ok=True)
 
 GROESSE_PX = 256

@@ -1,14 +1,14 @@
 # AGENTS.md
 
-Calibre-Plugin, das den Lesefortschritt als Burn-up-Chart zeigt.
+Calibre-Plugin „Reading Progress“: zeigt den Lesefortschritt als Burn-up-Chart.
 Details siehe [README.md](README.md).
 
 ## Build & Deployment
 
 ```bash
 # Plugin neu bauen (nach jeder Code-Änderung nötig)
-calibre-customize -r "Lesefortschritt"
-calibre-customize -b lesefortschritt
+calibre-customize -r "Reading Progress"
+calibre-customize -b readingprogress
 ```
 
 Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
@@ -22,7 +22,7 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
 - **Keine neuen Abhängigkeiten** in `main.py`, `chart_dialog.py`,
   `config_dialog.py`, `export_lesestatus.py` oder `localization.py` –
   Calibres Python hat keinen Paketmanager.
-- **`plugin-import-name-lesefortschritt.txt` darf nicht gelöscht werden.**
+- **`plugin-import-name-readingprogress.txt` darf nicht gelöscht werden.**
   Sie ist leer, aber essenziell für den Plugin-Import.
 
 ## Dateien nicht anfassen
@@ -30,7 +30,7 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
 - `.DS_Store` – macOS-Systemdatei
 - `/tmp/burndown_log.csv`, `/tmp/burndown_log.csv.tmp` – generiert
   (nur im Standalone-Debug von `export_lesestatus.py`)
-- `/tmp/lesefortschritt_paint_error.log` – generiert (Fehlerprotokoll
+- `/tmp/readingprogress_paint_error.log` – generiert (Fehlerprotokoll
   aus `chart_dialog.py`)
-- `lesefortschritt_*.mo` im tempdir – generierter Lokalisierungs-Cache
+- `readingprogress_*.mo` im tempdir – generierter Lokalisierungs-Cache
   (`localization.py`)

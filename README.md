@@ -45,7 +45,7 @@ library size, books read, and backlog (TBR).
 2. Install the plugin in Calibre:
 
    ```bash
-   calibre-customize -b ~/GitHub/calibre-burn-up-chart/lesefortschritt
+   calibre-customize -b ~/GitHub/calibre-burn-up-chart/readingprogress
    ```
 
 3. Restart Calibre.
@@ -64,7 +64,7 @@ Clicking the toolbar button opens a dropdown menu with two options:
 
 ### Configuration
 
-Under *Preferences → Advanced → Plugins → Lesefortschritt → Customize*
+Under *Preferences → Advanced → Plugins → Reading Progress → Customize*
 you can adjust:
 
 - **Target date:** The day on which the backlog (TBR) should reach 0.
@@ -72,21 +72,21 @@ you can adjust:
   the target date. `0.50` means: TBR halved by the target date.
 
 The values are stored in
-`~/Library/Preferences/calibre/plugins/lesefortschritt.json` and persist
+`~/Library/Preferences/calibre/plugins/readingprogress.json` and persist
 across Calibre restarts.
 
 ## Versioning
 
 This plugin follows [Semantic Versioning](https://semver.org/).
 The current version is maintained as a `__version__` tuple in
-`lesefortschritt/__init__.py` and is displayed by Calibre in the plugins
+`readingprogress/__init__.py` and is displayed by Calibre in the plugins
 list. All changes are documented in [CHANGELOG.md](CHANGELOG.md)
 ([German version](CHANGELOG.de.md)).
 
 Releases are marked in Git as annotated tags with a `v` prefix
 (e.g. `v1.0.0`). To bump the version:
 
-1. Update `__version__` in `lesefortschritt/__init__.py`.
+1. Update `__version__` in `readingprogress/__init__.py`.
 2. Add an entry to `CHANGELOG.md`.
 3. Rebuild and test the plugin.
 4. Commit and tag:
@@ -112,9 +112,9 @@ calibre-burn-up-chart/
 ├── ROADMAP.md
 ├── ROADMAP.de.md
 ├── make_icon.py
-└── lesefortschritt/
+└── readingprogress/
     ├── __init__.py                          # Plugin metadata, version
-    ├── plugin-import-name-lesefortschritt.txt
+    ├── plugin-import-name-readingprogress.txt
     ├── localization.py                      # gettext setup
     ├── main.py                              # GUI integration
     ├── config_dialog.py                     # Settings dialog
@@ -124,8 +124,8 @@ calibre-burn-up-chart/
     │   └── icon.png                         # Plugin icon
     └── translations/
         └── de/LC_MESSAGES/
-            ├── lesefortschritt.po
-            └── lesefortschritt.mo
+            ├── readingprogress.po
+            └── readingprogress.mo
 ```
 
 ## Technical notes

@@ -20,7 +20,7 @@ venv/
 # --- Vom Plugin generierte Dateien ---
 burndown_log.csv
 burndown_log.csv.tmp
-.lesefortschritt_cache.mo
+.readingprogress_cache.mo
 
 # --- Gebaute Plugin-Archive ---
-Lesefortschritt*.zip
+ReadingProgress*.zip

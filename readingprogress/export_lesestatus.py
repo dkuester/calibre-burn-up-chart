@@ -116,7 +116,7 @@ def exportiere(db_api, spalte_gelesen=None, spalte_last_read=None,
     events.sort()
 
     if not events:
-        raise RuntimeError("Keine verwertbaren Ereignisse gefunden.")
+        raise RuntimeError("No usable events found.")
 
     if heute is None:
         heute = date.today()
@@ -166,19 +166,19 @@ if __name__ == "__main__":
     api = calibre_db_factory(STANDALONE_LIBRARY).new_api
     info = exportiere(api, log_pfad=STANDALONE_LOG)
 
-    print(f"{info['monatswerte']} Monatswerte geschrieben nach "
+    print(f"{info['monatswerte']} monthly snapshots written to "
           f"{STANDALONE_LOG}")
-    print(f"Aktuell: {info['gelesen']}/{info['gesamt']} gelesen "
-          f"| Backlog: {info['backlog']}")
+    print(f"Currently: {info['gelesen']}/{info['gesamt']} read "
+          f"| backlog: {info['backlog']}")
     if info["ohne_timestamp"]:
-        print(f"Hinweis: {info['ohne_timestamp']} Bücher ohne timestamp "
-              f"übersprungen.")
+        print(f"Note: {info['ohne_timestamp']} books without timestamp "
+              f"skipped.")
     if info["ohne_last_read"]:
-        print(f"Hinweis: {info['ohne_last_read']} gelesene Bücher ohne "
-              f"#last_read am timestamp verbucht.")
+        print(f"Note: {info['ohne_last_read']} read books without "
+              f"#last_read recorded at timestamp.")
     if info["last_read_vor_added"]:
-        print(f"Hinweis: {info['last_read_vor_added']} Bücher mit "
-              f"last_read < timestamp am timestamp verbucht.")
+        print(f"Note: {info['last_read_vor_added']} books with "
+              f"last_read < timestamp recorded at timestamp.")
 
 def berechne_lesezeit(db_api, spalte_gelesen=None, spalte_last_read=None):
     """

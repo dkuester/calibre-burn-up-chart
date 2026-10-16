@@ -1,5 +1,5 @@
-from calibre_plugins.lesefortschritt import config
-from calibre_plugins.lesefortschritt.localization import _
+from calibre_plugins.readingprogress import config
+from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QDate,
     QDateEdit,

@@ -2,7 +2,7 @@
 
 *[English version](README.md)*
 
-Ein Calibre-Plugin, das den Lesefortschritt als Burn-up-Chart anzeigt.
+Ein Calibre-Plugin, das den Reading Progress als Burn-up-Chart anzeigt.
 Es rekonstruiert die historische Zeitreihe aus den Calibre-Metadaten
 (`timestamp` und benutzerdefinierte Spalten) und zeichnet den Verlauf
 von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
@@ -45,7 +45,7 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
 2. Plugin in Calibre installieren:
 
    ```bash
-   calibre-customize -b ~/GitHub/calibre-burn-up-chart/lesefortschritt
+   calibre-customize -b ~/GitHub/calibre-burn-up-chart/readingprogress
    ```
 
 3. Calibre neu starten.
@@ -66,7 +66,7 @@ Optionen:
 
 ### Konfiguration
 
-Unter *Einstellungen → Erweitert → Erweiterungen → Lesefortschritt →
+Unter *Einstellungen → Erweitert → Erweiterungen → Reading Progress →
 Anpassen* lassen sich einstellen:
 
 - **Zieldatum:** Der Tag, an dem der SuB auf 0 sein soll.
@@ -74,13 +74,13 @@ Anpassen* lassen sich einstellen:
   übrig bleibt. `0.50` bedeutet: SuB halbiert bis zum Zieldatum.
 
 Die Werte werden in
-`~/Library/Preferences/calibre/plugins/lesefortschritt.json` gespeichert
+`~/Library/Preferences/calibre/plugins/readingprogress.json` gespeichert
 und bleiben über Calibre-Neustarts erhalten.
 
 ## Versionierung
 
 Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).
-Die aktuelle Version ist in `lesefortschritt/__init__.py` als
+Die aktuelle Version ist in `readingprogress/__init__.py` als
 `__version__`-Tupel gepflegt und wird von Calibre in der
 Erweiterungsliste angezeigt. Alle Änderungen sind im
 [CHANGELOG.md](CHANGELOG.md) dokumentiert
@@ -89,7 +89,7 @@ Erweiterungsliste angezeigt. Alle Änderungen sind im
 Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
 (z.B. `v1.0.0`). Um die Version zu erhöhen:
 
-1. `__version__` in `lesefortschritt/__init__.py` anpassen.
+1. `__version__` in `readingprogress/__init__.py` anpassen.
 2. Eintrag in `CHANGELOG.md` ergänzen.
 3. Plugin neu bauen und testen.
 4. Committen und taggen:
@@ -115,9 +115,9 @@ calibre-burn-up-chart/
 ├── make_icon.py
 ├── ROADMAP.md
 ├── ROADMAP.de.md
-└── lesefortschritt/
+└── readingprogress/
     ├── __init__.py                          # Plugin-Metadaten, Version
-    ├── plugin-import-name-lesefortschritt.txt
+    ├── plugin-import-name-readingprogress.txt
     ├── localization.py                      # gettext-Setup
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
@@ -127,8 +127,8 @@ calibre-burn-up-chart/
     │   └── icon.png                         # Plugin-Icon
     └── translations/
         └── de/LC_MESSAGES/
-            ├── lesefortschritt.po
-            └── lesefortschritt.mo
+            ├── readingprogress.po
+            └── readingprogress.mo
 ```
 
 ## Technische Hinweise
