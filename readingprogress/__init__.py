@@ -10,6 +10,14 @@ config.defaults['target_date'] = '2050-09-04'
 config.defaults['reduction_factor'] = 0.5
 config.defaults['read_column'] = '#gelesen'
 config.defaults['last_read_column'] = '#last_read'
+config.defaults['show_forecast'] = True
+config.defaults['color_total'] = '#888888'
+config.defaults['color_read'] = '#2a9d8f'
+config.defaults['color_backlog'] = '#e76f51'
+config.defaults['color_goal'] = '#264653'
+config.defaults['color_stable'] = '#f4a261'
+config.defaults['color_soft'] = '#8ecae6'
+config.defaults['color_forecast'] = '#8338ec'
 config.defaults['_migrated_keys'] = False
 
 # One-time migration from the legacy German config keys to English ones:

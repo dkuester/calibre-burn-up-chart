@@ -1,12 +1,16 @@
 from calibre_plugins.readingprogress import config
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
+    QCheckBox,
+    QColor,
+    QColorDialog,
     QDate,
     QDateEdit,
     QDoubleSpinBox,
     QFormLayout,
     QLabel,
     QLineEdit,
+    QPushButton,
     QWidget,
 )
 
@@ -38,6 +42,31 @@ class ConfigWidget(QWidget):
         self.factor_edit.setDecimals(2)
         self.factor_edit.setValue(float(config['reduction_factor']))
         layout.addRow(_('Gentle reduction (factor):'), self.factor_edit)
+
+        # --- Forecast line ---
+        self.forecast_check = QCheckBox(_('Show forecast line'))
+        self.forecast_check.setChecked(bool(config['show_forecast']))
+        layout.addRow(self.forecast_check)
+
+        # --- Colors ---
+        self._color_buttons = {}
+        color_options = [
+            ('total', _('Total library color:')),
+            ('read', _('Read (cumulative) color:')),
+            ('backlog', _('Backlog (TBR) color:')),
+            ('goal', _('Goal line color:')),
+            ('stable', _('Constant library line color:')),
+            ('soft', _('Gentle reduction line color:')),
+            ('forecast', _('Forecast line color:')),
+        ]
+        for key, label in color_options:
+            btn = QPushButton()
+            btn.setFixedWidth(90)
+            self._update_color_button(btn, config[f'color_{key}'])
+            btn.clicked.connect(
+                lambda checked=False, k=key: self._pick_color(k))
+            layout.addRow(label, btn)
+            self._color_buttons[key] = btn
 
         # --- Custom columns ---
         self.read_column_edit = QLineEdit()
@@ -71,9 +100,28 @@ class ConfigWidget(QWidget):
             f'{qdate.year():04d}-{qdate.month():02d}-{qdate.day():02d}'
         )
         config['reduction_factor'] = float(self.factor_edit.value())
+        config['show_forecast'] = bool(self.forecast_check.isChecked())
+        for key, btn in self._color_buttons.items():
+            config[f'color_{key}'] = btn.text()
         config['read_column'] = (
             self.read_column_edit.text().strip() or '#gelesen'
         )
         config['last_read_column'] = (
             self.last_read_column_edit.text().strip() or '#last_read'
         )
+
+    def _update_color_button(self, btn, hex_value):
+        color = QColor(hex_value)
+        if not color.isValid():
+            color = QColor('#888888')
+        btn.setStyleSheet(
+            f'background-color: {color.name()};'
+            ' border: 1px solid #999999;'
+        )
+        btn.setText(color.name())
+
+    def _pick_color(self, key):
+        current = QColor(self._color_buttons[key].text())
+        color = QColorDialog.getColor(current, self)
+        if color.isValid():
+            self._update_color_button(self._color_buttons[key], color.name())

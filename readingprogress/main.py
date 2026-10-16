@@ -79,9 +79,13 @@ class ReadingProgressAction(InterfaceAction):
     def show_chart(self):
         from datetime import datetime
 
-        from calibre_plugins.readingprogress.chart_dialog import ChartDialog
+        from calibre_plugins.readingprogress.chart_dialog import (
+            DEFAULT_COLORS,
+            ChartDialog,
+        )
         from calibre_plugins.readingprogress.export_reading_status import (
             export_snapshots,
+            forecast_backlog,
         )
 
         try:
@@ -109,8 +113,14 @@ class ReadingProgressAction(InterfaceAction):
                 read=info['read'], total=info['total'],
                 backlog=info['backlog']), 5000)
 
+        show_forecast = bool(config['show_forecast'])
+        forecast = forecast_backlog(info['rows']) if show_forecast else None
+        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+
         dlg = ChartDialog(info['rows'], target_date, reduction_factor,
-                          date_format, self.gui)
+                          date_format, self.gui,
+                          show_forecast=show_forecast, forecast=forecast,
+                          colors=colors)
         dlg.exec_()
 
     def show_delay(self):

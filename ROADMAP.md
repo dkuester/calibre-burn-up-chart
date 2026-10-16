@@ -36,6 +36,29 @@ lines), `LegendRenderer` (the legend box) and `AnnotationRenderer`
 ("Today: X unread" and similar). `ChartWidget` keeps only the
 orchestration.
 
+### Forecast line
+
+A dashed forecast line extrapolates the backlog trend (linear regression
+over the last 12 months) to show where the TBR is heading if the current
+reading rate continues. It is configurable ("Show forecast line", on by
+default) and annotates the realistic date the backlog reaches 0, next to
+the desired target date.
+
+### Interactive tooltips
+
+Hovering over a data point shows its date and the total/read/backlog
+values at that point.
+
+### Zoom and pan
+
+Mouse wheel zooms in and out around the cursor, dragging pans, and a
+double-click resets the view to fit.
+
+### Configurable colors
+
+The colors of all data series and reference lines can be changed in the
+plugin settings (with sensible defaults).
+
 ## Planned
 
 Features we intend to build, but without a fixed target version.
@@ -68,12 +91,6 @@ Write computed values into a custom column, e.g. "days until read" per
 book. Then the Calibre interface itself can sort and filter by that
 value – e.g. "show me the books I have owned longest without reading".
 
-### Forecast line
-
-Linear regression over the last 12 months. Shows where the backlog is
-heading if the current reading rate continues. Highlights the gap
-between the desired target date and the realistic one.
-
 ## Ideas
 
 Broader ideas, none of them committed.
@@ -89,9 +106,6 @@ Broader ideas, none of them committed.
 
 ### UX improvements
 
-- Interactive tooltips on data points
-- Zoom and pan
-- Configurable colors
 - Status bar widget showing current backlog permanently
 - Context menu on selected books: "how long has this book been unread?"
 - Automatic virtual shelf "long unread" (> 1000 days)

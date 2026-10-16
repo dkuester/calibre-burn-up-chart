@@ -17,6 +17,14 @@ library size, books read, and backlog (TBR).
   selectable date via the plugin settings.
 - **Gentle reduction:** Additional reference line for a more realistic
   scenario (TBR halved by the target date, adjustable factor).
+- **Forecast line:** Extrapolates the backlog trend (linear regression
+  over the last 12 months) as a dashed line, marking the realistic date
+  the TBR reaches 0. Toggleable in the settings, on by default.
+- **Interactive tooltips:** Hover over a data point to see its date and
+  values.
+- **Zoom and pan:** Mouse wheel zooms, drag to pan, double-click resets.
+- **Configurable colors:** Recolor every series and reference line in the
+  settings.
 - **In-GUI display:** The chart opens as a dialog inside Calibre, with
   automatic scaling to screen size.
 - **Bilingual:** German and English interface, depending on Calibre's
@@ -70,6 +78,10 @@ you can adjust:
 - **Target date:** The day on which the backlog (TBR) should reach 0.
 - **Gentle reduction (factor):** Fraction of the TBR that remains at
   the target date. `0.50` means: TBR halved by the target date.
+- **Show forecast line:** Whether the forecast line is drawn (on by
+  default).
+- **Colors:** The color of each data series and reference line (total,
+  read, backlog, goal, constant, gentle, forecast).
 
 The values are stored in
 `~/Library/Preferences/calibre/plugins/readingprogress.json` and persist
@@ -121,7 +133,8 @@ calibre-burn-up-chart/
 │   ├── conftest.py
 │   ├── test_helpers.py
 │   ├── test_compute_reading_time.py
-│   └── test_export_snapshots.py
+│   ├── test_export_snapshots.py
+│   └── test_forecast.py
 └── readingprogress/
     ├── __init__.py                          # Plugin metadata, version
     ├── plugin-import-name-readingprogress.txt

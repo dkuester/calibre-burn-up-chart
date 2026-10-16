@@ -15,7 +15,7 @@ import os
 import warnings
 from calendar import monthrange
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 warnings.filterwarnings(
     "ignore", category=SyntaxWarning,
@@ -157,6 +157,69 @@ def export_snapshots(db_api, read_column=None, last_read_column=None,
         "missing_timestamp":      missing_timestamp,
         "missing_last_read":      missing_last_read,
         "last_read_before_added": last_read_before_added,
+    }
+
+
+def _no_forecast():
+    return {
+        "slope": 0.0,
+        "intercept": 0.0,
+        "anchor": None,
+        "zero_date": None,
+        "count": 0,
+        "ok": False,
+    }
+
+
+def forecast_backlog(rows, months=12):
+    """Linear regression of the backlog over the last ``months`` months.
+
+    Fits ``backlog = slope * days + intercept`` with ``days`` measured
+    relative to the last snapshot date. ``rows`` is the ``'rows'`` list
+    from :func:`export_snapshots` – ``(date, total, read, backlog)``.
+
+    :return: dict with ``slope`` (backlog change per day, negative =
+        shrinking), ``intercept`` (fitted backlog at the last date),
+        ``anchor`` (the last date), ``zero_date`` (date the trend reaches
+        0, or ``None``), ``count`` (points in the window) and ``ok``
+        (``False`` if fewer than two points are available).
+    """
+    if len(rows) < 2:
+        return _no_forecast()
+
+    anchor = rows[-1][0]
+    cutoff = anchor - timedelta(days=months * 30)
+    window = [r for r in rows if r[0] >= cutoff]
+    if len(window) < 2:
+        return _no_forecast()
+
+    xs = [(r[0] - anchor).days for r in window]
+    ys = [r[3] for r in window]
+    n = len(xs)
+    x_mean = sum(xs) / n
+    y_mean = sum(ys) / n
+
+    sxx = sum((x - x_mean) ** 2 for x in xs)
+    if sxx == 0:
+        slope = 0.0
+    else:
+        sxy = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
+        slope = sxy / sxx
+    intercept = y_mean - slope * x_mean
+
+    zero_date = None
+    if slope < 0:
+        days_to_zero = -intercept / slope
+        if days_to_zero > 0:
+            zero_date = anchor + timedelta(days=round(days_to_zero))
+
+    return {
+        "slope": slope,
+        "intercept": intercept,
+        "anchor": anchor,
+        "zero_date": zero_date,
+        "count": n,
+        "ok": True,
     }
 
 

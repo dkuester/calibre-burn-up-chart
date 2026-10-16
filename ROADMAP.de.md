@@ -39,6 +39,30 @@ aufgeteilt: `AxesRenderer` (Achsen, Raster, Achsenbeschriftungen),
 `AnnotationRenderer` („Heute: X ungelesen" und ähnliches). `ChartWidget`
 behält nur die Orchestrierung.
 
+### Prognoselinie
+
+Eine gestrichelte Prognoselinie extrapoliert den Backlog-Trend (lineare
+Regression über die letzten 12 Monate) und zeigt, wohin der SuB läuft,
+wenn die aktuelle Leserate bleibt. Sie ist konfigurierbar
+(„Prognoselinie anzeigen", standardmäßig an) und markiert das
+realistische Datum, an dem der Backlog 0 erreicht, neben dem
+Wunsch-Zieldatum.
+
+### Interaktive Tooltips
+
+Beim Überfahren eines Datenpunkts erscheinen Datum und die Werte für
+Gesamt/Gelesen/SuB an diesem Punkt.
+
+### Zoom und Pan
+
+Mausrad zoomt um den Cursor, Ziehen verschiebt, Doppelklick setzt die
+Ansicht zurück.
+
+### Konfigurierbare Farben
+
+Die Farben aller Datenreihen und Referenzlinien lassen sich in den
+Plugin-Einstellungen ändern (mit sinnvollen Standardwerten).
+
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
@@ -73,12 +97,6 @@ Berechnete Werte in eine benutzerdefinierte Spalte schreiben, z.B.
 danach sortieren und filtern – z.B. „zeig mir die Bücher, die ich am
 längsten besitze, ohne sie gelesen zu haben".
 
-### Prognoselinie
-
-Lineare Regression über die letzten 12 Monate. Zeigt, wohin der Backlog
-läuft, wenn die aktuelle Leserate bleibt. Hebt die Lücke zwischen
-Wunsch-Zieldatum und realistischem Zieldatum hervor.
-
 ## Ideen
 
 Breiteres Spektrum, nichts davon zugesagt.
@@ -94,9 +112,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 ### UX-Verbesserungen
 
-- Interaktive Tooltips an Datenpunkten
-- Zoom und Pan
-- Konfigurierbare Farben
 - Statusbar-Widget mit permanent sichtbarem Backlog
 - Kontextmenü für ausgewählte Bücher: „wie lange ist dieses Buch
   ungelesen?"
