@@ -17,42 +17,42 @@ class ConfigWidget(QWidget):
         super().__init__()
         layout = QFormLayout(self)
 
-        # --- Zieldatum ---
-        ziel_str = config['ziel_datum']
+        # --- Target date ---
+        target_str = config['target_date']
         try:
-            jahr, monat, tag = (int(x) for x in ziel_str.split('-'))
+            year, month, day = (int(x) for x in target_str.split('-'))
         except (ValueError, AttributeError):
-            jahr, monat, tag = 2050, 9, 4
+            year, month, day = 2050, 9, 4
 
-        self.datum_edit = QDateEdit()
-        self.datum_edit.setCalendarPopup(True)
-        self.datum_edit.setDisplayFormat('yyyy-MM-dd')
-        self.datum_edit.setDate(QDate(jahr, monat, tag))
-        self.datum_edit.setMinimumDate(QDate.currentDate())
-        layout.addRow(_('Target date:'), self.datum_edit)
+        self.date_edit = QDateEdit()
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat('yyyy-MM-dd')
+        self.date_edit.setDate(QDate(year, month, day))
+        self.date_edit.setMinimumDate(QDate.currentDate())
+        layout.addRow(_('Target date:'), self.date_edit)
 
-        # --- Abbau-Faktor ---
-        self.faktor_edit = QDoubleSpinBox()
-        self.faktor_edit.setRange(0.0, 1.0)
-        self.faktor_edit.setSingleStep(0.05)
-        self.faktor_edit.setDecimals(2)
-        self.faktor_edit.setValue(float(config['abbau_faktor']))
-        layout.addRow(_('Gentle reduction (factor):'), self.faktor_edit)
+        # --- Reduction factor ---
+        self.factor_edit = QDoubleSpinBox()
+        self.factor_edit.setRange(0.0, 1.0)
+        self.factor_edit.setSingleStep(0.05)
+        self.factor_edit.setDecimals(2)
+        self.factor_edit.setValue(float(config['reduction_factor']))
+        layout.addRow(_('Gentle reduction (factor):'), self.factor_edit)
 
-        # --- Benutzerdefinierte Spalten ---
-        self.spalte_gelesen_edit = QLineEdit()
-        self.spalte_gelesen_edit.setText(config['spalte_gelesen'])
-        self.spalte_gelesen_edit.setPlaceholderText('#gelesen')
-        layout.addRow(_('Custom column "read":'), self.spalte_gelesen_edit)
+        # --- Custom columns ---
+        self.read_column_edit = QLineEdit()
+        self.read_column_edit.setText(config['read_column'])
+        self.read_column_edit.setPlaceholderText('#gelesen')
+        layout.addRow(_('Custom column "read":'), self.read_column_edit)
 
-        self.spalte_last_read_edit = QLineEdit()
-        self.spalte_last_read_edit.setText(config['spalte_last_read'])
-        self.spalte_last_read_edit.setPlaceholderText('#last_read')
+        self.last_read_column_edit = QLineEdit()
+        self.last_read_column_edit.setText(config['last_read_column'])
+        self.last_read_column_edit.setPlaceholderText('#last_read')
         layout.addRow(_('Custom column "last read":'),
-                      self.spalte_last_read_edit)
+                      self.last_read_column_edit)
 
-        # --- Erläuterung ---
-        hinweis = QLabel(_(
+        # --- Explanation ---
+        hint = QLabel(_(
             '<b>Target date:</b> Date by which the backlog (TBR) should '
             'reach 0.<br><br>'
             '<b>Gentle reduction:</b> Fraction of the TBR that remains at '
@@ -62,18 +62,18 @@ class ConfigWidget(QWidget):
             'leading #) used to mark books as read and to store the last '
             'read date.'
         ))
-        hinweis.setWordWrap(True)
-        layout.addRow(hinweis)
+        hint.setWordWrap(True)
+        layout.addRow(hint)
 
     def save_settings(self):
-        qdate = self.datum_edit.date()
-        config['ziel_datum'] = (
+        qdate = self.date_edit.date()
+        config['target_date'] = (
             f'{qdate.year():04d}-{qdate.month():02d}-{qdate.day():02d}'
         )
-        config['abbau_faktor'] = float(self.faktor_edit.value())
-        config['spalte_gelesen'] = (
-            self.spalte_gelesen_edit.text().strip() or '#gelesen'
+        config['reduction_factor'] = float(self.factor_edit.value())
+        config['read_column'] = (
+            self.read_column_edit.text().strip() or '#gelesen'
         )
-        config['spalte_last_read'] = (
-            self.spalte_last_read_edit.text().strip() or '#last_read'
+        config['last_read_column'] = (
+            self.last_read_column_edit.text().strip() or '#last_read'
         )

@@ -119,7 +119,7 @@ calibre-burn-up-chart/
     ├── main.py                              # GUI integration
     ├── config_dialog.py                     # Settings dialog
     ├── chart_dialog.py                      # Chart display dialog
-    ├── export_lesestatus.py                 # Data retrieval from Calibre
+    ├── export_reading_status.py            # Data retrieval from Calibre
     ├── images/
     │   └── icon.png                         # Plugin icon
     └── translations/
@@ -130,7 +130,7 @@ calibre-burn-up-chart/
 
 ## Technical notes
 
-- `export_lesestatus.py` runs **inside** the Calibre process and uses
+- `export_reading_status.py` runs **inside** the Calibre process and uses
   the live database (`self.gui.current_db.new_api`).
 - All processing runs inside Calibre's embedded Python. The chart is 
   drawn directly using Qt's QPainter API.

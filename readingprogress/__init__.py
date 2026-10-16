@@ -6,27 +6,33 @@ __version_str__ = '.'.join(str(x) for x in __version__)
 
 
 config = JSONConfig('plugins/readingprogress')
-config.defaults['ziel_datum'] = '2050-09-04'
-config.defaults['abbau_faktor'] = 0.5
-config.defaults['spalte_gelesen'] = '#gelesen'
-config.defaults['spalte_last_read'] = '#last_read'
-config.defaults['_migrated_from_legacy'] = False
+config.defaults['target_date'] = '2050-09-04'
+config.defaults['reduction_factor'] = 0.5
+config.defaults['read_column'] = '#gelesen'
+config.defaults['last_read_column'] = '#last_read'
+config.defaults['_migrated_keys'] = False
 
-# One-time migration from the old config key ('plugins/lesefortschritt'),
-# so existing users keep their settings after the rename.
-if not config['_migrated_from_legacy']:
-    _legacy = JSONConfig('plugins/lesefortschritt')
-    _legacy.defaults.update({
+# One-time migration from the legacy German config keys to English ones:
+# reads the interim German keys from this config, falling back to the
+# pre-rename 'plugins/lesefortschritt' config for a direct upgrade.
+if not config['_migrated_keys']:
+    legacy = JSONConfig('plugins/lesefortschritt')
+    legacy.defaults.update({
         'ziel_datum': '2050-09-04',
         'abbau_faktor': 0.5,
         'spalte_gelesen': '#gelesen',
         'spalte_last_read': '#last_read',
     })
-    config['ziel_datum'] = _legacy['ziel_datum']
-    config['abbau_faktor'] = _legacy['abbau_faktor']
-    config['spalte_gelesen'] = _legacy['spalte_gelesen']
-    config['spalte_last_read'] = _legacy['spalte_last_read']
-    config['_migrated_from_legacy'] = True
+    for new_key, old_key in (('target_date', 'ziel_datum'),
+                             ('reduction_factor', 'abbau_faktor'),
+                             ('read_column', 'spalte_gelesen'),
+                             ('last_read_column', 'spalte_last_read')):
+        try:
+            value = config[old_key]
+        except KeyError:
+            value = legacy[old_key]
+        config[new_key] = value
+    config['_migrated_keys'] = True
 
 
 class ReadingProgressPlugin(InterfaceActionBase):
