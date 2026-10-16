@@ -122,7 +122,7 @@ calibre-burn-up-chart/
     ├── main.py                              # GUI-Integration
     ├── config_dialog.py                     # Einstellungsdialog
     ├── chart_dialog.py                      # Chart-Anzeigedialog
-    ├── export_lesestatus.py                 # Datenbeschaffung aus Calibre
+    ├── export_reading_status.py            # Datenbeschaffung aus Calibre
     ├── images/
     │   └── icon.png                         # Plugin-Icon
     └── translations/
@@ -133,7 +133,7 @@ calibre-burn-up-chart/
 
 ## Technische Hinweise
 
-- `export_lesestatus.py` läuft **innerhalb** des Calibre-Prozesses und
+- `export_reading_status.py` läuft **innerhalb** des Calibre-Prozesses und
   nutzt die Live-Datenbank (`self.gui.current_db.new_api`).
 
 ## Lizenz

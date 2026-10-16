@@ -20,7 +20,7 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
   direkt mit Qt `QPainter` in `chart_dialog.py` gezeichnet – es gibt
   keinen Subprozess und keine externen Abhängigkeiten.
 - **Keine neuen Abhängigkeiten** in `main.py`, `chart_dialog.py`,
-  `config_dialog.py`, `export_lesestatus.py` oder `localization.py` –
+  `config_dialog.py`, `export_reading_status.py` oder `localization.py` –
   Calibres Python hat keinen Paketmanager.
 - **`plugin-import-name-readingprogress.txt` darf nicht gelöscht werden.**
   Sie ist leer, aber essenziell für den Plugin-Import.
@@ -29,7 +29,7 @@ Calibre danach neu starten. Das Plugin wird nicht hot-reloaded.
 
 - `.DS_Store` – macOS-Systemdatei
 - `/tmp/burndown_log.csv`, `/tmp/burndown_log.csv.tmp` – generiert
-  (nur im Standalone-Debug von `export_lesestatus.py`)
+  (nur im Standalone-Debug von `export_reading_status.py`)
 - `/tmp/readingprogress_paint_error.log` – generiert (Fehlerprotokoll
   aus `chart_dialog.py`)
 - `readingprogress_*.mo` im tempdir – generierter Lokalisierungs-Cache

@@ -1,10 +1,10 @@
 """
-gettext-Setup für das Plugin.
+gettext setup for the plugin.
 
-Lädt die Übersetzung für die von Calibre gewählte Sprache. Da Calibre
-Plugins immer aus einem ZIP lädt, kann gettext die .mo-Datei nicht
-direkt aus dem Archiv lesen – sie wird daher in ein temporäres
-Verzeichnis extrahiert.
+Loads the translation for the language Calibre selected. Since Calibre
+always loads plugins from a ZIP, gettext cannot read the .mo file
+directly from the archive – it is therefore extracted to a temporary
+directory.
 """
 
 import gettext
@@ -20,7 +20,7 @@ def _plugin_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def _sprachcodes(lang):
+def _language_codes(lang):
     """'de_DE' → ['de_DE', 'de']; 'de' → ['de']."""
     codes = [lang]
     if '_' in lang:
@@ -28,52 +28,52 @@ def _sprachcodes(lang):
     return codes
 
 
-def _cache_name(zip_pfad, code):
-    kurz = hashlib.md5(zip_pfad.encode('utf-8')).hexdigest()[:8]
-    return f'readingprogress_{code}_{kurz}.mo'
+def _cache_name(zip_path, code):
+    short = hashlib.md5(zip_path.encode('utf-8')).hexdigest()[:8]
+    return f'readingprogress_{code}_{short}.mo'
 
 
-def _mo_aus_zip(zip_pfad, codes):
-    with zipfile.ZipFile(zip_pfad) as z:
+def _mo_from_zip(zip_path, codes):
+    with zipfile.ZipFile(zip_path) as z:
         for code in codes:
             rel = f'translations/{code}/LC_MESSAGES/readingprogress.mo'
             try:
-                daten = z.read(rel)
+                data = z.read(rel)
             except KeyError:
                 continue
-            ziel = os.path.join(tempfile.gettempdir(),
-                                _cache_name(zip_pfad, code))
-            with open(ziel, 'wb') as f:
-                f.write(daten)
-            return ziel
+            target = os.path.join(tempfile.gettempdir(),
+                                  _cache_name(zip_path, code))
+            with open(target, 'wb') as f:
+                f.write(data)
+            return target
     return None
 
 
-def _mo_aus_ordner(ordner, codes):
+def _mo_from_folder(folder, codes):
     for code in codes:
-        pfad = os.path.join(ordner, 'translations', code,
+        path = os.path.join(folder, 'translations', code,
                             'LC_MESSAGES', 'readingprogress.mo')
-        if os.path.exists(pfad):
-            return pfad
+        if os.path.exists(path):
+            return path
     return None
 
 
-def _finde_mo(lang):
-    codes = _sprachcodes(lang)
-    pdir = _plugin_dir()
+def _find_mo(lang):
+    codes = _language_codes(lang)
+    plugin_dir = _plugin_dir()
 
-    if pdir.endswith('.zip'):
-        return _mo_aus_zip(pdir, codes)
+    if plugin_dir.endswith('.zip'):
+        return _mo_from_zip(plugin_dir, codes)
 
-    return _mo_aus_ordner(pdir, codes)
+    return _mo_from_folder(plugin_dir, codes)
 
 
 def _install():
     try:
-        mo_pfad = _finde_mo(get_lang())
-        if mo_pfad is None:
+        mo_path = _find_mo(get_lang())
+        if mo_path is None:
             return gettext.NullTranslations().gettext
-        with open(mo_pfad, 'rb') as f:
+        with open(mo_path, 'rb') as f:
             return gettext.GNUTranslations(f).gettext
     except Exception as e:
         print(f'ReadingProgress: localization error: {e}')

@@ -1,9 +1,10 @@
-"""Gemeinsame Fixtures und Import-Pfad für die Tests.
+"""Shared fixtures and the import path for the tests.
 
-``export_lesestatus.py`` kommt ohne Calibre-Abhängigkeiten aus und wird hier
-als flaches Modul importiert. ``readingprogress/__init__.py`` darf nicht als
-Paket geladen werden, weil es ``calibre.customize`` importiert – deshalb wird
-``readingprogress/`` als Verzeichnis (nicht als Paket) auf ``sys.path`` gelegt.
+``export_reading_status.py`` has no Calibre dependencies and is imported
+here as a flat module. ``readingprogress/__init__.py`` must not be loaded
+as a package because it imports ``calibre.customize`` – so
+``readingprogress/`` is placed on ``sys.path`` as a directory (not a
+package).
 """
 
 import sys
@@ -17,10 +18,10 @@ if str(_PLUGIN_DIR) not in sys.path:
 
 
 class FakeDbApi:
-    """Ersatz für Calibres ``new_api`` – nur die beiden genutzten Methoden."""
+    """Stand-in for Calibre's ``new_api`` – only the two used methods."""
 
     def __init__(self, books):
-        # books: {book_id: {feld: wert}}
+        # books: {book_id: {field: value}}
         self.books = books
 
     def all_book_ids(self):
@@ -33,5 +34,5 @@ class FakeDbApi:
 
 @pytest.fixture
 def make_db():
-    """Fabrik: ``make_db({book_id: {feld: wert}})`` liefert eine FakeDbApi."""
+    """Factory: ``make_db({book_id: {field: value}})`` returns a FakeDbApi."""
     return FakeDbApi

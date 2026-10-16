@@ -1,8 +1,8 @@
 """
-Chart-Dialog für das ReadingProgress-Plugin.
+Chart dialog for the ReadingProgress plugin.
 
-Zeichnet das Burn-up-Chart direkt mit QPainter in einem QWidget.
-Keine externen Abhängigkeiten außer Qt (in Calibre enthalten).
+Draws the burn-up chart directly with QPainter in a QWidget.
+No external dependencies besides Qt (bundled with Calibre).
 """
 
 import traceback
@@ -24,24 +24,24 @@ from qt.core import (
     QWidget,
 )
 
-# Fehlerprotokoll für paintEvent (zum Debuggen)
-LOG_FEHLER = '/tmp/readingprogress_paint_error.log'
+# Error log for paintEvent (for debugging)
+LOG_ERROR = '/tmp/readingprogress_paint_error.log'
 
 
-def _qt_enum(*pfade):
-    """Ermittelt einen Qt-Enum-Wert versionsunabhängig.
+def _qt_enum(*paths):
+    """Resolves a Qt enum value independently of the Qt version.
 
-    Probiert nacheinander die angegebenen Attributpfade.
-    Beispiel: _qt_enum(['PenStyle', 'DashLine'], ['DashLine'])
-    → Qt.PenStyle.DashLine (modern) oder Qt.DashLine (alt).
+    Tries the given attribute paths in order.
+    Example: _qt_enum(['PenStyle', 'DashLine'], ['DashLine'])
+    → Qt.PenStyle.DashLine (modern) or Qt.DashLine (legacy).
     """
-    for pfad in pfade:
-        if isinstance(pfad, str):
-            pfad = [pfad]
+    for path in paths:
+        if isinstance(path, str):
+            path = [path]
         obj = Qt
         ok = True
-        for teil in pfad:
-            obj = getattr(obj, teil, None)
+        for part in path:
+            obj = getattr(obj, part, None)
             if obj is None:
                 ok = False
                 break
@@ -50,15 +50,15 @@ def _qt_enum(*pfade):
     return None
 
 
-def _render_hint(*pfade):
-    """Ermittelt einen QPainter.RenderHint versionsunabhängig."""
-    for pfad in pfade:
-        if isinstance(pfad, str):
-            pfad = [pfad]
+def _render_hint(*paths):
+    """Resolves a QPainter.RenderHint independently of the Qt version."""
+    for path in paths:
+        if isinstance(path, str):
+            path = [path]
         obj = QPainter
         ok = True
-        for teil in pfad:
-            obj = getattr(obj, teil, None)
+        for part in path:
+            obj = getattr(obj, part, None)
             if obj is None:
                 ok = False
                 break
@@ -67,7 +67,7 @@ def _render_hint(*pfade):
     return None
 
 
-# Robust ermittelte Enums (mit Fallback auf numerische Qt-Werte)
+# Robustly resolved enums (with fallback to numeric Qt values)
 ALIGN_CENTER  = _qt_enum(['AlignmentFlag', 'AlignCenter'],
                          ['AlignCenter'])  or 0x0004
 ALIGN_LEFT    = _qt_enum(['AlignmentFlag', 'AlignLeft'],
@@ -93,7 +93,7 @@ CAP_ROUND  = _qt_enum(['PenCapStyle', 'RoundCap'],
 JOIN_ROUND = _qt_enum(['PenJoinStyle', 'RoundJoin'],
                       ['RoundJoin'])
 
-# Render-Hints (versionsunabhängig)
+# Render hints (version-independent)
 RENDER_ANTIALIASING = _render_hint(
     ['RenderHint', 'Antialiasing'],   # Qt 6
     ['Antialiasing'],                  # Qt 5
@@ -103,54 +103,54 @@ RENDER_TEXT_ANTIALIASING = _render_hint(
     ['TextAntialiasing'],
 )
 
-# Numerische Fallbacks (stabil über Qt-Versionen)
+# Numeric fallbacks (stable across Qt versions)
 if RENDER_ANTIALIASING is None:
     RENDER_ANTIALIASING = 0x01
 if RENDER_TEXT_ANTIALIASING is None:
     RENDER_TEXT_ANTIALIASING = 0x02
 
 
-# Farben
-FARBE_GESAMT  = QColor("#888888")
-FARBE_GELESEN = QColor("#2a9d8f")
-FARBE_BACKLOG = QColor("#e76f51")
-FARBE_ZIEL    = QColor("#264653")
-FARBE_STABIL  = QColor("#f4a261")
-FARBE_SANFT   = QColor("#8ecae6")
-FARBE_ACHSE   = QColor("#333333")
-FARBE_RASTER  = QColor("#e0e0e0")
-FARBE_TEXT    = QColor("#222222")
+# Colors
+COLOR_TOTAL    = QColor("#888888")
+COLOR_READ     = QColor("#2a9d8f")
+COLOR_BACKLOG  = QColor("#e76f51")
+COLOR_GOAL     = QColor("#264653")
+COLOR_STABLE   = QColor("#f4a261")
+COLOR_SOFT     = QColor("#8ecae6")
+COLOR_AXIS     = QColor("#333333")
+COLOR_GRID     = QColor("#e0e0e0")
+COLOR_TEXT     = QColor("#222222")
 
-# Ränder des Zeichenbereichs (in Pixeln)
-RAND_LINKS  = 85
-RAND_RECHTS = 30
-RAND_OBEN   = 60
-RAND_UNTEN  = 60
+# Plot area margins (in pixels)
+MARGIN_LEFT    = 85
+MARGIN_RIGHT   = 30
+MARGIN_TOP     = 60
+MARGIN_BOTTOM  = 60
 
 
 class PlotScale:
-    """Bündelt die Abbildung von Daten- in Pixelkoordinaten."""
+    """Maps data coordinates to pixel coordinates."""
 
-    def __init__(self, plot, x_min, x_tage, y_max):
+    def __init__(self, plot, x_min, x_days, y_max):
         self.plot = plot
         self.x_min = x_min
-        self.x_tage = x_tage
+        self.x_days = x_days
         self.y_max = y_max
 
     def date_to_x(self, date):
-        tage = (date - self.x_min).days
-        return self.plot.left() + self.plot.width() * tage / self.x_tage
+        days = (date - self.x_min).days
+        return self.plot.left() + self.plot.width() * days / self.x_days
 
     def value_to_y(self, value):
         return self.plot.bottom() - self.plot.height() * value / self.y_max
 
 
 class AxesRenderer:
-    """Zeichnet Achsen, Raster, Tick-Beschriftungen und Achsentitel."""
+    """Draws axes, grid, tick labels and axis titles."""
 
     def draw(self, painter, scale, x_max, y_max, y_step):
         plot = scale.plot
-        painter.setPen(QPen(FARBE_ACHSE, 1))
+        painter.setPen(QPen(COLOR_AXIS, 1))
         painter.drawLine(QPointF(plot.left(),  plot.top()),
                          QPointF(plot.left(),  plot.bottom()))
         painter.drawLine(QPointF(plot.left(),  plot.bottom()),
@@ -161,62 +161,62 @@ class AxesRenderer:
         painter.setFont(font)
         fm = QFontMetrics(font)
 
-        # Y-Achse
-        y_wert = 0
-        while y_wert <= y_max + 0.01:
-            y_pix = scale.value_to_y(y_wert)
-            pen = QPen(FARBE_RASTER, 1)
+        # Y axis
+        y_value = 0
+        while y_value <= y_max + 0.01:
+            y_pix = scale.value_to_y(y_value)
+            pen = QPen(COLOR_GRID, 1)
             pen.setStyle(PEN_DOT)
             painter.setPen(pen)
             painter.drawLine(QPointF(plot.left(),  y_pix),
                              QPointF(plot.right(), y_pix))
-            painter.setPen(FARBE_TEXT)
-            text = str(int(y_wert))
-            breite = fm.horizontalAdvance(text)
+            painter.setPen(COLOR_TEXT)
+            text = str(int(y_value))
+            width = fm.horizontalAdvance(text)
             painter.drawText(
-                QRectF(plot.left() - 10 - breite, y_pix - 8, breite, 16),
+                QRectF(plot.left() - 10 - width, y_pix - 8, width, 16),
                 ALIGN_RIGHT | ALIGN_VCENTER, text,
             )
-            y_wert += y_step
+            y_value += y_step
 
-        # X-Achse: Jahresmarkierungen
-        jahre_spanne = (x_max - scale.x_min).days / 365.25
-        if jahre_spanne <= 5:
-            schritt = 1
-        elif jahre_spanne <= 15:
-            schritt = 2
-        elif jahre_spanne <= 40:
-            schritt = 5
+        # X axis: year markers
+        year_span = (x_max - scale.x_min).days / 365.25
+        if year_span <= 5:
+            step = 1
+        elif year_span <= 15:
+            step = 2
+        elif year_span <= 40:
+            step = 5
         else:
-            schritt = 10
+            step = 10
 
         from datetime import date as _date
-        for jahr in range(scale.x_min.year + 1, x_max.year + 1):
-            if jahr % schritt != 0:
+        for year in range(scale.x_min.year + 1, x_max.year + 1):
+            if year % step != 0:
                 continue
             try:
-                d = _date(jahr, 1, 1)
+                d = _date(year, 1, 1)
             except ValueError:
                 continue
             x_pix = scale.date_to_x(d)
             if x_pix < plot.left() or x_pix > plot.right():
                 continue
-            painter.setPen(QPen(FARBE_ACHSE, 1))
+            painter.setPen(QPen(COLOR_AXIS, 1))
             painter.drawLine(QPointF(x_pix, plot.bottom()),
                              QPointF(x_pix, plot.bottom() + 5))
-            painter.setPen(FARBE_TEXT)
-            text = str(jahr)
-            breite = fm.horizontalAdvance(text)
+            painter.setPen(COLOR_TEXT)
+            text = str(year)
+            width = fm.horizontalAdvance(text)
             painter.drawText(
-                QRectF(x_pix - breite / 2, plot.bottom() + 8, breite, 18),
+                QRectF(x_pix - width / 2, plot.bottom() + 8, width, 18),
                 ALIGN_CENTER, text,
             )
 
-        # Achsentitel
-        font_titel = QFont()
-        font_titel.setPointSize(11)
-        painter.setFont(font_titel)
-        painter.setPen(FARBE_TEXT)
+        # Axis titles
+        title_font = QFont()
+        title_font.setPointSize(11)
+        painter.setFont(title_font)
+        painter.setPen(COLOR_TEXT)
         painter.drawText(
             QRectF(plot.left(), plot.bottom() + 28, plot.width(), 20),
             ALIGN_CENTER, _("Year"),
@@ -233,7 +233,7 @@ class AxesRenderer:
 
 
 class SeriesRenderer:
-    """Zeichnet Datenreihen und Ziel-/Referenzgeraden."""
+    """Draws data series and target/reference lines."""
 
     def draw_series(self, painter, scale, rows, index, color, width):
         pen = QPen(color, width)
@@ -243,14 +243,14 @@ class SeriesRenderer:
             pen.setJoinStyle(JOIN_ROUND)
         painter.setPen(pen)
 
-        punkte = []
+        points = []
         for row in rows:
             x = scale.date_to_x(row[0])
             y = scale.value_to_y(row[index])
-            punkte.append(QPointF(x, y))
+            points.append(QPointF(x, y))
 
-        for i in range(len(punkte) - 1):
-            painter.drawLine(punkte[i], punkte[i + 1])
+        for i in range(len(points) - 1):
+            painter.drawLine(points[i], points[i + 1])
 
     def draw_reference_line(self, painter, scale, start, end, color, style,
                             width):
@@ -269,7 +269,7 @@ class SeriesRenderer:
 
 
 class AnnotationRenderer:
-    """Zeichnet den Titel und die 'Heute'-Annotation."""
+    """Draws the title and the 'Today' annotation."""
 
     def draw_title(self, painter, plot, rows, target_date, reduction_factor,
                    date_format):
@@ -277,24 +277,24 @@ class AnnotationRenderer:
         font.setPointSize(14)
         font.setBold(True)
         painter.setFont(font)
-        painter.setPen(FARBE_TEXT)
+        painter.setPen(COLOR_TEXT)
 
-        heutiger_backlog = rows[-1][3]
-        ziel_sanft_i = round(heutiger_backlog * reduction_factor)
-        datum_str = target_date.strftime(date_format)
-        titel = _("Reading progress for TBR = {tbr} on {date}").format(
-            tbr=ziel_sanft_i, date=datum_str)
+        current_backlog = rows[-1][3]
+        target_soft_i = round(current_backlog * reduction_factor)
+        date_str = target_date.strftime(date_format)
+        title = _("Reading progress for TBR = {tbr} on {date}").format(
+            tbr=target_soft_i, date=date_str)
         painter.drawText(
             QRectF(plot.left(), 15, plot.width(), 30),
-            ALIGN_CENTER, titel,
+            ALIGN_CENTER, title,
         )
 
     def draw_today(self, painter, scale, today, current_backlog):
         x = scale.date_to_x(today)
         y = scale.value_to_y(current_backlog)
 
-        painter.setPen(QPen(FARBE_BACKLOG, 1))
-        painter.setBrush(FARBE_BACKLOG)
+        painter.setPen(QPen(COLOR_BACKLOG, 1))
+        painter.setBrush(COLOR_BACKLOG)
         painter.drawEllipse(QPointF(x, y), 5, 5)
 
         text = _("Today: {count} unread").format(count=current_backlog)
@@ -319,17 +319,17 @@ class AnnotationRenderer:
         painter.setPen(QPen(QColor("#cccccc"), 1))
         painter.drawRoundedRect(box, 5, 5)
 
-        painter.setPen(FARBE_TEXT)
+        painter.setPen(COLOR_TEXT)
         painter.drawText(box, ALIGN_CENTER, text)
 
-        painter.setPen(QPen(FARBE_ACHSE, 1))
+        painter.setPen(QPen(COLOR_AXIS, 1))
         start = QPointF(box.left() + 5 if bx > x else box.right() - 5,
                         box.center().y())
         painter.drawLine(start, QPointF(x, y))
 
 
 class LegendRenderer:
-    """Zeichnet die Legende."""
+    """Draws the legend."""
 
     def draw(self, painter, plot, target_date, date_format, target_soft):
         font = QFont()
@@ -337,83 +337,83 @@ class LegendRenderer:
         painter.setFont(font)
         fm = QFontMetrics(font)
 
-        datum_str = target_date.strftime(date_format)
-        jahr_str = target_date.strftime('%Y')
-        ziel_sanft_i = round(target_soft)
+        date_str = target_date.strftime(date_format)
+        year_str = target_date.strftime('%Y')
+        target_soft_i = round(target_soft)
 
-        eintraege = [
-            (_("Total library"), FARBE_GESAMT, PEN_SOLID),
-            (_("Read (cumulative)"), FARBE_GELESEN, PEN_SOLID),
-            (_("Backlog (TBR)"), FARBE_BACKLOG, PEN_SOLID),
-            (_("Goal: TBR = 0 on {date}").format(date=datum_str),
-             FARBE_ZIEL, PEN_DASH),
+        entries = [
+            (_("Total library"), COLOR_TOTAL, PEN_SOLID),
+            (_("Read (cumulative)"), COLOR_READ, PEN_SOLID),
+            (_("Backlog (TBR)"), COLOR_BACKLOG, PEN_SOLID),
+            (_("Goal: TBR = 0 on {date}").format(date=date_str),
+             COLOR_GOAL, PEN_DASH),
             (_("Constant library (buy rate = read rate)"),
-             FARBE_STABIL, PEN_DOT),
+             COLOR_STABLE, PEN_DOT),
             (_("Gentle reduction to TBR = {tbr} by {year}").format(
-                tbr=ziel_sanft_i, year=jahr_str),
-             FARBE_SANFT, PEN_DASHDOT),
+                tbr=target_soft_i, year=year_str),
+             COLOR_SOFT, PEN_DASHDOT),
         ]
 
-        linien_breite = 30
+        line_width = 30
         padding = 10
-        zeilen_hoehe = fm.height() + 6
-        max_text_breite = max(fm.horizontalAdvance(e[0]) for e in eintraege)
-        box_breite = padding * 2 + linien_breite + 8 + max_text_breite
-        box_hoehe = padding * 2 + zeilen_hoehe * len(eintraege)
+        row_height = fm.height() + 6
+        max_text_width = max(fm.horizontalAdvance(e[0]) for e in entries)
+        box_width = padding * 2 + line_width + 8 + max_text_width
+        box_height = padding * 2 + row_height * len(entries)
 
-        box_x = plot.right() - box_breite - 10
+        box_x = plot.right() - box_width - 10
         box_y = plot.top() + 10
 
         painter.setPen(QPen(QColor("#cccccc"), 1))
         painter.setBrush(QColor(255, 255, 255, 230))
         painter.drawRoundedRect(
-            QRectF(box_x, box_y, box_breite, box_hoehe), 5, 5)
+            QRectF(box_x, box_y, box_width, box_height), 5, 5)
 
-        for i, (text, farbe, stil) in enumerate(eintraege):
-            zeile_y = box_y + padding + i * zeilen_hoehe + zeilen_hoehe / 2
-            pen = QPen(farbe, 2.5)
-            pen.setStyle(stil)
+        for i, (text, color, style) in enumerate(entries):
+            row_y = box_y + padding + i * row_height + row_height / 2
+            pen = QPen(color, 2.5)
+            pen.setStyle(style)
             painter.setPen(pen)
             painter.drawLine(
-                QPointF(box_x + padding, zeile_y),
-                QPointF(box_x + padding + linien_breite, zeile_y),
+                QPointF(box_x + padding, row_y),
+                QPointF(box_x + padding + line_width, row_y),
             )
-            painter.setPen(FARBE_TEXT)
+            painter.setPen(COLOR_TEXT)
             painter.drawText(
-                QRectF(box_x + padding + linien_breite + 8,
-                       zeile_y - zeilen_hoehe / 2,
-                       max_text_breite, zeilen_hoehe),
+                QRectF(box_x + padding + line_width + 8,
+                       row_y - row_height / 2,
+                       max_text_width, row_height),
                 ALIGN_LEFT | ALIGN_VCENTER, text,
             )
 
 
 class ChartWidget(QWidget):
-    """Zeichnet das Burn-up-Chart; hält nur die Orchestrierung."""
+    """Draws the burn-up chart; holds only the orchestration."""
 
-    def __init__(self, rows, ziel_datum, abbau_faktor, datum_format,
+    def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None):
         super().__init__(parent)
         self.rows = rows
-        self.ziel_datum = ziel_datum
-        self.abbau_faktor = abbau_faktor
-        self.datum_format = datum_format
-        self._achsen = AxesRenderer()
-        self._reihen = SeriesRenderer()
-        self._legende = LegendRenderer()
+        self.target_date = target_date
+        self.reduction_factor = reduction_factor
+        self.date_format = date_format
+        self._axes = AxesRenderer()
+        self._series = SeriesRenderer()
+        self._legend = LegendRenderer()
         self._annotation = AnnotationRenderer()
         self.setMinimumSize(700, 450)
 
     # ------------------------------------------------------------------
-    # Zeichnen (mit Fehlerfang, damit ein Fehler nicht Calibre killt)
+    # Drawing (with error handling, so an error does not kill Calibre)
     # ------------------------------------------------------------------
     def paintEvent(self, event):
         try:
             self._do_paint()
         except Exception as e:
-            fehler = traceback.format_exc()
+            error = traceback.format_exc()
             try:
-                with open(LOG_FEHLER, 'w', encoding='utf-8') as f:
-                    f.write(fehler)
+                with open(LOG_ERROR, 'w', encoding='utf-8') as f:
+                    f.write(error)
             except Exception:
                 pass
             try:
@@ -422,7 +422,7 @@ class ChartWidget(QWidget):
                 painter.setPen(QPen(QColor("#cc0000"), 1))
                 message = _(
                     "Error drawing:\n{type}: {error}\n\nDetails: {log}"
-                ).format(type=type(e).__name__, error=e, log=LOG_FEHLER)
+                ).format(type=type(e).__name__, error=e, log=LOG_ERROR)
                 painter.drawText(self.rect(), ALIGN_CENTER, message)
                 painter.end()
             except Exception:
@@ -436,107 +436,107 @@ class ChartWidget(QWidget):
         painter.fillRect(self.rect(), QColor("#ffffff"))
 
         if not self.rows or len(self.rows) < 2:
-            painter.setPen(FARBE_TEXT)
+            painter.setPen(COLOR_TEXT)
             painter.drawText(self.rect(), ALIGN_CENTER, _("No data"))
             painter.end()
             return
 
         plot = QRectF(
-            RAND_LINKS,
-            RAND_OBEN,
-            max(50, self.width()  - RAND_LINKS - RAND_RECHTS),
-            max(50, self.height() - RAND_OBEN  - RAND_UNTEN),
+            MARGIN_LEFT,
+            MARGIN_TOP,
+            max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
+            max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
         )
 
         x_min = self.rows[0][0]
-        x_max = self.ziel_datum
-        x_tage = (x_max - x_min).days
-        if x_tage <= 0:
+        x_max = self.target_date
+        x_days = (x_max - x_min).days
+        if x_days <= 0:
             painter.end()
             return
 
-        y_max_daten = max(
+        y_max_data = max(
             max(r[1] for r in self.rows),
             max(r[2] for r in self.rows),
             max(r[3] for r in self.rows),
         )
-        y_step, y_max = self._berechne_y_achse(y_max_daten)
+        y_step, y_max = self._compute_y_axis(y_max_data)
 
-        scale = PlotScale(plot, x_min, x_tage, y_max)
+        scale = PlotScale(plot, x_min, x_days, y_max)
 
-        self._achsen.draw(painter, scale, x_max, y_max, y_step)
+        self._axes.draw(painter, scale, x_max, y_max, y_step)
         self._annotation.draw_title(painter, plot, self.rows,
-                                    self.ziel_datum, self.abbau_faktor,
-                                    self.datum_format)
+                                    self.target_date, self.reduction_factor,
+                                    self.date_format)
 
-        heutiger_backlog = self.rows[-1][3]
-        heute = self.rows[-1][0]
-        ziel_sanft = heutiger_backlog * self.abbau_faktor
+        current_backlog = self.rows[-1][3]
+        today = self.rows[-1][0]
+        target_soft = current_backlog * self.reduction_factor
 
-        self._reihen.draw_reference_line(
-            painter, scale, start=(heute, heutiger_backlog),
-            end=(self.ziel_datum, 0),
-            color=FARBE_ZIEL, style=PEN_DASH, width=2,
+        self._series.draw_reference_line(
+            painter, scale, start=(today, current_backlog),
+            end=(self.target_date, 0),
+            color=COLOR_GOAL, style=PEN_DASH, width=2,
         )
-        self._reihen.draw_reference_line(
-            painter, scale, start=(heute, heutiger_backlog),
-            end=(self.ziel_datum, ziel_sanft),
-            color=FARBE_SANFT, style=PEN_DASHDOT, width=2,
+        self._series.draw_reference_line(
+            painter, scale, start=(today, current_backlog),
+            end=(self.target_date, target_soft),
+            color=COLOR_SOFT, style=PEN_DASHDOT, width=2,
         )
-        self._reihen.draw_reference_line(
-            painter, scale, start=(heute, heutiger_backlog),
-            end=(self.ziel_datum, heutiger_backlog),
-            color=FARBE_STABIL, style=PEN_DOT, width=2,
+        self._series.draw_reference_line(
+            painter, scale, start=(today, current_backlog),
+            end=(self.target_date, current_backlog),
+            color=COLOR_STABLE, style=PEN_DOT, width=2,
         )
 
-        self._reihen.draw_series(painter, scale, self.rows,
-                                 index=1, color=FARBE_GESAMT, width=2)
-        self._reihen.draw_series(painter, scale, self.rows,
-                                 index=2, color=FARBE_GELESEN, width=2.5)
-        self._reihen.draw_series(painter, scale, self.rows,
-                                 index=3, color=FARBE_BACKLOG, width=3)
+        self._series.draw_series(painter, scale, self.rows,
+                                 index=1, color=COLOR_TOTAL, width=2)
+        self._series.draw_series(painter, scale, self.rows,
+                                 index=2, color=COLOR_READ, width=2.5)
+        self._series.draw_series(painter, scale, self.rows,
+                                 index=3, color=COLOR_BACKLOG, width=3)
 
-        self._annotation.draw_today(painter, scale, heute, heutiger_backlog)
-        self._legende.draw(painter, plot, self.ziel_datum, self.datum_format,
-                           ziel_sanft)
+        self._annotation.draw_today(painter, scale, today, current_backlog)
+        self._legend.draw(painter, plot, self.target_date, self.date_format,
+                           target_soft)
 
         painter.end()
 
     # ------------------------------------------------------------------
-    # Skalierung
+    # Scaling
     # ------------------------------------------------------------------
-    def _berechne_y_achse(self, max_wert):
+    def _compute_y_axis(self, max_value):
         import math
-        if max_wert <= 0:
+        if max_value <= 0:
             return 1, 1
-        roh = max_wert / 5.0
-        magnitude = 10 ** math.floor(math.log10(roh))
+        raw = max_value / 5.0
+        magnitude = 10 ** math.floor(math.log10(raw))
         step = magnitude
-        for faktor in (1, 2, 2.5, 5, 10):
-            step = faktor * magnitude
-            if step >= roh:
+        for factor in (1, 2, 2.5, 5, 10):
+            step = factor * magnitude
+            if step >= raw:
                 break
-        y_max = math.ceil(max_wert / step) * step
+        y_max = math.ceil(max_value / step) * step
         return step, y_max
 
 
 class ChartDialog(QDialog):
-    """Dialog, der das Chart-Widget und einen Schließen-Button enthält."""
+    """Dialog that holds the chart widget and a Close button."""
 
-    def __init__(self, rows, ziel_datum, abbau_faktor, datum_format,
+    def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
-        self.chart = ChartWidget(rows, ziel_datum, abbau_faktor,
-                                 datum_format, self)
+        self.chart = ChartWidget(rows, target_date, reduction_factor,
+                                 date_format, self)
         layout.addWidget(self.chart, 1)
 
-        zeile = QHBoxLayout()
-        zeile.addStretch()
+        row = QHBoxLayout()
+        row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.accept)
-        zeile.addWidget(btn)
-        layout.addLayout(zeile)
+        row.addWidget(btn)
+        layout.addLayout(row)

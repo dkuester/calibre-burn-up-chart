@@ -17,8 +17,8 @@ The immediate next steps. Aimed at v1.5.0.
 
 Automated tests for the two data-processing entry points:
 
-- `berechne_lesezeit()` – median, mean, outlier handling, empty input
-- `exportiere()` – snapshot generation, month boundaries, edge cases
+- `compute_reading_time()` – median, mean, outlier handling, empty input
+- `export_snapshots()` – snapshot generation, month boundaries, edge cases
 
 Run with `pytest`. Use synthetic Calibre-style dictionaries, no
 real database needed.

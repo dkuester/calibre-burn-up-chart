@@ -18,8 +18,8 @@ Die unmittelbar anstehenden Schritte. Zielversion: v1.5.0.
 
 Automatisierte Tests für die beiden Datenverarbeitungs-Einstiegspunkte:
 
-- `berechne_lesezeit()` – Median, Mittel, Ausreißer, leere Eingabe
-- `exportiere()` – Snapshot-Erzeugung, Monatsgrenzen, Randfälle
+- `compute_reading_time()` – Median, Mittel, Ausreißer, leere Eingabe
+- `export_snapshots()` – Snapshot-Erzeugung, Monatsgrenzen, Randfälle
 
 Ausführung mit `pytest`. Synthetische Calibre-artige Wörterbücher, keine
 echte Datenbank nötig.
