@@ -10,6 +10,7 @@ config.defaults['target_date'] = '2050-09-04'
 config.defaults['reduction_factor'] = 0.5
 config.defaults['read_column'] = '#gelesen'
 config.defaults['last_read_column'] = '#last_read'
+config.defaults['show_forecast'] = True
 config.defaults['_migrated_keys'] = False
 
 # One-time migration from the legacy German config keys to English ones:

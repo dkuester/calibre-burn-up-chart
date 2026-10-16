@@ -1,6 +1,7 @@
 from calibre_plugins.readingprogress import config
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
+    QCheckBox,
     QDate,
     QDateEdit,
     QDoubleSpinBox,
@@ -39,6 +40,11 @@ class ConfigWidget(QWidget):
         self.factor_edit.setValue(float(config['reduction_factor']))
         layout.addRow(_('Gentle reduction (factor):'), self.factor_edit)
 
+        # --- Forecast line ---
+        self.forecast_check = QCheckBox(_('Show forecast line'))
+        self.forecast_check.setChecked(bool(config['show_forecast']))
+        layout.addRow(self.forecast_check)
+
         # --- Custom columns ---
         self.read_column_edit = QLineEdit()
         self.read_column_edit.setText(config['read_column'])
@@ -71,6 +77,7 @@ class ConfigWidget(QWidget):
             f'{qdate.year():04d}-{qdate.month():02d}-{qdate.day():02d}'
         )
         config['reduction_factor'] = float(self.factor_edit.value())
+        config['show_forecast'] = bool(self.forecast_check.isChecked())
         config['read_column'] = (
             self.read_column_edit.text().strip() or '#gelesen'
         )

@@ -53,6 +53,9 @@ msgstr "Zieldatum:"
 msgid "Gentle reduction (factor):"
 msgstr "Sanfter Abbau (Faktor):"
 
+msgid "Show forecast line"
+msgstr "Prognoselinie anzeigen"
+
 msgid "Custom column \"read\":"
 msgstr "Benutzerdefinierte Spalte \"gelesen\":"
 
@@ -89,6 +92,12 @@ msgstr "Bestand stabil (Kaufrate = Leserate)"
 
 msgid "Gentle reduction to TBR = {tbr} by {year}"
 msgstr "Sanfter Abbau auf SuB = {tbr} bis {year}"
+
+msgid "Forecast (last 12 months)"
+msgstr "Prognose (letzte 12 Monate)"
+
+msgid "Realistic: TBR = 0 on {date}"
+msgstr "Realistisch: SuB = 0 am {date}"
 
 msgid "Today: {count} unread"
 msgstr "Heute: {count} ungelesen"

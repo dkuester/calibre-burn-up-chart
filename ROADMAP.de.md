@@ -39,6 +39,15 @@ aufgeteilt: `AxesRenderer` (Achsen, Raster, Achsenbeschriftungen),
 `AnnotationRenderer` („Heute: X ungelesen" und ähnliches). `ChartWidget`
 behält nur die Orchestrierung.
 
+### Prognoselinie
+
+Eine gestrichelte Prognoselinie extrapoliert den Backlog-Trend (lineare
+Regression über die letzten 12 Monate) und zeigt, wohin der SuB läuft,
+wenn die aktuelle Leserate bleibt. Sie ist konfigurierbar
+(„Prognoselinie anzeigen", standardmäßig an) und markiert das
+realistische Datum, an dem der Backlog 0 erreicht, neben dem
+Wunsch-Zieldatum.
+
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
@@ -72,12 +81,6 @@ Berechnete Werte in eine benutzerdefinierte Spalte schreiben, z.B.
 „Tage bis zum Lesen" pro Buch. Dann kann die Calibre-Oberfläche selbst
 danach sortieren und filtern – z.B. „zeig mir die Bücher, die ich am
 längsten besitze, ohne sie gelesen zu haben".
-
-### Prognoselinie
-
-Lineare Regression über die letzten 12 Monate. Zeigt, wohin der Backlog
-läuft, wenn die aktuelle Leserate bleibt. Hebt die Lücke zwischen
-Wunsch-Zieldatum und realistischem Zieldatum hervor.
 
 ## Ideen
 

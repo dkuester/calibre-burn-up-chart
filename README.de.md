@@ -17,6 +17,10 @@ von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
   wählbarem Datum über die Plugin-Einstellungen.
 - **Sanfter Abbau:** Zusätzliche Referenzlinie für ein realistischeres
   Szenario (SuB halbiert bis zum Zieldatum, Faktor einstellbar).
+- **Prognoselinie:** Extrapoliert den Backlog-Trend (lineare Regression
+  über die letzten 12 Monate) als gestrichelte Linie und markiert das
+  realistische Datum, an dem der SuB 0 erreicht. In den Einstellungen
+  abschaltbar, standardmäßig an.
 - **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
   automatischer Skalierung auf die Bildschirmgröße.
 - **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
@@ -72,6 +76,8 @@ Anpassen* lassen sich einstellen:
 - **Zieldatum:** Der Tag, an dem der SuB auf 0 sein soll.
 - **Sanfter Abbau (Faktor):** Anteil des SuB, der am Zieldatum noch
   übrig bleibt. `0.50` bedeutet: SuB halbiert bis zum Zieldatum.
+- **Prognoselinie anzeigen:** Ob die Prognoselinie gezeichnet wird
+  (standardmäßig an).
 
 Die Werte werden in
 `~/Library/Preferences/calibre/plugins/readingprogress.json` gespeichert
@@ -124,7 +130,8 @@ calibre-burn-up-chart/
 │   ├── conftest.py
 │   ├── test_helpers.py
 │   ├── test_compute_reading_time.py
-│   └── test_export_snapshots.py
+│   ├── test_export_snapshots.py
+│   └── test_forecast.py
 └── readingprogress/
     ├── __init__.py                          # Plugin-Metadaten, Version
     ├── plugin-import-name-readingprogress.txt

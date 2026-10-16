@@ -117,6 +117,7 @@ COLOR_BACKLOG  = QColor("#e76f51")
 COLOR_GOAL     = QColor("#264653")
 COLOR_STABLE   = QColor("#f4a261")
 COLOR_SOFT     = QColor("#8ecae6")
+COLOR_FORECAST = QColor("#8338ec")
 COLOR_AXIS     = QColor("#333333")
 COLOR_GRID     = QColor("#e0e0e0")
 COLOR_TEXT     = QColor("#222222")
@@ -327,11 +328,41 @@ class AnnotationRenderer:
                         box.center().y())
         painter.drawLine(start, QPointF(x, y))
 
+    def draw_forecast_note(self, painter, scale, date, date_format,
+                           x_end, y_end):
+        """Small label near the end of the forecast line."""
+        plot = scale.plot
+        text = _("Realistic: TBR = 0 on {date}").format(
+            date=date.strftime(date_format))
+        font = QFont()
+        font.setPointSize(10)
+        painter.setFont(font)
+        fm = QFontMetrics(font)
+        tw = fm.horizontalAdvance(text) + 16
+        th = fm.height() + 10
+
+        bx = x_end - tw / 2
+        by = y_end - th - 15
+        if bx < plot.left():
+            bx = plot.left() + 4
+        if bx + tw > plot.right():
+            bx = plot.right() - tw - 4
+        if by < plot.top() + 4:
+            by = y_end + 15
+
+        box = QRectF(bx, by, tw, th)
+        painter.setBrush(QColor(255, 255, 255, 235))
+        painter.setPen(QPen(QColor("#cccccc"), 1))
+        painter.drawRoundedRect(box, 5, 5)
+        painter.setPen(COLOR_TEXT)
+        painter.drawText(box, ALIGN_CENTER, text)
+
 
 class LegendRenderer:
     """Draws the legend."""
 
-    def draw(self, painter, plot, target_date, date_format, target_soft):
+    def draw(self, painter, plot, target_date, date_format, target_soft,
+             show_forecast=False):
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -353,6 +384,9 @@ class LegendRenderer:
                 tbr=target_soft_i, year=year_str),
              COLOR_SOFT, PEN_DASHDOT),
         ]
+        if show_forecast:
+            entries.append((_("Forecast (last 12 months)"),
+                            COLOR_FORECAST, PEN_DASH))
 
         line_width = 30
         padding = 10
@@ -391,12 +425,14 @@ class ChartWidget(QWidget):
     """Draws the burn-up chart; holds only the orchestration."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None):
+                 parent=None, show_forecast=True, forecast=None):
         super().__init__(parent)
         self.rows = rows
         self.target_date = target_date
         self.reduction_factor = reduction_factor
         self.date_format = date_format
+        self.show_forecast = show_forecast
+        self.forecast = forecast
         self._axes = AxesRenderer()
         self._series = SeriesRenderer()
         self._legend = LegendRenderer()
@@ -496,11 +532,45 @@ class ChartWidget(QWidget):
         self._series.draw_series(painter, scale, self.rows,
                                  index=3, color=COLOR_BACKLOG, width=3)
 
+        if self.show_forecast:
+            self._draw_forecast(painter, scale)
+
         self._annotation.draw_today(painter, scale, today, current_backlog)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
-                           target_soft)
+                           target_soft, self.show_forecast)
 
         painter.end()
+
+    def _draw_forecast(self, painter, scale):
+        """Draws the forecast line and its 'realistic' zero-date note."""
+        fc = self.forecast
+        if not fc or not fc.get('ok'):
+            return
+        slope = fc['slope']
+        intercept = fc['intercept']
+        anchor = fc['anchor']
+        zero_date = fc['zero_date']
+
+        if slope < 0 and zero_date is not None and \
+                zero_date <= self.target_date:
+            end_date = zero_date
+            end_y = 0.0
+        else:
+            end_date = self.target_date
+            end_y = intercept + slope * (end_date - anchor).days
+            if end_y < 0:
+                end_y = 0.0
+
+        self._series.draw_reference_line(
+            painter, scale, start=(anchor, intercept),
+            end=(end_date, end_y),
+            color=COLOR_FORECAST, style=PEN_DASH, width=2)
+
+        if zero_date is not None:
+            x_end = scale.date_to_x(end_date)
+            y_end = scale.value_to_y(end_y)
+            self._annotation.draw_forecast_note(
+                painter, scale, zero_date, self.date_format, x_end, y_end)
 
     # ------------------------------------------------------------------
     # Scaling
@@ -524,14 +594,16 @@ class ChartDialog(QDialog):
     """Dialog that holds the chart widget and a Close button."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None):
+                 parent=None, show_forecast=True, forecast=None):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
         self.chart = ChartWidget(rows, target_date, reduction_factor,
-                                 date_format, self)
+                                 date_format, self,
+                                 show_forecast=show_forecast,
+                                 forecast=forecast)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
