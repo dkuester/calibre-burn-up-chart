@@ -2,10 +2,63 @@ import os
 import zipfile
 
 from calibre.gui2.actions import InterfaceAction
+from calibre.utils.config import JSONConfig
 from calibre.utils.localization import get_lang
 from calibre_plugins.readingprogress import config
+from calibre_plugins.readingprogress.chart_common import (
+    DEFAULT_COLORS,
+    all_colors_are_light_defaults,
+)
+from calibre_plugins.readingprogress.config_helpers import (
+    date_format,
+    migrate_legacy_keys,
+)
 from calibre_plugins.readingprogress.localization import _
 from qt.core import QIcon, QMenu, QPixmap, QTimer, QToolButton
+
+
+def _setup_config():
+    """Config defaults + one-time migrations.
+
+    Runs at this module's import (plugin activation), NOT from
+    ``__init__.py``: ``calibre-customize -b`` executes ``__init__.py`` in
+    a context where sibling imports resolve to the *installed* plugin, so
+    the color defaults and migrations must live where those imports are
+    resolved normally.
+    """
+    config.defaults['target_date'] = '2050-09-04'
+    config.defaults['reduction_factor'] = 0.5
+    config.defaults['read_column'] = '#gelesen'
+    config.defaults['last_read_column'] = '#last_read'
+    config.defaults['show_forecast'] = True
+    for color_key in DEFAULT_COLORS:
+        config.defaults[f'color_{color_key}'] = ''   # '' = follow theme
+    config.defaults['_migrated_keys'] = False
+    config.defaults['_migrated_colors_auto'] = False
+
+    # One-time migration from the legacy German config keys.
+    if not config['_migrated_keys']:
+        legacy = JSONConfig('plugins/lesefortschritt')
+        legacy.defaults.update({
+            'ziel_datum': '2050-09-04',
+            'abbau_faktor': 0.5,
+            'spalte_gelesen': '#gelesen',
+            'spalte_last_read': '#last_read',
+        })
+        for new_key, value in migrate_legacy_keys(config, legacy).items():
+            config[new_key] = value
+        config['_migrated_keys'] = True
+
+    # One-time: reset colors to auto if none were ever customized.
+    if not config['_migrated_colors_auto']:
+        stored = {k: config[f'color_{k}'] for k in DEFAULT_COLORS}
+        if all_colors_are_light_defaults(stored):
+            for k in DEFAULT_COLORS:
+                config[f'color_{k}'] = ''
+        config['_migrated_colors_auto'] = True
+
+
+_setup_config()
 
 
 def _load_icon():
@@ -34,8 +87,7 @@ def _load_icon():
 
 def _date_format():
     """Locale date format for the current Calibre UI language."""
-    language = get_lang().split('_')[0]
-    return '%d.%m.%Y' if language == 'de' else '%Y-%m-%d'
+    return date_format(get_lang().split('_')[0])
 
 
 class ReadingProgressAction(InterfaceAction):
@@ -85,7 +137,6 @@ class ReadingProgressAction(InterfaceAction):
     def show_chart(self):
         from datetime import datetime
 
-        from calibre_plugins.readingprogress.chart_common import DEFAULT_COLORS
         from calibre_plugins.readingprogress.chart_dialog import ChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
             export_snapshots,

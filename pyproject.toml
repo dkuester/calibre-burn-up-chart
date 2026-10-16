@@ -1,5 +1,10 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Coverage is measured only on the Qt-/Calibre-free modules (everything
+# else cannot be imported outside Calibre). New Qt-free modules must be
+# added here to stay measured. fail-under=100 keeps every line of the
+# testable surface covered.
+addopts = "--cov=chart_common --cov=config_helpers --cov=export_reading_status --cov-report=term-missing --cov-fail-under=100"
 
 [tool.ruff]
 target-version = "py39"

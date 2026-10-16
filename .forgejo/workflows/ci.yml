@@ -11,6 +11,13 @@ permissions:
 jobs:
   lint-and-test:
     runs-on: codeberg-tiny
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 is the floor the test toolchain (pytest 9, coverage 7)
+        # supports. The claimed py39 code floor is enforced separately via
+        # ruff's target-version and the runtime-API audit, not here.
+        python-version: ['3.10', '3.12']
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -18,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
@@ -26,5 +33,5 @@ jobs:
       - name: Lint with ruff
         run: ruff check .
 
-      - name: Run tests
+      - name: Run tests (coverage enforced via pytest addopts)
         run: python -m pytest

@@ -16,6 +16,8 @@ __pycache__/
 venv/
 .pytest_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # --- Vom Plugin generierte Dateien ---
 readingprogress_log.csv

@@ -75,6 +75,29 @@ def test_single_row_not_enough():
     assert fc["zero_date"] is None
 
 
+def test_window_too_small_returns_no_forecast():
+    anchor = date(2024, 3, 1)
+    rows = _rows([
+        (anchor - timedelta(days=400), 1000),  # outside the 12-month window
+        (anchor, 80),                          # only 1 point left in window
+    ])
+    fc = ers.forecast_backlog(rows)
+    assert fc["ok"] is False
+    assert fc["zero_date"] is None
+
+
+def test_duplicate_dates_zero_variance():
+    anchor = date(2024, 3, 1)
+    rows = _rows([
+        (anchor, 80),
+        (anchor, 80),   # same date -> zero x-variance -> guard against /0
+    ])
+    fc = ers.forecast_backlog(rows)
+    assert fc["ok"] is True
+    assert fc["slope"] == 0.0
+    assert fc["zero_date"] is None
+
+
 def test_window_excludes_old_points():
     anchor = date(2024, 3, 1)
     rows = _rows([

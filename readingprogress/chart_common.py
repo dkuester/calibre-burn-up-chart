@@ -103,6 +103,16 @@ def resolve_series_colors(dark, overrides):
     return resolved
 
 
+def all_colors_are_light_defaults(stored):
+    """True if every stored series color equals the light-theme default.
+
+    ``stored`` maps color key -> resolved value (after config defaults),
+    so ``''`` means "follow theme, not yet set". True only when the user
+    never customized a color (all values still the old light defaults).
+    """
+    return all(stored.get(k) == DEFAULT_COLORS[k] for k in DEFAULT_COLORS)
+
+
 def nice_step(max_value):
     """A "nice" tick step (1/2/2.5/5 x 10^n) for a value axis."""
     if max_value <= 0:
@@ -113,7 +123,7 @@ def nice_step(max_value):
         step = factor * magnitude
         if step >= raw:
             return step
-    return 10 * magnitude
+    return 10 * magnitude  # pragma: no cover  (factor=10 always returns)
 
 
 def compute_y_axis(max_value):
