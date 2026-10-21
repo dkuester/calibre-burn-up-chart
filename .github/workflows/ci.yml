@@ -1,0 +1,67 @@
+name: CI
+
+# Pushes to main and pull requests only: a PR branch would otherwise run
+# twice (push + pull_request). release.yml calls this workflow before it
+# publishes a release.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 is the floor the test toolchain (pytest 9, coverage 7)
+        # supports. The claimed py39 code floor is enforced separately via
+        # ruff's target-version and the runtime-API audit, not here.
+        python-version: ['3.10', '3.12']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run tests (coverage enforced via pytest addopts)
+        run: python -m pytest
+
+  package:
+    # Builds the plugin zip exactly as release.yml does, so a broken
+    # package shows up in review instead of on the next tag.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build plugin zip
+        run: |
+          version=$(sed -n 's/^__version__ = (\([0-9]*\), *\([0-9]*\), *\([0-9]*\)).*/\1.\2.\3/p' readingprogress/__init__.py)
+          zip="ReadingProgress-$version.zip"
+          # Tracked files only, paths relative to readingprogress/ as
+          # calibre expects them.
+          git archive --format=zip -o "$zip" HEAD:readingprogress
+          unzip -l "$zip"
+          unzip -l "$zip" | grep -q 'plugin-import-name-readingprogress.txt'
+          echo "ZIP=$zip" >> "$GITHUB_ENV"
+
+      - name: Upload plugin zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP }}
+          path: ${{ env.ZIP }}

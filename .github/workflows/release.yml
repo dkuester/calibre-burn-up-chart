@@ -1,0 +1,66 @@
+name: Release
+
+# Publishes a release for every pushed v* tag: runs CI, checks that the tag
+# matches __version__ and sits on main, builds ReadingProgress-<version>.zip
+# and attaches it. The release notes are the tag's section of CHANGELOG.md.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check tag, version and branch
+        run: |
+          version=$(sed -n 's/^__version__ = (\([0-9]*\), *\([0-9]*\), *\([0-9]*\)).*/\1.\2.\3/p' readingprogress/__init__.py)
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "::error::Tag $TAG does not match __version__ $version."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $TAG is not on main."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          # Everything between "## [<version>]" and the next "## [" heading.
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md has no section for $VERSION."
+            exit 1
+          fi
+
+      - name: Build plugin zip
+        run: |
+          zip="ReadingProgress-$VERSION.zip"
+          git archive --format=zip -o "$zip" HEAD:readingprogress
+          echo "ZIP=$zip" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        run: |
+          gh release create "$TAG" "$ZIP" --verify-tag \
+            --title "Reading Progress $TAG" --notes-file notes.md
