@@ -1,192 +1,153 @@
-# Calibre Burn-up Chart Plugin
+<div align="center">
 
-*[English version](README.md)*
+# Reading Progress für calibre
 
-Ein Calibre-Plugin, das den Lesefortschritt als Burn-up-Chart anzeigt.
-Es rekonstruiert die historische Zeitreihe aus den Calibre-Metadaten
-(`timestamp` und benutzerdefinierte Spalten) und zeichnet den Verlauf
-von Gesamtbestand, gelesenen Büchern und SuB (Backlog).
+**Sieh direkt in calibre, wie deine Bibliothek, deine gelesenen Bücher und dein Stapel ungelesener Bücher wachsen.**
+
+[![Release](https://img.shields.io/github/v/release/dkuester/calibre-burn-up-chart?label=release)](https://github.com/dkuester/calibre-burn-up-chart/releases/latest)
+[![CI](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml)
+[![calibre](https://img.shields.io/badge/calibre-5.0%2B-informational)](#voraussetzungen)
+[![Lizenz](https://img.shields.io/github/license/dkuester/calibre-burn-up-chart)](LICENSE)
+
+[Installation](#installation) · [Funktionen](#funktionen) · [Einstellungen](#einstellungen) · [Entwicklung](#entwicklung) · [Änderungen](CHANGELOG.de.md) · [Roadmap](ROADMAP.de.md) · [English](README.md)
+
+</div>
+
+Reading Progress ist ein calibre-Plugin, das deinen Lesefortschritt als
+Burn-up-Chart zeigt. Es rekonstruiert den Verlauf aus den Metadaten deiner
+Bibliothek (Datum der Aufnahme und zwei benutzerdefinierte Spalten) und zeigt
+Monat für Monat, wie sich Gesamtbestand, gelesene Bücher und Stapel
+ungelesener Bücher (SuB/TBR) entwickelt haben, zurück bis zum ältesten Buch
+der Bibliothek. Alles läuft innerhalb von calibre; eine eigene
+Python-Installation ist nicht nötig.
+
+---
 
 ## Funktionen
 
-- **Historische Zeitreihe:** Monatliche Snapshots aus den Buch-Metadaten,
-  rückwirkend bis zum ältesten Buch in der Bibliothek.
-- **Burn-up-Chart:** Gesamtbestand, kumuliert Gelesenes und SuB im
-  Zeitverlauf.
-- **Konfigurierbares Zieldatum:** Zielgerade „SuB = 0 am …" mit frei
-  wählbarem Datum über die Plugin-Einstellungen.
-- **Sanfter Abbau:** Zusätzliche Referenzlinie für ein realistischeres
-  Szenario (SuB halbiert bis zum Zieldatum, Faktor einstellbar).
-- **Prognoselinie:** Extrapoliert den Backlog-Trend (lineare Regression
-  über die letzten 12 Monate) als gestrichelte Linie und markiert das
-  realistische Datum, an dem der SuB 0 erreicht. In den Einstellungen
-  abschaltbar, standardmäßig an.
-- **Interaktive Tooltips (Burn-up-Chart):** Beim Überfahren eines Datenpunkts erscheinen
-  Datum und Werte.
-- **Zoom und Pan (Burn-up-Chart):** Mausrad zoomt, Ziehen verschiebt, Doppelklick setzt
-  zurück.
-- **Konfigurierbare Farben (Burn-up-Chart):** Jede Datenreihe und Referenzlinie lässt
-  sich in den Einstellungen umfärben.
-- **Dunkelmodus:** Die Charts folgen dem aktuellen Calibre-Theme. Bei
-  dunkler Farbpalette wechseln die Chart-Optik und die (nicht
-  angepassten) Serienfarben automatisch auf helle, kontrastreiche
-  Standardwerte.
-- **In-GUI-Anzeige:** Das Chart öffnet sich als Dialog in Calibre, mit
-  automatischer Skalierung auf die Bildschirmgröße.
-- **Zweisprachig:** Deutsche und englische Oberfläche, abhängig von
-  Calibres Spracheinstellung. Weitere Sprachen können über
-  `translations/<lang>/` ergänzt werden.
-- **Lese-Verzögerung:** Für jedes gelesene Buch wird die Zeitspanne
-  zwischen Hinzufügen und Lesen berechnet. Das Ergebnis wird als
-  Streudiagramm mit Median- und Mittelwertlinie dargestellt.
+| Funktion | Beschreibung |
+|---|---|
+| **Burn-up-Chart** | Gesamtbestand, kumuliert gelesene Bücher und SuB im Zeitverlauf, als monatliche Stände. |
+| **Zieldatum** | Eine Ziellinie „SuB = 0 am …“ mit frei wählbarem Datum. |
+| **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
+| **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
+| **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
+| **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
+| **Eigene Farben, passendes Theme** | Jede Datenreihe und Referenzlinie lässt sich umfärben. Die Charts folgen dem hellen oder dunklen Theme von calibre. |
+| **Zweisprachig** | Deutsche und englische Oberfläche, je nach Sprache von calibre. Weitere Sprachen lassen sich unter `translations/<lang>/` ergänzen. |
 
 ## Voraussetzungen
 
-- Calibre 5.0 oder neuer
-- Keine externe Python-Installation nötig. Alles läuft innerhalb von Calibre.
-- Zwei benutzerdefinierte Spalten in Calibre:
-  - `#gelesen` (Ja/Nein) – markiert gelesene Bücher
-  - `#last_read` (Datum) – Datum des letzten Lesens
+- calibre 5.0 oder neuer
+- Zwei benutzerdefinierte Spalten in der Bibliothek (Namen in den Einstellungen änderbar):
+
+| Spalte | Typ | Zweck |
+|---|---|---|
+| `#gelesen` | Ja/Nein | Markiert ein Buch als gelesen |
+| `#last_read` | Datum | Datum, an dem das Buch zuletzt gelesen wurde |
 
 ## Installation
 
-1. Repository klonen:
+1. `ReadingProgress-<version>.zip` aus dem [neuesten Release](https://github.com/dkuester/calibre-burn-up-chart/releases/latest) herunterladen.
+2. In calibre: *Einstellungen → Erweitert → Erweiterungen → Erweiterung aus Datei laden*, die ZIP auswählen.
+3. calibre neu starten.
+4. Den Knopf zur Werkzeugleiste hinzufügen: *Einstellungen → Benutzeroberfläche →
+   Werkzeugleisten & Menüs → Die Hauptwerkzeugleiste*, dort **Burn-up-Chart**
+   aus den verfügbaren Aktionen hinzufügen.
 
-   ```bash
-   git clone <repo-url> ~/GitHub/calibre-burn-up-chart
-   ```
-
-2. Plugin in Calibre installieren:
-
-   ```bash
-   calibre-customize -b ~/GitHub/calibre-burn-up-chart/readingprogress
-   ```
-
-3. Calibre neu starten.
-
-4. Die Aktion zur Toolbar hinzufügen:
-   *Einstellungen → Oberfläche → Symbolleisten & Menüs → Die
-   Hauptsymbolleiste* → „Burn-up Chart" aus der Liste der verfügbaren
-   Aktionen hinzufügen.
+> [!TIP]
+> Die Installation aus einem Klon geht auch:
+> `calibre-customize -b <pfad-zum-klon>/readingprogress`.
 
 ## Benutzung
 
-Ein Klick auf den Toolbar-Button öffnet ein Dropdown-Menü mit zwei
-Optionen:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit zwei Charts:
 
-- **Burn-up-Chart** – der historische Verlauf von Bestand, gelesenen
-  Büchern und SuB.
-- **Zeit zwischen Kauf und Lesen** – Verzögerungsstatistik pro Buch.
+- **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
+- **Zeit zwischen Kauf und Lesen**: die Leseverzögerung pro Buch.
 
-### Konfiguration
+## Einstellungen
 
-Unter *Einstellungen → Erweitert → Erweiterungen → Reading Progress →
-Anpassen* lassen sich einstellen:
+*Einstellungen → Erweitert → Erweiterungen → Reading Progress → Erweiterung anpassen*:
 
-- **Zieldatum:** Der Tag, an dem der SuB auf 0 sein soll.
-- **Sanfter Abbau (Faktor):** Anteil des SuB, der am Zieldatum noch
-  übrig bleibt. `0.50` bedeutet: SuB halbiert bis zum Zieldatum.
-- **Prognoselinie anzeigen:** Ob die Prognoselinie gezeichnet wird
-  (standardmäßig an).
-- **Farben:** Farbe jeder Datenreihe und Referenzlinie (Gesamt, Gelesen,
-  SuB, Ziel, Stabil, Sanfter Abbau, Prognose). Farben folgen
-  standardmäßig dem Theme und lassen sich auf die Theme-Standards
-  zurücksetzen.
+| Einstellung | Bedeutung |
+|---|---|
+| Zieldatum | Der Tag, an dem der SuB 0 erreichen soll. |
+| Sanfter Abbau (Faktor) | Anteil des SuB, der am Zieldatum übrig ist. `0.50` heißt: bis dahin halbiert. |
+| Prognoselinie anzeigen | Zeichnet die Prognoselinie (standardmäßig an). |
+| Farben | Farbe jeder Datenreihe und Referenzlinie. Leer heißt „dem Theme folgen“; *Farben auf Theme-Standard zurücksetzen* entfernt alle eigenen Farben. |
+| Benutzerdefinierte Spalte „gelesen“ / „zuletzt gelesen“ | Suchnamen der beiden Spalten, falls deine anders heißen. |
 
-Die Werte werden in
-`~/Library/Preferences/calibre/plugins/readingprogress.json` gespeichert
-und bleiben über Calibre-Neustarts erhalten.
-
-## Versionierung
-
-Dieses Plugin folgt [Semantic Versioning](https://semver.org/lang/de/).
-Die aktuelle Version ist in `readingprogress/__init__.py` als
-`__version__`-Tupel gepflegt und wird von Calibre in der
-Erweiterungsliste angezeigt. Alle Änderungen sind im
-[CHANGELOG.md](CHANGELOG.md) dokumentiert
-([deutsche Version](CHANGELOG.de.md)).
-
-Releases werden im Git als annotierte Tags mit `v`-Präfix gesetzt
-(z.B. `v1.0.0`). Um die Version zu erhöhen:
-
-1. `__version__` in `readingprogress/__init__.py` anpassen.
-2. Eintrag in `CHANGELOG.md` ergänzen.
-3. Plugin neu bauen und testen.
-4. Committen und taggen:
-
-   ```bash
-   git commit -am "Release v1.0.1"
-   git tag -a v1.0.1 -m "Kurze Beschreibung"
-   ```
-
-Geplante Features und Ideen stehen in [ROADMAP.de.md](ROADMAP.de.md).
-
-## Projektstruktur
-
-```
-calibre-burn-up-chart/
-├── .forgejo/
-│   └── workflows/
-│       └── ci.yml
-├── .gitignore
-├── README.md
-├── README.de.md
-├── LICENSE
-├── AGENTS.md
-├── CHANGELOG.md
-├── CHANGELOG.de.md
-├── ROADMAP.md
-├── ROADMAP.de.md
-├── make_icon.py
-├── pyproject.toml
-├── requirements-dev.txt
-├── tests/
-│   ├── conftest.py
-│   ├── test_chart_common.py
-│   ├── test_compute_reading_time.py
-│   ├── test_config_helpers.py
-│   ├── test_export_snapshots.py
-│   ├── test_forecast.py
-│   ├── test_helpers.py
-│   └── test_integration.py
-└── readingprogress/
-    ├── __init__.py                          # Plugin-Metadaten, Version
-    ├── plugin-import-name-readingprogress.txt
-    ├── localization.py                      # gettext-Setup
-    ├── main.py                              # GUI-Integration
-    ├── config_dialog.py                     # Einstellungsdialog
-    ├── chart_common.py                      # Qt-freie Chart-Mathematik + Farben
-    ├── config_helpers.py                    # Qt-freie Config-/Locale- + Migrations-Helfer
-    ├── chart_dialog.py                      # Chart-Anzeigedialog
-    ├── delay_dialog.py                      # Verzögerungs-Chart-Dialog
-    ├── export_reading_status.py             # Datenbeschaffung aus Calibre
-    ├── images/
-    │   └── icon.png                         # Plugin-Icon
-    └── translations/
-        └── de/LC_MESSAGES/
-            ├── readingprogress.po
-            └── readingprogress.mo
-```
-
-## Technische Hinweise
-
-- `export_reading_status.py` läuft **innerhalb** des Calibre-Prozesses und
-  nutzt die Live-Datenbank (`self.gui.current_db.new_api`).
+Die Einstellungen liegen in `plugins/readingprogress.json` im
+Konfigurationsordner von calibre und bleiben über Neustarts erhalten.
 
 ## Entwicklung
 
-Test-Suite und Linter in einer virtuellen Umgebung ausführen:
-
 ```bash
+git clone https://github.com/dkuester/calibre-burn-up-chart.git
+cd calibre-burn-up-chart
 python3 -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest
-.venv/bin/ruff check .
+.venv/bin/python -m pytest      # Tests, Mindest-Coverage wird geprüft
+.venv/bin/ruff check .          # Lint
 ```
 
-Ein Forgejo-Actions-Workflow (`.forgejo/workflows/ci.yml`) führt dieselben
-Prüfungen bei jedem Push und Pull Request aus.
+Die CI führt ruff und pytest (Python 3.10 und 3.12) bei jedem Push auf `main`
+und jedem Pull-Request aus.
+
+<details>
+<summary><strong>Projektstruktur</strong></summary>
+
+```
+readingprogress/
+├── __init__.py              # Plugin-Metadaten, Version
+├── main.py                  # GUI-Einbindung (Aktion, Menü)
+├── config_dialog.py         # Einstellungsdialog
+├── config_helpers.py        # Qt-freie Konfigurations-, Locale- und Migrationshilfen
+├── chart_common.py          # Qt-freie Chart-Berechnung und Farben
+├── chart_dialog.py          # Burn-up-Chart-Dialog (QPainter)
+├── delay_dialog.py          # Dialog für die Leseverzögerung
+├── export_reading_status.py # liest die laufende calibre-Datenbank
+├── localization.py          # gettext-Setup
+├── images/icon.png
+└── translations/de/LC_MESSAGES/readingprogress.{po,mo}
+tests/                       # pytest-Suite
+```
+
+`export_reading_status.py` läuft im calibre-Prozess und nutzt die laufende
+Datenbank (`self.gui.current_db.new_api`). Die Charts zeichnet Qts QPainter.
+
+</details>
+
+<details>
+<summary><strong>Release erstellen</strong></summary>
+
+Das Plugin folgt [Semantic Versioning](https://semver.org/). Die Version ist das
+Tupel `__version__` in `readingprogress/__init__.py`.
+
+1. `__version__` anheben und einen Eintrag in [CHANGELOG.md](CHANGELOG.md) und
+   [CHANGELOG.de.md](CHANGELOG.de.md) ergänzen.
+2. Per Pull-Request nach `main` mergen.
+3. Den Merge-Commit taggen: `git tag -a v1.7.0 -m "…" && git push origin v1.7.0`.
+4. Die CI baut `ReadingProgress-<version>.zip` und veröffentlicht das Release.
+
+</details>
+
+## Support
+
+| | |
+|---|---|
+| Fehler und Ideen | [Issues](https://github.com/dkuester/calibre-burn-up-chart/issues). Bitte calibre-Version und Betriebssystem angeben. |
+| Downloads und Änderungen | [Releases](https://github.com/dkuester/calibre-burn-up-chart/releases) · [CHANGELOG.de.md](CHANGELOG.de.md) |
+| Geplante Funktionen | [ROADMAP.de.md](ROADMAP.de.md) |
+| Frühere Historie | Pull-Requests bis v1.6.0 liegen im [archivierten Codeberg-Repo](https://codeberg.org/hortizept/calibre-burn-up-chart). |
+| Mitwirken | Pull-Requests gegen `main`; die CI muss grün sein. |
+
+## KI-Unterstützung
+
+Dieses Plugin wird mit Hilfe von KI-Programmierassistenten entwickelt.
+Entwurfsentscheidungen, Review und Tests in calibre liegen bei einem Menschen.
 
 ## Lizenz
 
-GNU General Public License v3.0 – siehe [LICENSE](LICENSE).
+[GNU General Public License v3.0](LICENSE)

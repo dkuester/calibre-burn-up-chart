@@ -23,10 +23,12 @@ A `pytest` suite (28 tests) covers the two data-processing entry points:
 
 It runs against synthetic Calibre-style dictionaries, no real database.
 
-### CI on Codeberg
+### CI
 
-A Forgejo Actions workflow (`.forgejo/workflows/ci.yml`) runs `ruff` and
-`pytest` on every push and pull request.
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs `ruff` and
+`pytest` on every push to `main` and every pull request; a `v*` tag
+publishes the release (`.github/workflows/release.yml`). Until October
+2026 the project lived on Codeberg and used Forgejo Actions.
 
 ### Refactoring `ChartWidget`
 

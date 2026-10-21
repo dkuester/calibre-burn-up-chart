@@ -26,10 +26,12 @@ Datenverarbeitungs-Einstiegspunkte ab:
 Sie läuft gegen synthetische Calibre-artige Wörterbücher, keine echte
 Datenbank nötig.
 
-### CI auf Codeberg
+### CI
 
-Ein Forgejo-Actions-Workflow (`.forgejo/workflows/ci.yml`) führt `ruff`
-und `pytest` bei jedem Push und Pull Request aus.
+Ein GitHub-Actions-Workflow (`.github/workflows/ci.yml`) führt `ruff`
+und `pytest` bei jedem Push auf `main` und jedem Pull-Request aus; ein
+Tag `v*` veröffentlicht das Release (`.github/workflows/release.yml`).
+Bis Oktober 2026 lag das Projekt auf Codeberg und nutzte Forgejo Actions.
 
 ### Refactoring `ChartWidget`
 
