@@ -39,7 +39,9 @@ In `main` gemergt, kommt mit der nächsten Version:
   zeigt es in calibre, Zoom und Verschieben, Zeitraum mit eigenem
   Median und Mittelwert, die einstellbare Farbe von „Gelesen" und
   PNG-/Zwischenablage-Export.
-- **Tests und CI:** 93 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Bericht:** speichert die Kennzahlen aller Charts als Markdown oder
+  als einzelne HTML-Seite mit eingebettetem Burn-up- und Raten-Chart.
+- **Tests und CI:** 99 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -80,10 +82,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 ### UX-Verbesserungen
 
 - Statusbar-Widget mit permanent sichtbarem Backlog
-
-### Teilen
-
-- Markdown-/HTML-Report der wichtigsten Kennzahlen
 
 ## Nicht geplant
 
