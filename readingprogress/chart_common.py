@@ -222,3 +222,36 @@ def ensure_png_suffix(path):
     if path.lower().endswith('.png'):
         return path
     return path + '.png'
+
+
+# Selectable time ranges of the burn-up chart: (config key, years).
+# None = everything from the first snapshot up to the target date.
+TIME_RANGES = (('all', None), ('5y', 5), ('2y', 2))
+
+
+def years_before(day, years):
+    """``day`` shifted back by ``years``; Feb 29 becomes Feb 28."""
+    try:
+        return day.replace(year=day.year - years)
+    except ValueError:
+        return day.replace(year=day.year - years, day=28)
+
+
+def fit_x_range(first, today, target, range_key):
+    """(x_min, x_max) of the unzoomed burn-up chart for ``range_key``.
+
+    'all' (and any unknown key) spans ``first`` … ``target``. A limited
+    range covers the last N years up to ``today``, but never starts
+    before ``first``.
+    """
+    years = dict(TIME_RANGES).get(range_key)
+    if years is None:
+        return first, target
+    return max(first, years_before(today, years)), today
+
+
+def visible_y_max(rows, x_min, x_max):
+    """Largest total/read/backlog value of the rows within
+    [x_min, x_max]; all rows count if none fall inside."""
+    visible = [r for r in rows if x_min <= r[0] <= x_max] or rows
+    return max(max(r[1], r[2], r[3]) for r in visible)

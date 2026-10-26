@@ -20,7 +20,9 @@ In `main` gemergt, kommt mit der nächsten Version:
   Knöpfe „Als PNG speichern…" und „In Zwischenablage kopieren". Sie
   erfassen das Chart so, wie es gerade zu sehen ist, also mit Zoom,
   Verschiebung und aktivem Theme.
-- **Tests und CI:** 66 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Zeitraum (Burn-up-Chart):** „Alles", „Letzte 5 Jahre" oder „Letzte
+  2 Jahre". Die begrenzten Zeiträume enden heute statt am Zieldatum.
+- **Tests und CI:** 72 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -48,12 +50,6 @@ Features, die wir bauen wollen, aber ohne feste Zielversion.
 
 Zwei Linien: Wie viele Bücher kommen pro Monat dazu, wie viele werden
 gelesen. Ergänzt das Burn-up-Chart um die zugrunde liegende Dynamik.
-
-### Zeitraum wählbar
-
-Optionen „Letzte 2 Jahre", „Letzte 5 Jahre", „Alles". Wird besonders
-nützlich, wenn die Bibliothek wächst und die frühen Jahre zu einer
-flachen Linie werden.
 
 ### Export in Calibre-Spalte
 

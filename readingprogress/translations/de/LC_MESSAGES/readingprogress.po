@@ -118,6 +118,22 @@ msgstr "{path} konnte nicht geschrieben werden."
 msgid "Chart copied to clipboard"
 msgstr "Chart in die Zwischenablage kopiert"
 
+# Time range selector (burn-up chart)
+msgid "Time range:"
+msgstr "Zeitraum:"
+
+msgid "All time"
+msgstr "Alles"
+
+msgid "Last 5 years"
+msgstr "Letzte 5 Jahre"
+
+msgid "Last 2 years"
+msgstr "Letzte 2 Jahre"
+
+msgid "Reading progress over the last {years} years"
+msgstr "Lesefortschritt der letzten {years} Jahre"
+
 msgid "Reading progress for TBR = {tbr} on {date}"
 msgstr "Lesefortschritt für SuB = {tbr} am {date}"
 

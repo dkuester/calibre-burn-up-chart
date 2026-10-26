@@ -32,6 +32,7 @@ Python-Installation ist nicht nötig.
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
+| **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
 | **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
 | **Export** | Beide Charts als PNG speichern oder in die Zwischenablage kopieren, genau wie angezeigt (Zoom, Verschiebung, Theme). |
 | **Eigene Farben, passendes Theme** | Jede Datenreihe und Referenzlinie lässt sich umfärben. Die Charts folgen dem hellen oder dunklen Theme von calibre. |
