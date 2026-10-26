@@ -273,6 +273,98 @@ def compute_rates(rows, window=12):
                     _trailing_mean(added, window),
                     _trailing_mean(read, window)))
 
+
+# Problem kinds reported by find_date_problems()
+MISSING_LAST_READ = "missing_last_read"
+READ_BEFORE_ADDED = "read_before_added"
+
+
+def find_date_problems(db_api, read_column=None, last_read_column=None):
+    """Read books whose read date the charts cannot use as is.
+
+    Two kinds, the same ones :func:`export_snapshots` counts (and then
+    records at the date added): read books without ``last_read_column``
+    and read books whose read date lies before the date added.
+
+    :return: list of dicts with ``book_id``, ``problem``
+        (:data:`MISSING_LAST_READ` or :data:`READ_BEFORE_ADDED`),
+        ``title``, ``authors`` (tuple), ``added``, ``last_read``
+        (``None`` if missing) and ``days_before`` (days between the read
+        date and the date added, ``None`` if missing); sorted by date
+        added, then title.
+    """
+    if read_column is None:
+        read_column = READ_COLUMN
+    if last_read_column is None:
+        last_read_column = LAST_READ_COLUMN
+
+    all_ids = db_api.all_book_ids()
+    added_map     = db_api.all_field_for("timestamp", all_ids)
+    read_map      = db_api.all_field_for(read_column, all_ids)
+    last_read_map = db_api.all_field_for(last_read_column, all_ids)
+    title_map     = db_api.all_field_for("title", all_ids)
+    authors_map   = db_api.all_field_for("authors", all_ids)
+
+    problems = []
+    for book_id in all_ids:
+        added = to_date(added_map.get(book_id))
+        if added is None or read_map.get(book_id) is not True:
+            continue
+        last_read = to_date(last_read_map.get(book_id))
+        if last_read is None:
+            problem, days_before = MISSING_LAST_READ, None
+        elif last_read < added:
+            problem, days_before = READ_BEFORE_ADDED, (added - last_read).days
+        else:
+            continue
+        problems.append({
+            "book_id": book_id,
+            "problem": problem,
+            "title": title_map.get(book_id) or "",
+            "authors": tuple(authors_map.get(book_id) or ()),
+            "added": added,
+            "last_read": last_read,
+            "days_before": days_before,
+        })
+    problems.sort(key=lambda p: (p["added"], p["title"].lower()))
+    return problems
+
+
+def id_search(book_ids, group_size=50):
+    """calibre search expression that matches exactly ``book_ids``.
+
+    calibre's query parser recurses once per ``or``, so a flat chain
+    hits its recursion limit at a few hundred terms. Longer lists are
+    split into parenthesized groups of at most ``group_size`` terms
+    (recursively, so the nesting stays shallow).
+    """
+    book_ids = list(book_ids)
+    if len(book_ids) <= group_size:
+        return " or ".join("id:{}".format(i) for i in book_ids)
+    chunk = -(-len(book_ids) // group_size)   # ceil division
+    return " or ".join(
+        "({})".format(id_search(book_ids[k:k + chunk], group_size))
+        for k in range(0, len(book_ids), chunk))
+
+
+def problem_csv_rows(problems, date_format, labels):
+    """Rows for a CSV export of :func:`find_date_problems`.
+
+    ``labels`` maps each problem kind to its (translated) text.
+    """
+    rows = []
+    for p in problems:
+        rows.append([
+            p["book_id"],
+            labels[p["problem"]],
+            p["title"],
+            " & ".join(p["authors"]),
+            p["added"].strftime(date_format),
+            p["last_read"].strftime(date_format) if p["last_read"] else "",
+            "" if p["days_before"] is None else p["days_before"],
+        ])
+    return rows
+
 if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
     from calibre.library import db as calibre_db_factory
 
