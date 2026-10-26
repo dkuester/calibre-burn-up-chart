@@ -35,7 +35,7 @@ Python-Installation ist nicht nötig.
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
 | **Altersverteilung des SuB** | Ungelesene Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen Balken zeigt diese Bücher in calibre. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme und zeigt sie zum Korrigieren in der Bücherliste von calibre an. |
-| **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
+| **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
 | **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
 | **Export** | Beide Charts als PNG speichern oder in die Zwischenablage kopieren, genau wie angezeigt (Zoom, Verschiebung, Theme). |

@@ -199,6 +199,7 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
             compute_reading_time,
+            id_search,
         )
 
         try:
@@ -224,8 +225,22 @@ class ReadingProgressAction(InterfaceAction):
                 mean=int(round(s['mean'])),
                 n=s['count']), 5000)
 
+        db_api = self.gui.current_db.new_api
+        ids = [p[2] for p in info['points']]
+        titles = db_api.all_field_for('title', ids)
+        authors = db_api.all_field_for('authors', ids)
+        books = {i: (titles.get(i) or '', ' & '.join(authors.get(i) or ()))
+                 for i in ids}
+        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+
+        def show_in_library(book_ids):
+            self.gui.search.set_search_string(id_search(book_ids))
+
         dlg = DelayChartDialog(
-            info['points'], info['statistics'], self.gui)
+            info['points'], _date_format(), self.gui, books=books,
+            colors=colors, time_range=config['time_range'],
+            on_time_range_changed=self._save_time_range,
+            on_show=show_in_library)
         dlg.exec_()
 
     def show_rates(self):

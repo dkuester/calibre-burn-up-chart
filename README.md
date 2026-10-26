@@ -34,7 +34,7 @@ Python installation is needed.
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
 | **Data quality check** | Lists read books without a read date or read before being added, and shows them in calibre's book list for fixing. |
-| **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean. |
+| **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
 | **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
 | **Export** | Save either chart as a PNG or copy it to the clipboard, exactly as shown (zoom, pan, theme). |

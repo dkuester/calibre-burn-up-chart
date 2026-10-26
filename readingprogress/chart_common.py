@@ -255,3 +255,17 @@ def visible_y_max(rows, x_min, x_max):
     [x_min, x_max]; all rows count if none fall inside."""
     visible = [r for r in rows if x_min <= r[0] <= x_max] or rows
     return max(max(r[1], r[2], r[3]) for r in visible)
+
+
+def delay_unit(max_days):
+    """Y unit of the delay chart for the largest delay in days.
+
+    :return: ``(unit, factor, decimals)`` – 'days', 'months' or 'years',
+        the factor converting days into that unit and the decimals for
+        its axis labels.
+    """
+    if max_days <= 90:
+        return 'days', 1.0, 0
+    if max_days <= 730:
+        return 'months', 1.0 / 30.44, 0
+    return 'years', 1.0 / 365.25, 1
