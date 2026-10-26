@@ -67,7 +67,57 @@ Details im [Changelog](CHANGELOG.de.md).
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
 
-Derzeit nichts; die nächsten Kandidaten kommen aus den Ideen unten.
+### Nötiges Tempo bis zum Ziel
+
+Eine Zeile im Burn-up-Chart und im Bericht, z. B. „Für SuB = 0 bis
+2050: 4,6 Bücher/Monat lesen oder höchstens 2,1 Bücher/Monat kaufen.“
+Macht aus dem Ziel eine Monatszahl, nach der man handeln kann. Die Daten
+sind alle da; kleiner Aufwand.
+
+### Jahresziel (mit dem Plugin „Reading Goal“)
+
+Das Plugin „Reading Goal“ verwaltet bereits Jahresziele („60 Bücher in
+2026“) und speichert pro Jahr Ziel, gelesene Bücher und Monatszahlen
+(`plugins/Reading_Goal_Data_<Bibliotheks-ID>.json`). Statt einer
+zweiten Ziel-Einstellung lesen wir diese Daten (nur lesend) und bauen
+daraus einen Bericht: Fortschritt gegenüber dem Soll als Chart und im
+Bericht, angereichert mit unseren Zahlen (SuB, Zugänge,
+Leseverzögerung). Erscheint nur, wenn das Plugin und Daten für die
+aktuelle Bibliothek vorhanden sind.
+
+### Angefangene Reihen mit dem nächsten Band
+
+Eine Liste der angefangenen, aber nicht beendeten Reihen: Reihe,
+Fortschritt („60/76“), der nächste ungelesene Band (Nummer und Titel)
+und wann zuletzt etwas aus der Reihe gelesen wurde, damit
+liegengebliebene Reihen auffallen. Ein Klick zeigt den nächsten Band in
+calibre, wie bei Datenqualität und Altersverteilung. Reihen mit nur
+einem Band in der Bibliothek bleiben außen vor. Bei Lücken werden der
+niedrigste ungelesene Band und der erste nach dem höchsten gelesenen
+gezeigt.
+
+### SuB nach Reihen
+
+Welche Reihen den größten Teil des SuB ausmachen, als Balken. Hilft bei
+der Entscheidung, was man abbaut – oder was man gar nicht mehr lesen
+will.
+
+### Reihen-Fortschritt als Chart
+
+Ein gestapelter Balken (gelesen/ungelesen) pro angefangener Reihe,
+sortiert nach Fortschritt. Visuell schön, inhaltlich aber nah an
+„Angefangene Reihen“.
+
+### Reihen-Prüfung in der Datenqualität
+
+- Dieselbe Reihe unter mehreren Namen („Expanse“, „The Expanse-Serie“,
+  „The Expanse“)
+- Doppelte Bandnummern innerhalb einer Reihe (Ausgaben in zwei
+  Sprachen, Sammelbände)
+- Lücken: ein früherer Band ungelesen, obwohl ein späterer gelesen ist
+
+Sauberere Reihen-Daten machen auch die Reihen-Auswertungen oben
+verlässlicher.
 
 ## Ideen
 
