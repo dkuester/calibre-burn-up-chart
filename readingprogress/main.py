@@ -364,26 +364,36 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.quality_dialog import (
             QualityDialog,
         )
+        from calibre_plugins.readingprogress.series import (
+            collect_series,
+            find_series_problems,
+        )
 
         def fetch(db_api, read_column, last_read_column):
             problems = find_date_problems(db_api, read_column,
                                           last_read_column)
             read_flags = db_api.all_field_for(read_column,
                                               db_api.all_book_ids())
-            return problems, sum(1 for v in read_flags.values() if v is True)
+            series_problems = find_series_problems(
+                collect_series(db_api, read_column))
+            return (problems,
+                    sum(1 for v in read_flags.values() if v is True),
+                    series_problems)
 
         result = self._read_library(fetch)
         if result is None:
             return
-        problems, read_total = result
-        if not problems:
+        problems, read_total, series_problems = result
+        if not problems and not series_problems:
             info_dialog(
                 self.gui, _('Data quality'),
-                _('All read books have a usable read date.'), show=True)
+                _('All read books have a usable read date, and no series '
+                  'problems were found.'), show=True)
             return
 
         QualityDialog(problems, read_total, _date_format(), self.gui,
-                      on_show=self._show_in_library).exec()
+                      on_show=self._show_in_library,
+                      series_problems=series_problems).exec()
 
     def show_age(self):
         from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
@@ -435,6 +445,11 @@ class ReadingProgressAction(InterfaceAction):
             build_report,
             report_format,
         )
+        from calibre_plugins.readingprogress.series import (
+            collect_series,
+            find_series_problems,
+            problem_counts,
+        )
 
         target_date, reduction_factor = _target_settings()
         today = date.today()
@@ -444,6 +459,8 @@ class ReadingProgressAction(InterfaceAction):
             data = collect_report_data(db_api, read_column,
                                        last_read_column, target_date,
                                        reduction_factor)
+            data['quality'].update(problem_counts(find_series_problems(
+                collect_series(db_api, read_column))))
             events = (library_events(db_api, read_column, last_read_column)
                       if years else None)
             data['goal'] = (report_data(years, events, today)

@@ -29,6 +29,17 @@ Fertig, noch nicht veröffentlicht:
   Zahlen (alle gelesenen Bücher, Zugänge, SuB, Leseverzögerung).
   Erscheint nur, wenn „Reading Goal“ Daten für die aktuelle Bibliothek
   hat.
+- **Reihen-Prüfung in der Datenqualität:** Ein Tab „Reihen“ listet
+  Reihen unter mehreren Namen („Expanse“, „The Expanse-Serie“, „The
+  Expanse“), doppelte Bandnummern innerhalb einer Reihe (Ausgaben in
+  zwei Sprachen, Sammelbände oder keine gepflegte Nummer) und Lücken
+  (ein früherer Band ungelesen, obwohl ein späterer gelesen ist). Namen
+  gelten als dieselbe Reihe, wenn sie sich nur in Groß-/Kleinschreibung,
+  Satzzeichen, einem Artikel am Anfang oder einem Wort wie „Serie“
+  unterscheiden; ein Ähnlichkeitsvergleich wurde probiert und verworfen,
+  weil er vor allem verschiedene Bände paarte („Black Panther
+  (2005-2008)“ und „(2008-2010)“). Sauberere Reihen-Daten machen die
+  Reihen-Auswertungen unten verlässlicher.
 
 ## Erledigt
 
@@ -109,17 +120,6 @@ will.
 Ein gestapelter Balken (gelesen/ungelesen) pro angefangener Reihe,
 sortiert nach Fortschritt. Visuell schön, inhaltlich aber nah an
 „Angefangene Reihen“.
-
-### Reihen-Prüfung in der Datenqualität
-
-- Dieselbe Reihe unter mehreren Namen („Expanse“, „The Expanse-Serie“,
-  „The Expanse“)
-- Doppelte Bandnummern innerhalb einer Reihe (Ausgaben in zwei
-  Sprachen, Sammelbände)
-- Lücken: ein früherer Band ungelesen, obwohl ein späterer gelesen ist
-
-Sauberere Reihen-Daten machen auch die Reihen-Auswertungen oben
-verlässlicher.
 
 ## Ideen
 

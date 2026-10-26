@@ -24,6 +24,15 @@
   complete it. The report gets the same figures plus the months, other
   challenges, all goal years and how many list books came from the TBR.
   Reading Goal's files are only read, never written.
+- **Series checks in the data quality dialog:** "Check data quality"
+  gets a "Series" tab next to the read dates. It lists series under
+  several names ("Expanse", "The Expanse", "The Expanse-Serie"; names
+  that differ only in case, punctuation, a leading article or a word
+  like "Series"), volume numbers used by more than one book of a series
+  and gaps (an earlier volume unread although a later one is read).
+  Double-clicking a row shows its books in calibre; the tab can be saved
+  as CSV. The report's "Data quality" section counts the three kinds.
+  Nothing is changed.
 
 ## [1.7.0] – 2026-10-26
 

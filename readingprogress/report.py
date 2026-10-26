@@ -286,7 +286,10 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
     - ``delay``: dict from ``delay_statistics()`` or ``None``
     - ``age``: dict with ``median_years`` (or ``None``), ``max_years``
       and ``counts``, the number of books per ``age_buckets()`` bucket
-    - ``quality``: dict with ``missing`` and ``before_added``
+    - ``quality``: dict with ``missing`` and ``before_added`` (read
+      dates) and ``series_names``, ``series_duplicates`` and
+      ``series_gaps`` (optional, from ``series.problem_counts()``); only
+      non-zero counts are listed
     - ``goal`` (optional): dict from ``reading_goal.report_data()``, or
       ``None`` without Reading Goal data (see :func:`goal_sections`)
     """
@@ -375,16 +378,20 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
         })
 
     q = data['quality']
-    if q['missing'] or q['before_added']:
-        sections.append({
-            'heading': tr("Data quality"),
-            'rows': [
-                (tr("Read books without a read date"), str(q['missing'])),
-                (tr("Read before being added"), str(q['before_added'])),
-            ],
-            'note': tr("The charts count these books as read on the day "
-                       "they were added."),
-        })
+    rows = [(label, str(q.get(key, 0))) for key, label in (
+        ('missing', tr("Read books without a read date")),
+        ('before_added', tr("Read before being added")),
+        ('series_names', tr("Series under several names")),
+        ('series_duplicates', tr("Series with duplicate volume numbers")),
+        ('series_gaps', tr("Series with gaps")),
+    ) if q.get(key)]
+    if rows:
+        section = {'heading': tr("Data quality"), 'rows': rows}
+        if q['missing'] or q['before_added']:
+            section['note'] = tr("The charts count books without a usable "
+                                 "read date as read on the day they were "
+                                 "added.")
+        sections.append(section)
 
     return sections
 
