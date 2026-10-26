@@ -22,6 +22,56 @@ def _percent(part, whole, decimal_sep):
     return _number(100 * part / whole, 0, decimal_sep) + ' %'
 
 
+def pace_number(value, decimal_sep='.'):
+    """Books per month with one decimal; tiny positive values as '< 0.1'
+    instead of a misleading '0.0'."""
+    if 0 < value < 0.05:
+        return '< ' + _number(0.1, 1, decimal_sep)
+    return _number(value, 1, decimal_sep)
+
+
+def pace_text(pace, tr, decimal_sep='.'):
+    """What to do to reach the goal of ``pace``, a dict from
+    ``export_reading_status.required_pace()`` – e.g. 'read 4.6 books/month
+    or buy at most 2.1 books/month'. ``tr`` translates the templates."""
+    if pace['status'] == 'reached':
+        return tr("already reached")
+    if pace['status'] == 'too_close':
+        return tr("target date too close – choose a later date in the "
+                  "settings")
+    read = pace_number(pace['read_needed'], decimal_sep)
+    if pace['max_added'] > 0:
+        return tr("read {read} books/month or buy at most {added} "
+                  "books/month").format(
+            read=read, added=pace_number(pace['max_added'], decimal_sep))
+    return tr("read {read} books/month or buy nothing and still read "
+              "{reduction} books/month").format(
+        read=read, reduction=pace_number(pace['reduction'], decimal_sep))
+
+
+def pace_line(pace, tr, date_str, decimal_sep='.'):
+    """Full sentence for the burn-up chart: 'For TBR = 0 by <date>: …'."""
+    return tr("For TBR = {tbr} by {date}: {pace}.").format(
+        tbr=pace['target_backlog'], date=date_str,
+        pace=pace_text(pace, tr, decimal_sep))
+
+
+def _capitalize(text):
+    return text[:1].upper() + text[1:]
+
+
+def pace_rows(data, tr, decimal_sep='.'):
+    """Report rows for ``data['pace']`` and, unless it has the same goal,
+    ``data['pace_soft']``."""
+    paces = [data['pace']]
+    if data['pace_soft']['target_backlog'] != data['pace']['target_backlog']:
+        paces.append(data['pace_soft'])
+    return [(tr("Required pace (TBR = {tbr})").format(
+                tbr=pace['target_backlog']),
+             _capitalize(pace_text(pace, tr, decimal_sep)))
+            for pace in paces]
+
+
 def bucket_label(tr, index, bucket_count, max_years):
     """Label of age bucket ``index`` (see ``age_buckets()``): '< 1 year',
     '2–3 years' or, for a capped last bucket, '10+ years'."""
@@ -43,6 +93,8 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
     - ``last12``: dict with ``added`` and ``read`` of the last 12 months
     - ``target_date``, ``target_tbr``: goal from the settings
     - ``forecast``: dict from ``forecast_backlog()``
+    - ``pace``, ``pace_soft``: dicts from ``required_pace()`` for TBR = 0
+      and for the gentle reduction
     - ``delay``: dict from ``delay_statistics()`` or ``None``
     - ``age``: dict with ``median_years`` (or ``None``), ``max_years``
       and ``counts``, the number of books per ``age_buckets()`` bucket
@@ -88,7 +140,12 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
                 tbr=data['target_tbr'],
                 date=data['target_date'].strftime(date_format))),
             (tr("Forecast (last 12 months)"), forecast),
-        ],
+        ] + pace_rows(data, tr, decimal_sep),
+        'note': tr("Required pace at the current purchase rate ({added}) "
+                   "and reading rate ({read}) per month, mean of the last "
+                   "12 months.").format(
+            added=pace_number(data['pace']['added_rate'], decimal_sep),
+            read=pace_number(data['pace']['read_rate'], decimal_sep)),
     })
 
     delay = data['delay']

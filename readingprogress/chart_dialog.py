@@ -30,7 +30,12 @@ from calibre_plugins.readingprogress.chart_common import (
     year_tick_step,
     zoom_view,
 )
+from calibre_plugins.readingprogress.export_reading_status import (
+    compute_rates,
+    required_pace,
+)
 from calibre_plugins.readingprogress.localization import _
+from calibre_plugins.readingprogress.report import pace_line
 from qt.core import (
     QApplication,
     QColor,
@@ -74,6 +79,8 @@ JOIN_ROUND = Qt.PenJoinStyle.RoundJoin
 
 LEFT_BUTTON = Qt.MouseButton.LeftButton
 
+ELIDE_RIGHT = Qt.TextElideMode.ElideRight
+
 RENDER_ANTIALIASING      = QPainter.RenderHint.Antialiasing
 RENDER_TEXT_ANTIALIASING = QPainter.RenderHint.TextAntialiasing
 
@@ -83,6 +90,11 @@ MARGIN_LEFT    = 85
 MARGIN_RIGHT   = 30
 MARGIN_TOP     = 60
 MARGIN_BOTTOM  = 60
+
+# Required-pace lines below the burn-up title
+PACE_LINE_TOP    = 46
+PACE_LINE_HEIGHT = 20
+PACE_MARGIN_TOP  = 105   # MARGIN_TOP with pace lines
 
 # Interaction parameters
 ZOOM_IN_FACTOR  = 1.25
@@ -371,6 +383,32 @@ class AnnotationRenderer:
             ALIGN_CENTER, title,
         )
 
+    def draw_pace(self, painter, plot, widget_width, lines, chrome):
+        """Required-pace sentences, one per line, below the title.
+
+        Centered over ``plot`` like the title; too long for it, they use
+        the whole widget width, shrink down to 8 pt and are elided last."""
+        if not lines:
+            return
+        font = QFont()
+        for size in range(11, 7, -1):
+            font.setPointSize(size)
+            fm = QFontMetrics(font)
+            needed = max(fm.horizontalAdvance(t) for t in lines)
+            if needed <= widget_width - 20:
+                break
+        if needed <= plot.width():
+            left, width = plot.left(), plot.width()
+        else:
+            left, width = 10, widget_width - 20
+        painter.setFont(font)
+        painter.setPen(chrome['muted'])
+        for i, text in enumerate(lines):
+            painter.drawText(
+                QRectF(left, PACE_LINE_TOP + i * PACE_LINE_HEIGHT,
+                       width, PACE_LINE_HEIGHT),
+                ALIGN_CENTER, fm.elidedText(text, ELIDE_RIGHT, int(width)))
+
     def draw_today(self, painter, scale, today, current_backlog,
                    backlog_color, chrome):
         x = scale.date_to_x(today)
@@ -528,7 +566,7 @@ class ChartWidget(QWidget):
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None, show_forecast=True, forecast=None, colors=None,
-                 time_range='all'):
+                 time_range='all', decimal_sep='.'):
         super().__init__(parent)
         self.rows = rows
         self.target_date = target_date
@@ -541,6 +579,7 @@ class ChartWidget(QWidget):
         self._dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         self.colors = self._build_colors(colors)
         self.time_range = time_range
+        self.pace_lines = self._pace_lines(decimal_sep)
         self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
         self._pan_view = None      # view captured at drag start
@@ -573,12 +612,7 @@ class ChartWidget(QWidget):
             painter.end()
             return
 
-        plot = QRectF(
-            MARGIN_LEFT,
-            MARGIN_TOP,
-            max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
-            max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
-        )
+        plot = self._plot_rect()
 
         if self._view is None:
             x_min, x_max = self._fit_x_range()
@@ -601,6 +635,8 @@ class ChartWidget(QWidget):
                                     self.date_format, self.chrome,
                                     years=dict(TIME_RANGES).get(
                                         self.time_range))
+        self._annotation.draw_pace(painter, plot, self.width(),
+                                   self.pace_lines, self.chrome)
 
         current_backlog = self.rows[-1][3]
         today = self.rows[-1][0]
@@ -704,12 +740,31 @@ class ChartWidget(QWidget):
         return build_series_colors(self._dark, overrides)
 
     def _plot_rect(self):
+        top = PACE_MARGIN_TOP if self.pace_lines else MARGIN_TOP
         return QRectF(
             MARGIN_LEFT,
-            MARGIN_TOP,
+            top,
             max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
-            max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
+            max(50, self.height() - top - MARGIN_BOTTOM),
         )
+
+    def _pace_lines(self, decimal_sep):
+        """Required-pace sentences for TBR = 0 and, if it is a different
+        goal, the gentle reduction. They do not depend on the visible
+        window, so they stay for every time range."""
+        if not self.rows or len(self.rows) < 2:
+            return []
+        today, backlog = self.rows[-1][0], self.rows[-1][3]
+        rates = compute_rates(self.rows)
+        targets = [0]
+        soft = round(backlog * self.reduction_factor)
+        if soft != 0:
+            targets.append(soft)
+        date_str = self.target_date.strftime(self.date_format)
+        return [pace_line(required_pace(backlog, rates, today,
+                                        self.target_date, target),
+                          _, date_str, decimal_sep)
+                for target in targets]
 
     def _fit_x_range(self):
         """(x_min, x_max) of the unzoomed view for the time range."""
@@ -834,7 +889,8 @@ class ChartDialog(QDialog):
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None, show_forecast=True, forecast=None, colors=None,
-                 time_range='all', on_time_range_changed=None):
+                 time_range='all', on_time_range_changed=None,
+                 decimal_sep='.'):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
@@ -844,7 +900,8 @@ class ChartDialog(QDialog):
                                  date_format, self,
                                  show_forecast=show_forecast,
                                  forecast=forecast, colors=colors,
-                                 time_range=time_range)
+                                 time_range=time_range,
+                                 decimal_sep=decimal_sep)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
