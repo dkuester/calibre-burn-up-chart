@@ -29,6 +29,7 @@ Python installation is needed.
 | **Burn-up chart** | Total library, cumulative books read and backlog over time, as monthly snapshots. |
 | **Target date** | A goal line "TBR = 0 on …" with a date you choose. |
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
+| **Required pace** | Below the title: how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date, based on the last 12 months. |
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |

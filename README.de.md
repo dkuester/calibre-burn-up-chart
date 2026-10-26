@@ -30,6 +30,7 @@ Python-Installation ist nicht nötig.
 | **Burn-up-Chart** | Gesamtbestand, kumuliert gelesene Bücher und SuB im Zeitverlauf, als monatliche Stände. |
 | **Zieldatum** | Eine Ziellinie „SuB = 0 am …“ mit frei wählbarem Datum. |
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
+| **Nötiges Tempo** | Unter dem Titel: wie viele Bücher pro Monat man lesen oder höchstens kaufen darf, um das Ziel (SuB = 0 und sanfter Abbau) bis zum Zieldatum zu erreichen, gemessen an den letzten 12 Monaten. |
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |

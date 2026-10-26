@@ -456,3 +456,24 @@ msgstr "Gelesen vor der Aufnahme"
 
 msgid "The charts count these books as read on the day they were added."
 msgstr "Die Charts zählen diese Bücher als am Aufnahmetag gelesen."
+
+msgid "already reached"
+msgstr "bereits erreicht"
+
+msgid "target date too close – choose a later date in the settings"
+msgstr "Zieldatum zu nah – in den Einstellungen ein späteres Datum wählen"
+
+msgid "read {read} books/month or buy at most {added} books/month"
+msgstr "{read} Bücher/Monat lesen oder höchstens {added} Bücher/Monat kaufen"
+
+msgid "read {read} books/month or buy nothing and still read {reduction} books/month"
+msgstr "{read} Bücher/Monat lesen oder nichts mehr kaufen und trotzdem {reduction} Bücher/Monat lesen"
+
+msgid "For TBR = {tbr} by {date}: {pace}."
+msgstr "Für SuB = {tbr} bis {date}: {pace}."
+
+msgid "Required pace (TBR = {tbr})"
+msgstr "Nötiges Tempo (SuB = {tbr})"
+
+msgid "Required pace at the current purchase rate ({added}) and reading rate ({read}) per month, mean of the last 12 months."
+msgstr "Nötiges Tempo bei der aktuellen Kaufrate ({added}) und Leserate ({read}) pro Monat, Mittel der letzten 12 Monate."

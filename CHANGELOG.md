@@ -1,3 +1,17 @@
+## [Unreleased]
+
+### Added
+
+- **Required pace to reach the goal:** Two lines below the burn-up
+  chart's title say what it takes to reach the goal by the target date,
+  e.g. "For TBR = 0 by 04.09.2050: read 26.4 books/month or buy at most
+  0.3 books/month." One line is for TBR = 0, one for the gentle
+  reduction. The reading rate needed assumes the current purchase rate,
+  the purchase limit the current reading rate (both means of the last
+  12 months). If even buying nothing is not enough, the line says how
+  much to read then. The lines stay in the 5- and 2-year views. The
+  report shows the same figures in "Goal and forecast".
+
 ## [1.7.0] – 2026-10-26
 
 ### Added

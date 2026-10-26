@@ -9,6 +9,17 @@ Priorities follow a simple rule: **maintenance and quality before new
 features**. A feature that breaks existing code costs more than it is
 worth.
 
+## Next version
+
+Done, not yet released:
+
+- **Required pace to reach the goal:** two lines below the burn-up
+  title and two rows in the report, e.g. "For TBR = 0 by 04.09.2050:
+  read 26.4 books/month or buy at most 0.3 books/month." One line for
+  TBR = 0, one for the gentle reduction, both at the purchase and
+  reading rates of the last 12 months. Turns the goal into a monthly
+  number to act on.
+
 ## Done
 
 ### 1.7.0
@@ -61,13 +72,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### Required pace to reach the goal
-
-One line in the burn-up chart and in the report, e.g. "For TBR = 0 by
-2050: read 4.6 books/month or buy at most 2.1 books/month." Turns the
-goal into a monthly number to act on. All data is already there; small
-effort.
 
 ### Yearly reading goal (with the Reading Goal plugin)
 

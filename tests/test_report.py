@@ -9,12 +9,22 @@ def _tr(text):
     return text
 
 
+def _pace(target, read_needed, max_added, added_rate, read_rate,
+          status='ok'):
+    return {'status': status, 'target_backlog': target,
+            'read_needed': read_needed, 'max_added': max_added,
+            'reduction': read_needed - added_rate,
+            'added_rate': added_rate, 'read_rate': read_rate}
+
+
 def _data(**overrides):
     data = {
         'total': 200, 'read': 50, 'backlog': 150,
         'last12': {'added': 30, 'read': 12},
         'target_date': date(2050, 9, 4), 'target_tbr': 75,
         'forecast': {'ok': True, 'zero_date': date(2031, 5, 1)},
+        'pace': _pace(0, 4.0, 1.5, 2.5, 1.0),
+        'pace_soft': _pace(75, 3.2, 2.3, 2.5, 1.0),
         'delay': {'count': 40, 'mean': 300.4, 'median': 120.0,
                   'min': 0, 'max': 2000},
         'age': {'median_years': 2.4, 'max_years': 10, 'counts': [60, 90]},
@@ -36,6 +46,12 @@ def test_markdown_contains_all_sections():
     assert '| Change of the TBR | +18 |' in text
     assert '| Forecast (last 12 months) | TBR = 0 on 01.05.2031 |' in text
     assert '| Gentle reduction | TBR = 75 on 04.09.2050 |' in text
+    assert ('| Required pace (TBR = 0) | Read 4,0 books/month or buy at '
+            'most 1,5 books/month |') in text
+    assert ('| Required pace (TBR = 75) | Read 3,2 books/month or buy at '
+            'most 2,3 books/month |') in text
+    assert ('Required pace at the current purchase rate (2,5) and reading '
+            'rate (1,0) per month') in text
     assert '| Median | 120 days |' in text
     assert '| Mean | 300 days |' in text
     assert '| Time in the TBR | Books | Share |' in text
@@ -102,3 +118,17 @@ def test_bucket_label():
     assert report.bucket_label(_tr, 10, 11, 10) == '10+ years'
     # A last bucket below the cap is an ordinary one-year bucket
     assert report.bucket_label(_tr, 4, 5, 10) == '4–5 years'
+
+
+def test_pace_rows_skip_soft_goal_equal_to_zero_goal():
+    data = _data(pace_soft=_pace(0, 4.0, 1.5, 2.5, 1.0))
+    assert report.pace_rows(data, _tr) == [
+        ('Required pace (TBR = 0)',
+         'Read 4.0 books/month or buy at most 1.5 books/month')]
+
+
+def test_pace_rows_reached():
+    data = _data(pace=_pace(0, 1.0, 2.5, 2.5, 1.0, status='reached'),
+                 pace_soft=_pace(0, 1.0, 2.5, 2.5, 1.0, status='reached'))
+    assert report.pace_rows(data, _tr) == [
+        ('Required pace (TBR = 0)', 'Already reached')]

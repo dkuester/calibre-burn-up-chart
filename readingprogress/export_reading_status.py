@@ -279,6 +279,59 @@ def compute_rates(rows, window=12):
                     _trailing_mean(read, window)))
 
 
+# Average month length in days (Gregorian calendar)
+DAYS_PER_MONTH = 365.2425 / 12
+
+# Statuses returned by required_pace()
+PACE_OK = "ok"
+PACE_REACHED = "reached"
+PACE_TOO_CLOSE = "too_close"
+
+
+def required_pace(backlog, rates, today, target_date, target_backlog=0):
+    """Monthly pace needed to bring the backlog to ``target_backlog`` by
+    ``target_date``.
+
+    ``rates`` is the list from :func:`compute_rates`; its last trailing
+    means are the current purchase and reading rates. Either reading must
+    rise to ``read_needed`` (buying as before) or buying must drop to
+    ``max_added`` (reading as before); ``max_added <= 0`` means even
+    buying nothing is not enough at the current reading rate.
+
+    :return: dict with ``status`` (:data:`PACE_OK`, :data:`PACE_REACHED`
+        if the backlog is already at or below the goal,
+        :data:`PACE_TOO_CLOSE` if less than one month is left),
+        ``target_backlog``, ``months`` (left until ``target_date``),
+        ``reduction`` (backlog decrease needed per month),
+        ``added_rate``, ``read_rate``, ``read_needed`` and ``max_added``
+        (books per month).
+    """
+    added_rate = rates[-1][3] if rates else 0.0
+    read_rate = rates[-1][4] if rates else 0.0
+    months = (target_date - today).days / DAYS_PER_MONTH
+    pace = {
+        "status": PACE_OK,
+        "target_backlog": target_backlog,
+        "months": months,
+        "reduction": 0.0,
+        "added_rate": added_rate,
+        "read_rate": read_rate,
+        "read_needed": read_rate,
+        "max_added": added_rate,
+    }
+    if backlog <= target_backlog:
+        pace["status"] = PACE_REACHED
+        return pace
+    if months < 1:
+        pace["status"] = PACE_TOO_CLOSE
+        return pace
+    reduction = (backlog - target_backlog) / months
+    pace["reduction"] = reduction
+    pace["read_needed"] = added_rate + reduction
+    pace["max_added"] = read_rate - reduction
+    return pace
+
+
 # Problem kinds reported by find_date_problems()
 MISSING_LAST_READ = "missing_last_read"
 READ_BEFORE_ADDED = "read_before_added"
@@ -496,8 +549,10 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
                         reduction_factor, today=None):
     """All figures of the report (see ``report.build_sections``).
 
-    Also holds ``rows`` (from :func:`export_snapshots`), ``rates`` (from
-    :func:`compute_rates`) for the charts embedded in the HTML report.
+    ``pace`` and ``pace_soft`` are :func:`required_pace` for TBR = 0 and
+    for the gentle reduction. Also holds ``rows`` (from
+    :func:`export_snapshots`), ``rates`` (from :func:`compute_rates`) for
+    the charts embedded in the HTML report.
     Raises :class:`NoDataError` for a library without dates added.
     """
     info = export_snapshots(db_api, read_column, last_read_column,
@@ -507,6 +562,8 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
     problems = find_date_problems(db_api, read_column, last_read_column)
     missing = sum(1 for p in problems if p["problem"] == MISSING_LAST_READ)
     last12 = rates[-12:]
+    target_tbr = round(info["backlog"] * reduction_factor)
+    today = info["rows"][-1][0]
     return {
         "total": info["total"],
         "read": info["read"],
@@ -514,8 +571,11 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
         "last12": {"added": sum(r[1] for r in last12),
                    "read": sum(r[2] for r in last12)},
         "target_date": target_date,
-        "target_tbr": round(info["backlog"] * reduction_factor),
+        "target_tbr": target_tbr,
         "forecast": forecast_backlog(info["rows"]),
+        "pace": required_pace(info["backlog"], rates, today, target_date),
+        "pace_soft": required_pace(info["backlog"], rates, today,
+                                   target_date, target_tbr),
         "delay": compute_reading_time(
             db_api, read_column, last_read_column)["statistics"],
         "age": {

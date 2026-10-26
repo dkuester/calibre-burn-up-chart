@@ -255,7 +255,8 @@ class ReadingProgressAction(InterfaceAction):
                     _date_format(), self.gui,
                     show_forecast=show_forecast, forecast=forecast,
                     colors=self._colors(), time_range=config['time_range'],
-                    on_time_range_changed=self._save_time_range).exec()
+                    on_time_range_changed=self._save_time_range,
+                    decimal_sep=_decimal_separator()).exec()
 
     def show_delay(self):
         from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog
@@ -409,7 +410,8 @@ class ReadingProgressAction(InterfaceAction):
                     data['rows'], target_date, reduction_factor,
                     _date_format(), show_forecast=bool(
                         config['show_forecast']),
-                    forecast=data['forecast'], colors=colors)),
+                    forecast=data['forecast'], colors=colors,
+                    decimal_sep=_decimal_separator())),
                 (_('Purchase rate vs. reading rate'), RatesChartWidget(
                     data['rates'], _decimal_separator(), colors=colors)),
             ]

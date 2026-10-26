@@ -1,3 +1,18 @@
+## [Unveröffentlicht]
+
+### Hinzugefügt
+
+- **Nötiges Tempo bis zum Ziel:** Zwei Zeilen unter dem Titel des
+  Burn-up-Charts sagen, was es braucht, um das Ziel bis zum Zieldatum
+  zu erreichen, z. B. „Für SuB = 0 bis 04.09.2050: 26,4 Bücher/Monat
+  lesen oder höchstens 0,3 Bücher/Monat kaufen.“ Eine Zeile gilt für
+  SuB = 0, eine für den sanften Abbau. Die nötige Leserate setzt die
+  aktuelle Kaufrate voraus, die Kaufgrenze die aktuelle Leserate (beide
+  als Mittel der letzten 12 Monate). Reicht selbst ein Kaufstopp nicht,
+  nennt die Zeile, wie viel man dann lesen muss. Die Zeilen bleiben
+  auch in der 5- und 2-Jahres-Ansicht stehen. Der Bericht zeigt
+  dieselben Zahlen unter „Ziel und Prognose“.
+
 ## [1.7.0] – 2026-10-26
 
 ### Hinzugefügt

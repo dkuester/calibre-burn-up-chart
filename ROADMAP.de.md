@@ -10,6 +10,17 @@ Die Reihenfolge folgt einer einfachen Regel: **Pflege und Qualität vor
 neuen Features.** Ein Feature, das bestehenden Code bricht, kostet mehr,
 als es wert ist.
 
+## Nächste Version
+
+Fertig, noch nicht veröffentlicht:
+
+- **Nötiges Tempo bis zum Ziel:** zwei Zeilen unter dem Titel des
+  Burn-up-Charts und zwei Zeilen im Bericht, z. B. „Für SuB = 0 bis
+  04.09.2050: 26,4 Bücher/Monat lesen oder höchstens 0,3 Bücher/Monat
+  kaufen.“ Eine Zeile gilt für SuB = 0, eine für den sanften Abbau,
+  beide bei der Kauf- und Leserate der letzten 12 Monate. Macht aus dem
+  Ziel eine Monatszahl, nach der man handeln kann.
+
 ## Erledigt
 
 ### 1.7.0
@@ -66,13 +77,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### Nötiges Tempo bis zum Ziel
-
-Eine Zeile im Burn-up-Chart und im Bericht, z. B. „Für SuB = 0 bis
-2050: 4,6 Bücher/Monat lesen oder höchstens 2,1 Bücher/Monat kaufen.“
-Macht aus dem Ziel eine Monatszahl, nach der man handeln kann. Die Daten
-sind alle da; kleiner Aufwand.
 
 ### Jahresziel (mit dem Plugin „Reading Goal“)
 
