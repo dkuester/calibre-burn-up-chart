@@ -241,3 +241,11 @@ def test_visible_y_max():
     assert cc.visible_y_max(rows, date(2019, 1, 1), date(2021, 1, 1)) == 10
     # No row inside the window: fall back to all rows.
     assert cc.visible_y_max(rows, date(2027, 1, 1), date(2028, 1, 1)) == 60
+
+
+def test_delay_unit():
+    assert cc.delay_unit(0) == ('days', 1.0, 0)
+    assert cc.delay_unit(90) == ('days', 1.0, 0)
+    assert cc.delay_unit(91)[0] == 'months'
+    assert cc.delay_unit(730) == ('months', pytest.approx(1 / 30.44), 0)
+    assert cc.delay_unit(731) == ('years', pytest.approx(1 / 365.25), 1)

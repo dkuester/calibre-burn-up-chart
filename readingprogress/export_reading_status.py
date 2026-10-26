@@ -477,26 +477,28 @@ def compute_reading_time(db_api, read_column=None, last_read_column=None):
         points.append((last_read, days, book_id))
 
     points.sort()
+    return {
+        "points":      points,
+        "statistics":  delay_statistics(points),
+        "missing_data": missing_data,
+    }
 
+
+def delay_statistics(points):
+    """Count, mean, median, min and max of the days in ``points``
+    (``(read_date, days, book_id)`` tuples), or ``None`` if empty."""
     if not points:
-        return {"points": [], "statistics": None, "missing_data": missing_data}
-
+        return None
     values = sorted(p[1] for p in points)
     n = len(values)
     if n % 2 == 1:
         median = float(values[n // 2])
     else:
         median = (values[n // 2 - 1] + values[n // 2]) / 2.0
-
-    statistics = {
+    return {
         "count":  n,
         "mean":   sum(values) / n,
         "median": median,
         "min":    values[0],
         "max":    values[-1],
-    }
-    return {
-        "points":      points,
-        "statistics":  statistics,
-        "missing_data": missing_data,
     }

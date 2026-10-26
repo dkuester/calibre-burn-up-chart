@@ -3,7 +3,7 @@
 ### Added
 
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
-  buttons in both chart dialogs. They capture the chart as currently
+  buttons in all chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
 - **Age of the TBR:** A new chart shows the unread books by whole years
   since they were added (books of 10 years and more share one bar),
@@ -34,9 +34,15 @@
 
 ### Changed
 
+- **Reading-delay chart** now works like the other charts: tooltips
+  name the book, clicking a point shows it in calibre, the wheel zooms
+  and dragging pans, a time range selector recomputes median and mean
+  for that range, points use the configurable read color, and the
+  chart can be saved as PNG or copied to the clipboard.
+
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 91 tests with a 100% coverage gate on the
+- Test suite extended to 93 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks

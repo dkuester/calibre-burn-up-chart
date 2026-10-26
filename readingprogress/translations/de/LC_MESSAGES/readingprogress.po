@@ -349,3 +349,13 @@ msgstr "{label}\n{count} Bücher · {share} %\nKlicken, um sie in calibre zu zei
 
 msgid "Click a bar to show its books in calibre."
 msgstr "Klick auf einen Balken zeigt dessen Bücher in calibre."
+
+# Delay chart interaction
+msgid "Time between purchase and reading, last {years} years"
+msgstr "Zeit zwischen Kauf und Lesen, letzte {years} Jahre"
+
+msgid "{title}\n{authors}\nRead on {date} · {days} days until read\nClick to show it in calibre"
+msgstr "{title}\n{authors}\nGelesen am {date} · {days} Tage bis zum Lesen\nKlicken, um es in calibre zu zeigen"
+
+msgid "Click a point to show the book in calibre."
+msgstr "Klick auf einen Punkt zeigt das Buch in calibre."

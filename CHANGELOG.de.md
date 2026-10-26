@@ -3,7 +3,7 @@
 ### Hinzugefügt
 
 - **PNG-Export und Zwischenablage:** Knöpfe „Als PNG speichern…" und
-  „In Zwischenablage kopieren" in beiden Chart-Dialogen. Sie erfassen
+  „In Zwischenablage kopieren" in allen Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
 - **Altersverteilung des SuB:** Ein neues Chart zeigt die ungelesenen
@@ -39,9 +39,16 @@
 
 ### Geändert
 
+- **Verzögerungs-Chart** funktioniert jetzt wie die anderen Charts:
+  Tooltips nennen das Buch, ein Klick auf einen Punkt zeigt es in
+  calibre, Mausrad zoomt und Ziehen verschiebt, eine Zeitraum-Auswahl
+  berechnet Median und Mittelwert für diesen Zeitraum neu, die Punkte
+  nutzen die einstellbare Farbe von „Gelesen“, und das Chart lässt sich
+  als PNG speichern oder in die Zwischenablage kopieren.
+
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 91 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 93 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht

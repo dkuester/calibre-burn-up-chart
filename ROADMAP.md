@@ -15,7 +15,7 @@ worth.
 
 Merged into `main`, shipping with the next release:
 
-- **PNG export and clipboard:** Both chart dialogs get "Save as PNG…"
+- **PNG export and clipboard:** All chart dialogs get "Save as PNG…"
   and "Copy to clipboard" buttons. They capture the chart as currently
   shown, including zoom, pan and the active theme.
 - **Time range (burn-up chart):** "All time", "Last 5 years" or "Last 2
@@ -31,7 +31,10 @@ Merged into `main`, shipping with the next release:
   and shows them in calibre's book list for fixing.
 - **Age of the TBR:** a bar chart of the unread books by whole years
   since they were added; clicking a bar shows those books in calibre.
-- **Tests and CI:** 91 `pytest` tests with a 100% coverage gate on the
+- **Reading-delay chart on par:** tooltips naming the book, click to
+  show it in calibre, zoom and pan, time range with its own median and
+  mean, the configurable read color, and PNG/clipboard export.
+- **Tests and CI:** 93 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -71,8 +74,6 @@ Broader ideas, none of them committed.
 
 ### UX improvements
 
-- Parity for the reading-delay chart (tooltips, zoom/pan, configurable
-  colors), which currently keeps fixed colors and no interaction
 - Status bar widget showing current backlog permanently
 
 ### Sharing

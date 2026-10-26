@@ -16,7 +16,7 @@ als es wert ist.
 
 In `main` gemergt, kommt mit der nächsten Version:
 
-- **PNG-Export und Zwischenablage:** Beide Chart-Dialoge bekommen die
+- **PNG-Export und Zwischenablage:** Alle Chart-Dialoge bekommen die
   Knöpfe „Als PNG speichern…" und „In Zwischenablage kopieren". Sie
   erfassen das Chart so, wie es gerade zu sehen ist, also mit Zoom,
   Verschiebung und aktivem Theme.
@@ -35,7 +35,11 @@ In `main` gemergt, kommt mit der nächsten Version:
 - **Altersverteilung des SuB:** ein Balkendiagramm der ungelesenen
   Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen
   Balken zeigt diese Bücher in calibre.
-- **Tests und CI:** 91 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Verzögerungs-Chart angeglichen:** Tooltips mit dem Buch, Klick
+  zeigt es in calibre, Zoom und Verschieben, Zeitraum mit eigenem
+  Median und Mittelwert, die einstellbare Farbe von „Gelesen" und
+  PNG-/Zwischenablage-Export.
+- **Tests und CI:** 93 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -75,8 +79,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 ### UX-Verbesserungen
 
-- Parity für das Verzögerungs-Chart (Tooltips, Zoom/Pan, konfigurierbare
-  Farben), das derzeit feste Farben und keine Interaktion hat
 - Statusbar-Widget mit permanent sichtbarem Backlog
 
 ### Teilen

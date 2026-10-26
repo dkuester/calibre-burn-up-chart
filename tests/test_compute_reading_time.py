@@ -117,3 +117,12 @@ def test_custom_column_names(make_db):
     res = ers.compute_reading_time(db, read_column="read_yes",
                                    last_read_column="read_on")
     assert res["statistics"]["mean"] == 10.0
+
+
+def test_delay_statistics_direct():
+    assert ers.delay_statistics([]) is None
+    pts = [(None, 10, 1), (None, 30, 2), (None, 20, 3), (None, 40, 4)]
+    s = ers.delay_statistics(pts)
+    assert s == {"count": 4, "mean": 25.0, "median": 25.0,
+                 "min": 10, "max": 40}
+    assert ers.delay_statistics(pts[:3])["median"] == 20.0
