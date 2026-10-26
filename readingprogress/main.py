@@ -1,6 +1,7 @@
 import os
 import zipfile
 
+from calibre.gui2 import info_dialog
 from calibre.gui2.actions import InterfaceAction
 from calibre.utils.config import JSONConfig
 from calibre.utils.localization import get_lang
@@ -123,6 +124,8 @@ class ReadingProgressAction(InterfaceAction):
                        self.show_delay)
         menu.addAction(_('Purchase rate vs. reading rate'),
                        self.show_rates)
+        menu.addSeparator()
+        menu.addAction(_('Check data quality'), self.show_quality)
         self.qaction.setMenu(menu)
 
         # Reconfigure the QToolButton after the toolbar is created:
@@ -251,3 +254,36 @@ class ReadingProgressAction(InterfaceAction):
             time_range=config['time_range'],
             on_time_range_changed=self._save_time_range)
         dlg.exec_()
+
+    def show_quality(self):
+        from calibre_plugins.readingprogress.export_reading_status import (
+            find_date_problems,
+            id_search,
+        )
+        from calibre_plugins.readingprogress.quality_dialog import (
+            QualityDialog,
+        )
+
+        db_api = self.gui.current_db.new_api
+        try:
+            problems = find_date_problems(
+                db_api, config['read_column'], config['last_read_column'])
+            read_flags = db_api.all_field_for(
+                config['read_column'], db_api.all_book_ids())
+        except Exception as e:
+            self.gui.status_bar.show_message(
+                _('Export failed: {}').format(e), 5000)
+            return
+
+        if not problems:
+            info_dialog(
+                self.gui, _('Data quality'),
+                _('All read books have a usable read date.'), show=True)
+            return
+
+        def show_in_library(book_ids):
+            self.gui.search.set_search_string(id_search(book_ids))
+
+        read_total = sum(1 for v in read_flags.values() if v is True)
+        QualityDialog(problems, read_total, _date_format(), self.gui,
+                      on_show=show_in_library).exec_()

@@ -26,7 +26,10 @@ Merged into `main`, shipping with the next release:
 - **"Days in TBR" column:** a button in the settings creates a calibre
   column that calibre computes itself, so it is always up to date and
   no values are written into the library.
-- **Tests and CI:** 79 `pytest` tests with a 100% coverage gate on the
+- **Data quality check:** lists read books without a read date or read
+  before being added (the charts count them as read on the day added)
+  and shows them in calibre's book list for fixing.
+- **Tests and CI:** 86 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -70,13 +73,6 @@ Broader ideas, none of them committed.
 - Parity for the reading-delay chart (tooltips, zoom/pan, configurable
   colors), which currently keeps fixed colors and no interaction
 - Status bar widget showing current backlog permanently
-- Context menu on selected books: "how long has this book been unread?"
-- Automatic virtual shelf "long unread" (> 1000 days)
-
-### Data quality
-
-- Dialog listing books with missing `#last_read`
-- Bulk edit helper for `#last_read` (backfill from "read" status changes)
 
 ### Sharing
 
@@ -86,6 +82,18 @@ Broader ideas, none of them committed.
 
 Ideas that were considered and rejected. Listed here so they do not
 keep coming up.
+
+### "How long unread?" context menu and "long unread" shelf
+
+Both are covered by the "Days in TBR" column: sort by it, or create a
+virtual library with the search `#days_in_tbr:>1000 and #gelesen:false`
+(using your read column).
+
+### Bulk backfill of `#last_read` from status changes
+
+calibre keeps no history of when a book was marked as read, so there is
+nothing to backfill from. The data quality check lists the affected
+books instead, so they can be fixed by hand.
 
 ### Stacked bar chart
 

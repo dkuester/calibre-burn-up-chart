@@ -269,3 +269,58 @@ msgstr "Spalte angelegt"
 
 msgid "Restart calibre to see the column \"Days in TBR\"."
 msgstr "calibre neu starten, um die Spalte „Tage im SuB“ zu sehen."
+
+# Data quality dialog
+msgid "Check data quality"
+msgstr "Datenqualität prüfen"
+
+msgid "Data quality"
+msgstr "Datenqualität"
+
+msgid "All read books have a usable read date."
+msgstr "Alle gelesenen Bücher haben ein brauchbares Lesedatum."
+
+msgid "No read date"
+msgstr "Kein Lesedatum"
+
+msgid "Read before added"
+msgstr "Gelesen vor Aufnahme"
+
+msgid "<b>{count} of {read} read books have a questionable read date:</b> {missing} without a read date, {early} read before being added. The charts count all of them as read on the day they were added."
+msgstr "<b>{count} von {read} gelesenen Büchern haben ein fragwürdiges Lesedatum:</b> {missing} ohne Lesedatum, {early} gelesen vor der Aufnahme. Die Charts zählen sie alle als am Aufnahmetag gelesen."
+
+msgid "Tip: if many of them were added on the same day, the date added is probably wrong (a bulk import), not the read date. Sort by \"Added\" to spot such days."
+msgstr "Tipp: Wurden viele davon am selben Tag aufgenommen, ist vermutlich das Aufnahmedatum falsch (Sammel-Import), nicht das Lesedatum. Nach „Aufgenommen“ sortieren, um solche Tage zu finden."
+
+msgid "Show selected in calibre"
+msgstr "Ausgewählte in calibre zeigen"
+
+msgid "Show all in calibre"
+msgstr "Alle in calibre zeigen"
+
+msgid "Save as CSV…"
+msgstr "Als CSV speichern…"
+
+msgid "Problem"
+msgstr "Problem"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Author(s)"
+msgstr "Autor(en)"
+
+msgid "Added"
+msgstr "Aufgenommen"
+
+msgid "Last read"
+msgstr "Zuletzt gelesen"
+
+msgid "Days before"
+msgstr "Tage davor"
+
+msgid "Save list as CSV"
+msgstr "Liste als CSV speichern"
+
+msgid "CSV files"
+msgstr "CSV-Dateien"

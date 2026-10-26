@@ -32,6 +32,7 @@ Python installation is needed.
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
+| **Data quality check** | Lists read books without a read date or read before being added, and shows them in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
 | **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
@@ -63,11 +64,12 @@ Python installation is needed.
 
 ## Usage
 
-The toolbar button opens a menu with three charts:
+The toolbar button opens a menu with three charts and a data check:
 
 - **Burn-up chart**: library size, books read and backlog over time.
 - **Time between purchase and reading**: the reading delay per book.
 - **Purchase rate vs. reading rate**: books added and read per month.
+- **Check data quality**: read books without a usable read date, to fix them in calibre.
 
 ## Configuration
 
@@ -110,6 +112,7 @@ readingprogress/
 ├── config_helpers.py        # Qt-free config/locale and migration helpers
 ├── chart_common.py          # Qt-free chart math and colors
 ├── chart_dialog.py          # burn-up chart dialog (QPainter)
+├── quality_dialog.py        # data quality dialog
 ├── rates_dialog.py          # purchase rate vs. reading rate dialog
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database

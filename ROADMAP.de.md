@@ -28,7 +28,11 @@ In `main` gemergt, kommt mit der nächsten Version:
 - **Spalte „Tage im SuB“:** ein Knopf in den Einstellungen legt eine
   calibre-Spalte an, die calibre selbst berechnet. Sie ist damit immer
   aktuell, und es werden keine Werte in die Bibliothek geschrieben.
-- **Tests und CI:** 79 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Datenqualität prüfen:** listet gelesene Bücher ohne Lesedatum oder
+  mit Lesedatum vor der Aufnahme (die Charts zählen sie als am
+  Aufnahmetag gelesen) und zeigt sie zum Korrigieren in der Bücherliste
+  von calibre an.
+- **Tests und CI:** 86 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -72,14 +76,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 - Parity für das Verzögerungs-Chart (Tooltips, Zoom/Pan, konfigurierbare
   Farben), das derzeit feste Farben und keine Interaktion hat
 - Statusbar-Widget mit permanent sichtbarem Backlog
-- Kontextmenü für ausgewählte Bücher: „wie lange ist dieses Buch
-  ungelesen?"
-- Automatisches virtuelles Regal „lange ungelesen" (> 1000 Tage)
-
-### Datenqualität
-
-- Dialog mit Liste der Bücher ohne `#last_read`
-- Massenbearbeitung für `#last_read` (Nachtrag aus Statusänderungen)
 
 ### Teilen
 
@@ -89,6 +85,19 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 Ideen, die erwogen und verworfen wurden. Hier gelistet, damit sie nicht
 immer wieder aufpoppen.
+
+### Kontextmenü „wie lange ungelesen?" und Regal „lange ungelesen"
+
+Beides deckt die Spalte „Tage im SuB" ab: danach sortieren oder eine
+virtuelle Bibliothek mit der Suche `#days_in_tbr:>1000 and
+#gelesen:false` anlegen (mit deiner Lese-Spalte).
+
+### Massenbearbeitung von `#last_read` aus Statusänderungen
+
+calibre speichert keinen Verlauf, wann ein Buch als gelesen markiert
+wurde, es gibt also nichts, woraus man nachtragen könnte. Stattdessen
+listet die Datenqualitäts-Prüfung die betroffenen Bücher, damit man sie
+von Hand korrigieren kann.
 
 ### Gestapeltes Balkendiagramm
 

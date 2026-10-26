@@ -5,6 +5,11 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in both chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **Data quality check:** A new menu entry lists read books whose read
+  date the charts cannot use (no read date, or read before being added),
+  sortable by date added to spot bulk imports. Selected or all of them
+  can be shown in calibre's book list, or saved as CSV. Nothing in the
+  library is changed.
 - **"Days in TBR" column:** A button in the plugin settings creates a
   calibre column `#days_in_tbr` that calibre computes itself from the
   date added and the read columns: days between adding and reading for
@@ -26,7 +31,7 @@
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 79 tests with a 100% coverage gate on the
+- Test suite extended to 86 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks
