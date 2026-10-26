@@ -223,6 +223,56 @@ def forecast_backlog(rows, months=12):
     }
 
 
+
+def _trailing_mean(values, window):
+    """Mean of the last ``window`` values up to each position (fewer at
+    the start, where not enough values exist yet)."""
+    means = []
+    for i in range(len(values)):
+        part = values[max(0, i - window + 1):i + 1]
+        means.append(sum(part) / len(part))
+    return means
+
+
+def compute_rates(rows, window=12):
+    """Books added and books read per calendar month.
+
+    ``rows`` is the ``'rows'`` list from :func:`export_snapshots` –
+    cumulative ``(date, total, read, backlog)`` snapshots, which skip
+    months without any event. Every month from the first to the last
+    snapshot gets an entry; skipped months count 0.
+
+    :return: list of ``(date, added, read, added_avg, read_avg)`` – the
+        snapshot date (month end for skipped months), the month's counts
+        and their trailing means over ``window`` months.
+    """
+    if not rows:
+        return []
+    by_month = {(r[0].year, r[0].month): r for r in rows}
+    year, month = rows[0][0].year, rows[0][0].month
+    last = (rows[-1][0].year, rows[-1][0].month)
+
+    dates, added, read = [], [], []
+    prev_total = prev_read = 0
+    while (year, month) <= last:
+        row = by_month.get((year, month))
+        if row is None:
+            dates.append(month_end(year, month))
+            added.append(0)
+            read.append(0)
+        else:
+            dates.append(row[0])
+            added.append(row[1] - prev_total)
+            read.append(row[2] - prev_read)
+            prev_total, prev_read = row[1], row[2]
+        month += 1
+        if month > 12:
+            year, month = year + 1, 1
+
+    return list(zip(dates, added, read,
+                    _trailing_mean(added, window),
+                    _trailing_mean(read, window)))
+
 if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
     from calibre.library import db as calibre_db_factory
 

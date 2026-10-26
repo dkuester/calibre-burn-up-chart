@@ -20,7 +20,10 @@ Merged into `main`, shipping with the next release:
   shown, including zoom, pan and the active theme.
 - **Time range (burn-up chart):** "All time", "Last 5 years" or "Last 2
   years". The limited ranges end today instead of at the target date.
-- **Tests and CI:** 72 `pytest` tests with a 100% coverage gate on the
+- **Purchase rate vs. reading rate:** a third chart with books added
+  and read per month (12-month averages), shaded by whether the backlog
+  shrinks or grows.
+- **Tests and CI:** 78 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -43,12 +46,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### Purchase rate vs. reading rate
-
-Two lines showing how many books are added per month and how many are
-read per month. Complements the burn-up chart by showing the underlying
-dynamics.
 
 ### Export to Calibre column
 

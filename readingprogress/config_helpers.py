@@ -19,6 +19,11 @@ def date_format(language):
     return "%d.%m.%Y" if language == "de" else "%Y-%m-%d"
 
 
+def decimal_separator(language):
+    """Decimal separator for a Calibre UI language code."""
+    return "," if language == "de" else "."
+
+
 def migrate_legacy_keys(current, legacy):
     """Resolves each new key from its legacy German key.
 

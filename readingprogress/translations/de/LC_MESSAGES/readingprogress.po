@@ -134,6 +134,37 @@ msgstr "Letzte 2 Jahre"
 msgid "Reading progress over the last {years} years"
 msgstr "Lesefortschritt der letzten {years} Jahre"
 
+# Purchase rate vs. reading rate chart
+msgid "Purchase rate vs. reading rate"
+msgstr "Kaufrate vs. Leserate"
+
+msgid "Books added vs. read per month"
+msgstr "Zugänge und gelesene Bücher pro Monat"
+
+msgid "Books added vs. read per month, last {years} years"
+msgstr "Zugänge und gelesene Bücher pro Monat, letzte {years} Jahre"
+
+msgid "Last 12 months: {added} added · {read} read · TBR {change}"
+msgstr "Letzte 12 Monate: {added} Zugänge · {read} gelesen · SuB {change}"
+
+msgid "Books per month"
+msgstr "Bücher pro Monat"
+
+msgid "Added (12-month average)"
+msgstr "Zugänge (Mittel über 12 Monate)"
+
+msgid "Read (12-month average)"
+msgstr "Gelesen (Mittel über 12 Monate)"
+
+msgid "TBR shrinking (more read than added)"
+msgstr "SuB schrumpft (mehr gelesen als dazugekommen)"
+
+msgid "TBR growing (more added than read)"
+msgstr "SuB wächst (mehr dazugekommen als gelesen)"
+
+msgid "{month}\nAdded: {added} (average {added_avg})\nRead: {read} (average {read_avg})"
+msgstr "{month}\nZugänge: {added} (Mittel {added_avg})\nGelesen: {read} (Mittel {read_avg})"
+
 msgid "Reading progress for TBR = {tbr} on {date}"
 msgstr "Lesefortschritt für SuB = {tbr} am {date}"
 

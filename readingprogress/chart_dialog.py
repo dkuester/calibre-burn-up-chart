@@ -201,6 +201,18 @@ def show_paint_error(widget, error):
         pass
 
 
+def build_series_colors(dark, overrides):
+    """QColor per series key: user overrides, else the theme default."""
+    result = {}
+    for key, hex_val in resolve_series_colors(dark, overrides).items():
+        color = QColor(hex_val)
+        if not color.isValid():
+            color = QColor(DARK_DEFAULT_COLORS[key] if dark
+                           else DEFAULT_COLORS[key])
+        result[key] = color
+    return result
+
+
 def save_chart_png(widget, kind):
     """Asks for a file name and saves ``widget`` as currently shown."""
     path = choose_save_file(
@@ -238,6 +250,34 @@ def add_export_buttons(row, widget, kind):
     row.addWidget(copy_btn)
 
 
+def add_time_range_box(parent, row, chart, time_range, on_changed):
+    """Adds the 'Time range' selector to ``row``.
+
+    Switching calls ``chart.set_time_range(key)`` and ``on_changed(key)``
+    (which persists the choice; may be ``None``).
+    """
+    labels = {
+        'all': _("All time"),
+        '5y': _("Last 5 years"),
+        '2y': _("Last 2 years"),
+    }
+    box = QComboBox(parent)
+    for key, _years in TIME_RANGES:
+        box.addItem(labels[key], key)
+    index = box.findData(time_range)
+    box.setCurrentIndex(index if index >= 0 else 0)
+
+    def changed(index):
+        key = box.itemData(index)
+        chart.set_time_range(key)
+        if on_changed is not None:
+            on_changed(key)
+
+    box.currentIndexChanged.connect(changed)
+    row.addWidget(QLabel(_("Time range:"), parent))
+    row.addWidget(box)
+
+
 class PlotScale:
     """Maps data coordinates to pixel coordinates."""
 
@@ -258,7 +298,8 @@ class PlotScale:
 class AxesRenderer:
     """Draws axes, grid, tick labels and axis titles."""
 
-    def draw(self, painter, scale, x_max, y_max, y_step, chrome):
+    def draw(self, painter, scale, x_max, y_max, y_step, chrome,
+             y_title=None):
         plot = scale.plot
         painter.setPen(QPen(chrome['axis'], 1))
         painter.drawLine(QPointF(plot.left(),  plot.top()),
@@ -330,7 +371,7 @@ class AxesRenderer:
         painter.rotate(-90)
         painter.drawText(
             QRectF(-plot.height() / 2, -10, plot.height(), 20),
-            ALIGN_CENTER, _("Number of books"),
+            ALIGN_CENTER, y_title or _("Number of books"),
         )
         painter.restore()
 
@@ -475,11 +516,6 @@ class LegendRenderer:
              show_reference=True):
         """``show_reference=False`` lists only the data series, for a
         view that ends today and so shows no goal/forecast lines."""
-        font = QFont()
-        font.setPointSize(10)
-        painter.setFont(font)
-        fm = QFontMetrics(font)
-
         date_str = target_date.strftime(date_format)
         year_str = target_date.strftime('%Y')
         target_soft_i = round(target_soft)
@@ -503,6 +539,18 @@ class LegendRenderer:
                                       colors['forecast'], PEN_DASH))
         if show_reference:
             entries += reference_entries
+        self.draw_entries(painter, plot, entries, chrome)
+
+    def draw_entries(self, painter, plot, entries, chrome):
+        """Draws a legend box in the top right corner of ``plot``.
+
+        ``entries`` are ``(text, color, pen_style)``; a ``pen_style`` of
+        ``None`` draws a filled swatch instead of a line.
+        """
+        font = QFont()
+        font.setPointSize(10)
+        painter.setFont(font)
+        fm = QFontMetrics(font)
 
         line_width = 30
         padding = 10
@@ -521,13 +569,19 @@ class LegendRenderer:
 
         for i, (text, color, style) in enumerate(entries):
             row_y = box_y + padding + i * row_height + row_height / 2
-            pen = QPen(color, 2.5)
-            pen.setStyle(style)
-            painter.setPen(pen)
-            painter.drawLine(
-                QPointF(box_x + padding, row_y),
-                QPointF(box_x + padding + line_width, row_y),
-            )
+            if style is None:
+                painter.setPen(QPen(PEN_NOPEN))
+                painter.setBrush(color)
+                painter.drawRect(QRectF(box_x + padding, row_y - 5,
+                                        line_width, 10))
+            else:
+                pen = QPen(color, 2.5)
+                pen.setStyle(style)
+                painter.setPen(pen)
+                painter.drawLine(
+                    QPointF(box_x + padding, row_y),
+                    QPointF(box_x + padding + line_width, row_y),
+                )
             painter.setPen(chrome['text'])
             painter.drawText(
                 QRectF(box_x + padding + line_width + 8,
@@ -715,16 +769,7 @@ class ChartWidget(QWidget):
     # Scaling / view helpers
     # ------------------------------------------------------------------
     def _build_colors(self, overrides):
-        resolved_hex = resolve_series_colors(self._dark, overrides)
-        result = {}
-        for key, hex_val in resolved_hex.items():
-            color = QColor(hex_val)
-            if not color.isValid():
-                fallback = (DARK_DEFAULT_COLORS[key] if self._dark
-                            else DEFAULT_COLORS[key])
-                color = QColor(fallback)
-            result[key] = color
-        return result
+        return build_series_colors(self._dark, overrides)
 
     def _plot_rect(self):
         return QRectF(
@@ -871,33 +916,11 @@ class ChartDialog(QDialog):
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
-        self._add_time_range_box(row, time_range, on_time_range_changed)
+        add_time_range_box(self, row, self.chart, time_range,
+                           on_time_range_changed)
         add_export_buttons(row, self.chart, 'burn-up')
         row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.accept)
         row.addWidget(btn)
         layout.addLayout(row)
-
-    def _add_time_range_box(self, row, time_range, on_changed):
-        """Adds the 'Time range' selector; ``on_changed(key)`` persists it."""
-        labels = {
-            'all': _("All time"),
-            '5y': _("Last 5 years"),
-            '2y': _("Last 2 years"),
-        }
-        box = QComboBox(self)
-        for key, _years in TIME_RANGES:
-            box.addItem(labels[key], key)
-        index = box.findData(time_range)
-        box.setCurrentIndex(index if index >= 0 else 0)
-
-        def changed(index):
-            key = box.itemData(index)
-            self.chart.set_time_range(key)
-            if on_changed is not None:
-                on_changed(key)
-
-        box.currentIndexChanged.connect(changed)
-        row.addWidget(QLabel(_("Time range:"), self))
-        row.addWidget(box)

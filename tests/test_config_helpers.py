@@ -58,3 +58,8 @@ def test_all_colors_are_light_defaults_customized():
 def test_all_colors_are_light_defaults_auto():
     assert cc.all_colors_are_light_defaults(
         {k: '' for k in cc.DEFAULT_COLORS}) is False
+
+
+def test_decimal_separator():
+    assert ch.decimal_separator('de') == ','
+    assert ch.decimal_separator('en') == '.'

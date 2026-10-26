@@ -31,6 +31,7 @@ Python-Installation ist nicht nötig.
 | **Zieldatum** | Eine Ziellinie „SuB = 0 am …“ mit frei wählbarem Datum. |
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
+| **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
 | **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
@@ -63,10 +64,11 @@ Python-Installation ist nicht nötig.
 
 ## Benutzung
 
-Der Knopf in der Werkzeugleiste öffnet ein Menü mit zwei Charts:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit drei Charts:
 
 - **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
 - **Zeit zwischen Kauf und Lesen**: die Leseverzögerung pro Buch.
+- **Kaufrate vs. Leserate**: Zugänge und gelesene Bücher pro Monat.
 
 ## Einstellungen
 
@@ -108,6 +110,7 @@ readingprogress/
 ├── config_helpers.py        # Qt-freie Konfigurations-, Locale- und Migrationshilfen
 ├── chart_common.py          # Qt-freie Chart-Berechnung und Farben
 ├── chart_dialog.py          # Burn-up-Chart-Dialog (QPainter)
+├── rates_dialog.py          # Dialog für Kaufrate vs. Leserate
 ├── delay_dialog.py          # Dialog für die Leseverzögerung
 ├── export_reading_status.py # liest die laufende calibre-Datenbank
 ├── localization.py          # gettext-Setup

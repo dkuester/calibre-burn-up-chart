@@ -5,6 +5,12 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in both chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **Purchase rate vs. reading rate:** A third chart, opened from the
+  toolbar menu. It shows books added and books read per month as
+  12-month averages and shades the area between them by whether the
+  backlog shrinks or grows. A key-figures line sums up the last 12
+  months, and the tooltip shows each month's counts. Time range
+  selector and PNG/clipboard export as in the burn-up chart.
 - **Time range (burn-up chart):** A "Time range" selector in the chart
   dialog: "All time", "Last 5 years", "Last 2 years". The limited
   ranges end today, so recent history fills the chart; the title then
@@ -15,7 +21,7 @@
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 72 tests with a 100% coverage gate on the
+- Test suite extended to 78 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks
