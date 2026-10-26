@@ -1,3 +1,21 @@
+## [Unreleased]
+
+### Added
+
+- **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
+  buttons in both chart dialogs. They capture the chart as currently
+  shown, including zoom, pan and the active theme.
+
+### Changed
+
+- Project moved from Codeberg to GitHub; CI and releases now run on
+  GitHub Actions.
+- Test suite extended to 66 tests with a 100% coverage gate on the
+  Qt-free modules; CI runs on Python 3.10 and 3.12.
+- Config defaults and migrations moved from `__init__.py` to
+  `main.py`, so building with `calibre-customize -b` no longer breaks
+  when a new helper is added.
+
 ## [1.6.0] – 2026-10-16
 
 ### Added

@@ -32,6 +32,7 @@ Python installation is needed.
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean. |
 | **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
+| **Export** | Save either chart as a PNG or copy it to the clipboard, exactly as shown (zoom, pan, theme). |
 | **Your colors, your theme** | Every series and reference line can be recolored. Charts follow calibre's light or dark theme. |
 | **Bilingual** | English and German interface, following calibre's language. More languages can be added in `translations/<lang>/`. |
 

@@ -180,3 +180,20 @@ def test_resolve_series_colors():
     assert cc.resolve_series_colors(True, {'goal': '#123456'})['total'] == '#b8b8b8'
     # light theme, explicit override
     assert cc.resolve_series_colors(False, {'total': '#000000'})['total'] == '#000000'
+
+
+def test_export_filename():
+    assert cc.export_filename('burn-up', date(2026, 10, 26)) == \
+        'reading-progress-burn-up-2026-10-26.png'
+
+
+def test_export_filename_defaults_to_today():
+    name = cc.export_filename('delay')
+    assert name == 'reading-progress-delay-{}.png'.format(
+        date.today().isoformat())
+
+
+def test_ensure_png_suffix():
+    assert cc.ensure_png_suffix('/tmp/chart') == '/tmp/chart.png'
+    assert cc.ensure_png_suffix('/tmp/chart.png') == '/tmp/chart.png'
+    assert cc.ensure_png_suffix('/tmp/chart.PNG') == '/tmp/chart.PNG'

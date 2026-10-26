@@ -207,3 +207,18 @@ def pan_view(x_min, x_max, y_max, fit_x_min, fit_x_max, shift_days):
         new_x_min = new_x_min - timedelta(days=drift)
 
     return View(new_x_min, new_x_max, y_max)
+
+
+def export_filename(kind, today=None):
+    """Suggested file name for a PNG export, e.g.
+    ``reading-progress-burn-up-2026-10-26.png``."""
+    if today is None:
+        today = date.today()
+    return 'reading-progress-{}-{}.png'.format(kind, today.isoformat())
+
+
+def ensure_png_suffix(path):
+    """``path`` with a ``.png`` suffix (kept if already present, any case)."""
+    if path.lower().endswith('.png'):
+        return path
+    return path + '.png'

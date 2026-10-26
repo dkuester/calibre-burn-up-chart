@@ -12,67 +12,33 @@ als es wert ist.
 
 ## Erledigt
 
-Im aktuellen Entwicklungszyklus abgeschlossen, kommt mit der nächsten
-Version:
+### Nächste Version
 
-### Unit-Tests
+In `main` gemergt, kommt mit der nächsten Version:
 
-Eine `pytest`-Suite (28 Tests) deckt die beiden
-Datenverarbeitungs-Einstiegspunkte ab:
+- **PNG-Export und Zwischenablage:** Beide Chart-Dialoge bekommen die
+  Knöpfe „Als PNG speichern…" und „In Zwischenablage kopieren". Sie
+  erfassen das Chart so, wie es gerade zu sehen ist, also mit Zoom,
+  Verschiebung und aktivem Theme.
+- **Tests und CI:** 66 `pytest`-Tests mit Pflicht-Coverage von 100 %
+  auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
+  `export_reading_status`). Die CI führt `ruff` und `pytest` unter
+  Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
+  aus. Ein Tag `v*` veröffentlicht das Release.
+- **Umzug auf GitHub:** Bis Oktober 2026 lag das Projekt auf Codeberg
+  und nutzte Forgejo Actions. Das Codeberg-Repo ist archiviert.
 
-- `compute_reading_time()` – Median, Mittel, leere Eingabe, Randfälle
-- `export_snapshots()` – Snapshot-Erzeugung, Monatsgrenzen, Randfälle
+### Veröffentlicht
 
-Sie läuft gegen synthetische Calibre-artige Wörterbücher, keine echte
-Datenbank nötig.
+Details im [Changelog](CHANGELOG.de.md).
 
-### CI
-
-Ein GitHub-Actions-Workflow (`.github/workflows/ci.yml`) führt `ruff`
-und `pytest` bei jedem Push auf `main` und jedem Pull-Request aus; ein
-Tag `v*` veröffentlicht das Release (`.github/workflows/release.yml`).
-Bis Oktober 2026 lag das Projekt auf Codeberg und nutzte Forgejo Actions.
-
-### Refactoring `ChartWidget`
-
-`ChartWidget` in `chart_dialog.py` ist jetzt in Renderer-Klassen
-aufgeteilt: `AxesRenderer` (Achsen, Raster, Achsenbeschriftungen),
-`SeriesRenderer` (Datenlinien), `LegendRenderer` (die Legendenbox) und
-`AnnotationRenderer` („Heute: X ungelesen" und ähnliches). `ChartWidget`
-behält nur die Orchestrierung.
-
-### Prognoselinie
-
-Eine gestrichelte Prognoselinie extrapoliert den Backlog-Trend (lineare
-Regression über die letzten 12 Monate) und zeigt, wohin der SuB läuft,
-wenn die aktuelle Leserate bleibt. Sie ist konfigurierbar
-(„Prognoselinie anzeigen", standardmäßig an) und markiert das
-realistische Datum, an dem der Backlog 0 erreicht, neben dem
-Wunsch-Zieldatum.
-
-### Interaktive Tooltips (Burn-up-Chart)
-
-Beim Überfahren eines Datenpunkts erscheinen Datum und die Werte für
-Gesamt/Gelesen/SuB an diesem Punkt.
-
-### Zoom und Pan (Burn-up-Chart)
-
-Mausrad zoomt um den Cursor, Ziehen verschiebt, Doppelklick setzt die
-Ansicht zurück.
-
-### Konfigurierbare Farben (Burn-up-Chart)
-
-Die Farben aller Datenreihen und Referenzlinien lassen sich in den
-Plugin-Einstellungen ändern (mit sinnvollen Standardwerten).
-
-### Dunkelmodus
-
-Die Charts passen sich dem aktuellen Calibre-Theme an. Bei dunkler
-Farbpalette wechselt die Chart-Optik (Hintergrund, Achsen, Raster,
-Text, Legenden-/Hinweis-Boxen) auf helle Farben auf dunklem Grund, und
-die konfigurierbaren Serienfarben fallen auf kontrastreichere
-Dunkeltheme-Standards zurück – außer der Nutzer hat eine Farbe
-explizit gewählt.
+- **1.6.0:** Dunkelmodus für beide Charts.
+- **1.5.0:** Prognoselinie, interaktive Tooltips, Zoom und Pan sowie
+  konfigurierbare Farben (alles im Burn-up-Chart). `ChartWidget` in
+  Renderer-Klassen aufgeteilt. Erste Unit-Tests und CI.
+- **1.4.0:** Analyse der Leseverzögerung („Zeit zwischen Kauf und
+  Lesen").
+- **1.3.0:** Charts direkt mit QPainter gezeichnet, ohne matplotlib.
 
 ## Geplant
 
@@ -82,12 +48,6 @@ Features, die wir bauen wollen, aber ohne feste Zielversion.
 
 Zwei Linien: Wie viele Bücher kommen pro Monat dazu, wie viele werden
 gelesen. Ergänzt das Burn-up-Chart um die zugrunde liegende Dynamik.
-
-### PNG-Export
-
-Ein Button im Chart-Dialog: „Als PNG speichern". Verwendet
-`widget.render(QPixmap)`, um das aktuelle Chart in eine Datei zu
-schreiben. Nützlich für Reports oder zum Teilen.
 
 ### Zeitraum wählbar
 
@@ -131,7 +91,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 
 ### Teilen
 
-- Chart in die Zwischenablage kopieren
 - Markdown-/HTML-Report der wichtigsten Kennzahlen
 
 ## Nicht geplant

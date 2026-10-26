@@ -7,12 +7,15 @@ No external dependencies besides Qt (bundled with Calibre).
 
 import traceback
 
+from calibre.gui2 import choose_save_file, error_dialog
 from calibre_plugins.readingprogress.chart_common import (
     DARK_DEFAULT_COLORS,
     DEFAULT_COLORS,
     View,
     chrome_colors,
     compute_y_axis,
+    ensure_png_suffix,
+    export_filename,
     is_dark_background,
     nice_step,
     pan_view,
@@ -22,6 +25,7 @@ from calibre_plugins.readingprogress.chart_common import (
 )
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
+    QApplication,
     QColor,
     QDialog,
     QFont,
@@ -30,6 +34,7 @@ from qt.core import (
     QPainter,
     QPalette,
     QPen,
+    QPoint,
     QPointF,
     QPushButton,
     QRectF,
@@ -189,6 +194,43 @@ def show_paint_error(widget, error):
         painter.end()
     except Exception:
         pass
+
+
+def save_chart_png(widget, kind):
+    """Asks for a file name and saves ``widget`` as currently shown."""
+    path = choose_save_file(
+        widget, 'readingprogress-export-png', _("Save chart as PNG"),
+        filters=[(_("PNG images"), ['png'])], all_files=False,
+        initial_filename=export_filename(kind))
+    if not path:
+        return
+    path = ensure_png_suffix(path)
+    if not widget.grab().save(path, 'PNG'):
+        error_dialog(widget, _("Export failed"),
+                     _("Could not write {path}.").format(path=path),
+                     show=True)
+
+
+def copy_chart_to_clipboard(widget, button):
+    """Copies ``widget`` as currently shown to the clipboard as an image."""
+    QApplication.clipboard().setPixmap(widget.grab())
+    QToolTip.showText(button.mapToGlobal(QPoint(0, button.height())),
+                      _("Chart copied to clipboard"), button)
+
+
+def add_export_buttons(row, widget, kind):
+    """Adds 'Save as PNG…' and 'Copy to clipboard' buttons to ``row``.
+
+    ``kind`` names the chart in the suggested file name.
+    """
+    save_btn = QPushButton(_("Save as PNG…"))
+    save_btn.clicked.connect(lambda: save_chart_png(widget, kind))
+    row.addWidget(save_btn)
+
+    copy_btn = QPushButton(_("Copy to clipboard"))
+    copy_btn.clicked.connect(
+        lambda: copy_chart_to_clipboard(widget, copy_btn))
+    row.addWidget(copy_btn)
 
 
 class PlotScale:
@@ -760,7 +802,7 @@ class ChartWidget(QWidget):
 
 
 class ChartDialog(QDialog):
-    """Dialog that holds the chart widget and a Close button."""
+    """Dialog that holds the chart widget, export buttons and Close."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None, show_forecast=True, forecast=None, colors=None):
@@ -776,6 +818,7 @@ class ChartDialog(QDialog):
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
+        add_export_buttons(row, self.chart, 'burn-up')
         row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.accept)

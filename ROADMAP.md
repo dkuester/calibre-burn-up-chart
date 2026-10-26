@@ -11,63 +11,32 @@ worth.
 
 ## Done
 
-Completed in the current development cycle, shipping with the next
-release:
+### Next release
 
-### Unit tests
+Merged into `main`, shipping with the next release:
 
-A `pytest` suite (28 tests) covers the two data-processing entry points:
+- **PNG export and clipboard:** Both chart dialogs get "Save as PNG…"
+  and "Copy to clipboard" buttons. They capture the chart as currently
+  shown, including zoom, pan and the active theme.
+- **Tests and CI:** 66 `pytest` tests with a 100% coverage gate on the
+  Qt-free modules (`chart_common`, `config_helpers`,
+  `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
+  and 3.12 for every push to `main` and every pull request. A `v*` tag
+  publishes the release.
+- **Moved to GitHub:** Until October 2026 the project lived on Codeberg
+  and used Forgejo Actions. The Codeberg repository is archived.
 
-- `compute_reading_time()` – median, mean, empty input, edge cases
-- `export_snapshots()` – snapshot generation, month boundaries, edge cases
+### Released
 
-It runs against synthetic Calibre-style dictionaries, no real database.
+Details in the [changelog](CHANGELOG.md).
 
-### CI
-
-A GitHub Actions workflow (`.github/workflows/ci.yml`) runs `ruff` and
-`pytest` on every push to `main` and every pull request; a `v*` tag
-publishes the release (`.github/workflows/release.yml`). Until October
-2026 the project lived on Codeberg and used Forgejo Actions.
-
-### Refactoring `ChartWidget`
-
-`ChartWidget` in `chart_dialog.py` is now split into renderer classes:
-`AxesRenderer` (axes, grid, tick labels), `SeriesRenderer` (data series
-lines), `LegendRenderer` (the legend box) and `AnnotationRenderer`
-("Today: X unread" and similar). `ChartWidget` keeps only the
-orchestration.
-
-### Forecast line
-
-A dashed forecast line extrapolates the backlog trend (linear regression
-over the last 12 months) to show where the TBR is heading if the current
-reading rate continues. It is configurable ("Show forecast line", on by
-default) and annotates the realistic date the backlog reaches 0, next to
-the desired target date.
-
-### Interactive tooltips (burn-up chart)
-
-Hovering over a data point shows its date and the total/read/backlog
-values at that point.
-
-### Zoom and pan (burn-up chart)
-
-Mouse wheel zooms in and out around the cursor, dragging pans, and a
-double-click resets the view to fit.
-
-### Configurable colors (burn-up chart)
-
-The colors of all data series and reference lines can be changed in the
-plugin settings (with sensible defaults).
-
-### Dark mode support
-
-The charts adapt to Calibre's current theme. On a dark palette the
-chart chrome (background, axes, grid, text, legend/annotation boxes)
-switches to light-on-dark colors, and the configurable series colors
-fall back to higher-contrast dark-theme defaults unless the user
-explicitly picked a color.
+- **1.6.0:** dark mode for both charts.
+- **1.5.0:** forecast line, interactive tooltips, zoom and pan, and
+  configurable colors (all for the burn-up chart). `ChartWidget` was
+  split into renderer classes. First unit tests and CI.
+- **1.4.0:** reading-delay analysis ("time between purchase and
+  reading").
+- **1.3.0:** charts drawn directly with QPainter; no matplotlib.
 
 ## Planned
 
@@ -78,11 +47,6 @@ Features we intend to build, but without a fixed target version.
 Two lines showing how many books are added per month and how many are
 read per month. Complements the burn-up chart by showing the underlying
 dynamics.
-
-### PNG export
-
-A button in the chart dialog: "Save as PNG". Uses `widget.render(QPixmap)`
-to write the current chart to a file. Useful for reports or sharing.
 
 ### Configurable time range
 
@@ -123,7 +87,6 @@ Broader ideas, none of them committed.
 
 ### Sharing
 
-- Copy chart to clipboard
 - Markdown / HTML report of key metrics
 
 ## Not planned
