@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.7.0] – 2026-10-26
 
 ### Added
 
@@ -33,8 +33,8 @@
 - **Time range (burn-up chart):** A "Time range" selector in the chart
   dialog: "All time", "Last 5 years", "Last 2 years". The limited
   ranges end today, so recent history fills the chart; the title then
-  names the range and the legend lists only the data series. Zoom and pan stay within the range, and
-  the choice is remembered.
+  names the range and the legend lists only the data series. Zoom and
+  pan stay within the range, and the choice is remembered.
 
 ### Changed
 
@@ -43,10 +43,15 @@
   and dragging pans, a time range selector recomputes median and mean
   for that range, points use the configurable read color, and the
   chart can be saved as PNG or copied to the clipboard.
-
+- **Requires calibre 8.0 or newer.** The plugin now uses Qt 6 only; the
+  Qt 5 compatibility code is gone.
+- **Clearer errors:** if the "read" or "last read" column does not
+  exist or has the wrong type, the charts say which column and where to
+  change it, instead of a short status-bar message. The settings warn
+  about it when saved. Other read errors open a dialog with details.
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 99 tests with a 100% coverage gate on the
+- Test suite extended to 110 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks
@@ -56,6 +61,15 @@
 
 - Lines no longer spill into the axis margins when the burn-up chart is
   zoomed in.
+- Y-axis labels are correct again: steps such as 2.5 were cut to
+  "0, 2, 5, 7, 10, 12", small axes showed "0, 0, 1, 1". Book counts now
+  use whole-number steps.
+- The reading-delay axis in years uses the decimal separator of the
+  calibre language ("1,5" in German).
+- An empty library, or one without dates added, now shows "No data
+  available for this analysis." instead of an untranslated error.
+- A target date in the past is kept in the settings instead of being
+  moved to today when they are saved.
 
 ## [1.6.0] – 2026-10-16
 

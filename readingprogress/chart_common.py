@@ -113,26 +113,53 @@ def all_colors_are_light_defaults(stored):
     return all(stored.get(k) == DEFAULT_COLORS[k] for k in DEFAULT_COLORS)
 
 
-def nice_step(max_value):
-    """A "nice" tick step (1/2/2.5/5 x 10^n) for a value axis."""
+def nice_step(max_value, integer=False):
+    """A "nice" tick step (1/2/2.5/5 x 10^n) for a value axis.
+
+    ``integer=True`` is for axes that count books: only whole steps of
+    1/2/5 x 10^n, so every tick label is a whole number.
+    """
     if max_value <= 0:
         return 1
     raw = max_value / 5.0
     magnitude = 10 ** math.floor(math.log10(raw))
-    for factor in (1, 2, 2.5, 5, 10):
+    factors = (1, 2, 5, 10) if integer else (1, 2, 2.5, 5, 10)
+    for factor in factors:
         step = factor * magnitude
         if step >= raw:
-            return step
+            return max(step, 1) if integer else step
     return 10 * magnitude  # pragma: no cover  (factor=10 always returns)
 
 
-def compute_y_axis(max_value):
+def compute_y_axis(max_value, integer=False):
     """(tick step, rounded-up axis maximum) for a value axis."""
     if max_value <= 0:
         return 1, 1
-    step = nice_step(max_value)
+    step = nice_step(max_value, integer)
     y_max = math.ceil(max_value / step) * step
     return step, y_max
+
+
+def axis_ticks(y_max, step):
+    """Tick values 0, step, 2*step, … up to ``y_max`` (computed by index,
+    so no floating-point error accumulates)."""
+    count = int(y_max / step + 1e-9)
+    return [i * step for i in range(count + 1)]
+
+
+def tick_decimals(step):
+    """Decimals needed to label ticks ``step`` apart (0 for whole steps,
+    2 for 0.25, …)."""
+    for decimals in range(4):
+        scaled = step * 10 ** decimals
+        if abs(scaled - round(scaled)) < 1e-9:
+            return decimals
+    return 3
+
+
+def format_number(value, decimals, decimal_sep='.'):
+    """``value`` with ``decimals`` decimals and the locale's separator."""
+    return '{:.{}f}'.format(value, decimals).replace('.', decimal_sep)
 
 
 def year_tick_step(year_span):
@@ -260,12 +287,11 @@ def visible_y_max(rows, x_min, x_max):
 def delay_unit(max_days):
     """Y unit of the delay chart for the largest delay in days.
 
-    :return: ``(unit, factor, decimals)`` – 'days', 'months' or 'years',
-        the factor converting days into that unit and the decimals for
-        its axis labels.
+    :return: ``(unit, factor)`` – 'days', 'months' or 'years' and the
+        factor converting days into that unit.
     """
     if max_days <= 90:
-        return 'days', 1.0, 0
+        return 'days', 1.0
     if max_days <= 730:
-        return 'months', 1.0 / 30.44, 0
-    return 'years', 1.0 / 365.25, 1
+        return 'months', 1.0 / 30.44
+    return 'years', 1.0 / 365.25

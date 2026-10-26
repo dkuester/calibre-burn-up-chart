@@ -12,9 +12,9 @@ als es wert ist.
 
 ## Erledigt
 
-### Nächste Version
+### 1.7.0
 
-In `main` gemergt, kommt mit der nächsten Version:
+Kommt mit 1.7.0:
 
 - **PNG-Export und Zwischenablage:** Alle Chart-Dialoge bekommen die
   Knöpfe „Als PNG speichern…" und „In Zwischenablage kopieren". Sie
@@ -41,11 +41,13 @@ In `main` gemergt, kommt mit der nächsten Version:
   PNG-/Zwischenablage-Export.
 - **Bericht:** speichert die Kennzahlen aller Charts als Markdown oder
   als einzelne HTML-Seite mit eingebettetem Burn-up- und Raten-Chart.
-- **Tests und CI:** 99 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Setzt calibre 8.0 voraus:** Das Plugin nutzt nur noch Qt 6, der
+  Kompatibilitätscode für Qt 5 ist entfallen.
+- **Tests und CI:** 110 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
-  `export_reading_status`). Die CI führt `ruff` und `pytest` unter
-  Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
-  aus. Ein Tag `v*` veröffentlicht das Release.
+  `export_reading_status`, `report`). Die CI führt `ruff` und `pytest`
+  unter Python 3.10 und 3.12 bei jedem Push auf `main` und jedem
+  Pull-Request aus. Ein Tag `v*` veröffentlicht das Release.
 - **Umzug auf GitHub:** Bis Oktober 2026 lag das Projekt auf Codeberg
   und nutzte Forgejo Actions. Das Codeberg-Repo ist archiviert.
 

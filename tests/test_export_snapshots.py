@@ -78,13 +78,13 @@ def test_missing_timestamp_is_counted(make_db):
 
 
 def test_no_usable_events_raises(make_db):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ers.NoDataError):
         ers.export_snapshots(make_db({}), today=date(2024, 1, 1))
 
 
 def test_all_without_timestamp_raises(make_db):
     db = make_db({1: {"timestamp": None, "#gelesen": True}})
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ers.NoDataError):
         ers.export_snapshots(db, today=date(2024, 1, 1))
 
 

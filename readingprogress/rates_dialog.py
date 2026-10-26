@@ -78,11 +78,10 @@ class RatesChartWidget(QWidget):
     ``(date, added, read, added_avg, read_avg)`` per month.
     """
 
-    def __init__(self, rates, date_format, decimal_sep='.', parent=None,
-                 colors=None, time_range='all'):
+    def __init__(self, rates, decimal_sep='.', parent=None, colors=None,
+                 time_range='all'):
         super().__init__(parent)
         self.rates = rates
-        self.date_format = date_format
         self.decimal_sep = decimal_sep
         self.time_range = time_range
         self.chrome = chrome_for(self)
@@ -123,7 +122,8 @@ class RatesChartWidget(QWidget):
         return fit_x_range(first, last, last, self.time_range)
 
     def _scale(self, plot):
-        """PlotScale for the current time range, or None if degenerate."""
+        """``(PlotScale, x_max, y_step)`` for the current time range, or
+        None if the range is degenerate."""
         x_min, x_max = self._x_range()
         x_days = (x_max - x_min).days
         if x_days <= 0:
@@ -131,7 +131,7 @@ class RatesChartWidget(QWidget):
         visible = [r for r in self.rates if x_min <= r[0] <= x_max] \
             or self.rates
         y_step, y_max = compute_y_axis(
-            Y_HEADROOM * max(max(r[3], r[4]) for r in visible))
+            Y_HEADROOM * max(max(r[3], r[4]) for r in visible), integer=True)
         return PlotScale(plot, x_min, x_days, y_max), x_max, y_step
 
     def _do_paint(self):
@@ -274,14 +274,14 @@ class RatesChartWidget(QWidget):
 class RatesChartDialog(QDialog):
     """Dialog with the rates chart, time range, export buttons and Close."""
 
-    def __init__(self, rates, date_format, decimal_sep='.', parent=None,
-                 colors=None, time_range='all', on_time_range_changed=None):
+    def __init__(self, rates, decimal_sep='.', parent=None, colors=None,
+                 time_range='all', on_time_range_changed=None):
         super().__init__(parent)
         self.setWindowTitle(_("Purchase rate vs. reading rate"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
-        self.chart = RatesChartWidget(rates, date_format, decimal_sep, self,
+        self.chart = RatesChartWidget(rates, decimal_sep, self,
                                       colors=colors, time_range=time_range)
         layout.addWidget(self.chart, 1)
 
@@ -291,6 +291,6 @@ class RatesChartDialog(QDialog):
         add_export_buttons(row, self.chart, 'rates')
         row.addStretch()
         btn = QPushButton(_("Close"))
-        btn.clicked.connect(self.accept)
+        btn.clicked.connect(self.reject)
         row.addWidget(btn)
         layout.addLayout(row)

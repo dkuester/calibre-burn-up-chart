@@ -19,14 +19,12 @@ from calibre_plugins.readingprogress.chart_common import (
     is_dark_background,
     nice_step,
     pan_view,
-    year_tick_step,
     zoom_view,
 )
 from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_CENTER,
-    ALIGN_RIGHT,
-    ALIGN_VCENTER,
     CAP_ROUND,
+    LEFT_BUTTON,
     PEN_DASH,
     PEN_DOT,
     RENDER_ANTIALIASING,
@@ -34,6 +32,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     TOOLTIP_RADIUS,
     ZOOM_IN_FACTOR,
     ZOOM_OUT_FACTOR,
+    AxesRenderer,
     PlotScale,
     _cursor_pos,
     _global_pos,
@@ -59,7 +58,6 @@ from qt.core import (
     QPointF,
     QPushButton,
     QRectF,
-    Qt,
     QToolTip,
     QVBoxLayout,
     QWidget,
@@ -88,11 +86,14 @@ class DelayChartWidget(QWidget):
     is called with a book id.
     """
 
-    def __init__(self, points, date_format, parent=None, books=None,
-                 colors=None, time_range='all', on_point_clicked=None):
+    def __init__(self, points, date_format, decimal_sep='.', parent=None,
+                 books=None, colors=None, time_range='all',
+                 on_point_clicked=None):
         super().__init__(parent)
         self.points = points
         self.date_format = date_format
+        self.decimal_sep = decimal_sep
+        self._axes = AxesRenderer()
         self.books = books or {}
         self.on_point_clicked = on_point_clicked
         self.chrome = chrome_for(self)
@@ -124,8 +125,7 @@ class DelayChartWidget(QWidget):
                             if x_min <= p[0] <= x_max]
             self.statistics = delay_statistics(self.visible)
         if self.statistics is not None:
-            self.y_unit, self.y_factor, self.y_decimals = delay_unit(
-                self.statistics['max'])
+            self.y_unit, self.y_factor = delay_unit(self.statistics['max'])
         self.update()
 
     # ------------------------------------------------------------------
@@ -144,9 +144,15 @@ class DelayChartWidget(QWidget):
         x_min, x_max = self.visible[0][0], self.visible[-1][0]
         margin = timedelta(days=max(1, int((x_max - x_min).days
                                            * X_MARGIN_SHARE)))
-        _, y_max = compute_y_axis(max(self.statistics['max'], 1)
-                                  * self.y_factor)
+        _step, y_max = compute_y_axis(
+            max(self.statistics['max'], 1) * self.y_factor,
+            integer=self._whole_units())
         return View(x_min - margin, x_max + margin, y_max)
+
+    def _whole_units(self):
+        """Days and months get whole-number ticks, years may need
+        fractions (a TBR of 1.5 years)."""
+        return self.y_unit != 'years'
 
     def _current_view(self):
         return self._view if self._view is not None else self._fit_view()
@@ -179,7 +185,7 @@ class DelayChartWidget(QWidget):
 
         plot = self._plot_rect()
         scale = self._scale(plot)
-        y_step = nice_step(scale.y_max)
+        y_step = nice_step(scale.y_max, integer=self._whole_units())
 
         self._draw_header(painter, plot)
         self._draw_axes(painter, scale, y_step)
@@ -225,83 +231,15 @@ class DelayChartWidget(QWidget):
                          ALIGN_CENTER, text)
 
     def _draw_axes(self, painter, scale, y_step):
-        plot = scale.plot
-        x_max = scale.x_min + timedelta(days=scale.x_days)
-        painter.setPen(QPen(self.chrome['axis'], 1))
-        painter.drawLine(QPointF(plot.left(),  plot.top()),
-                         QPointF(plot.left(),  plot.bottom()))
-        painter.drawLine(QPointF(plot.left(),  plot.bottom()),
-                         QPointF(plot.right(), plot.bottom()))
-
-        font = QFont()
-        font.setPointSize(10)
-        painter.setFont(font)
-        fm = QFontMetrics(font)
-
-        # Y axis
-        y_value = 0.0
-        while y_value <= scale.y_max + 0.001:
-            y_pix = scale.value_to_y(y_value)
-            pen = QPen(self.chrome['grid'], 1)
-            pen.setStyle(PEN_DOT)
-            painter.setPen(pen)
-            painter.drawLine(QPointF(plot.left(),  y_pix),
-                             QPointF(plot.right(), y_pix))
-
-            painter.setPen(self.chrome['text'])
-            text = f"{y_value:.{self.y_decimals}f}"
-            width = fm.horizontalAdvance(text)
-            painter.drawText(
-                QRectF(plot.left() - 10 - width, y_pix - 8, width, 16),
-                ALIGN_RIGHT | ALIGN_VCENTER, text,
-            )
-            y_value += y_step
-
-        # X axis: years
-        year_span = scale.x_days / 365.25
-        step = year_tick_step(year_span)
-
-        from datetime import date as _date
-        for year in range(scale.x_min.year, x_max.year + 1):
-            if year % step != 0:
-                continue
-            x_pix = scale.date_to_x(_date(year, 1, 1))
-            if x_pix < plot.left() or x_pix > plot.right():
-                continue
-            painter.setPen(QPen(self.chrome['axis'], 1))
-            painter.drawLine(QPointF(x_pix, plot.bottom()),
-                             QPointF(x_pix, plot.bottom() + 5))
-            painter.setPen(self.chrome['text'])
-            t = str(year)
-            b = fm.horizontalAdvance(t)
-            painter.drawText(
-                QRectF(x_pix - b / 2, plot.bottom() + 8, b, 18),
-                ALIGN_CENTER, t,
-            )
-
-        # Axis titles
-        title_font = QFont()
-        title_font.setPointSize(11)
-        painter.setFont(title_font)
-        painter.setPen(self.chrome['text'])
-        painter.drawText(
-            QRectF(plot.left(), plot.bottom() + 28, plot.width(), 20),
-            ALIGN_CENTER, _("Read on"),
-        )
-
-        y_label = {
+        y_title = {
             "days":   _("Days until read"),
             "months": _("Months until read"),
             "years":  _("Years until read"),
         }[self.y_unit]
-        painter.save()
-        painter.translate(22, plot.center().y())
-        painter.rotate(-90)
-        painter.drawText(
-            QRectF(-plot.height() / 2, -10, plot.height(), 20),
-            ALIGN_CENTER, y_label,
-        )
-        painter.restore()
+        self._axes.draw(painter, scale,
+                        scale.x_min + timedelta(days=scale.x_days),
+                        scale.y_max, y_step, self.chrome, y_title=y_title,
+                        x_title=_("Read on"), decimal_sep=self.decimal_sep)
 
     def _statistic_lines(self, scale):
         """(y, label, color, style) of the median and mean lines."""
@@ -318,8 +256,7 @@ class DelayChartWidget(QWidget):
         for y, _label, color, style in self._statistic_lines(scale):
             pen = QPen(color, 2)
             pen.setStyle(style)
-            if CAP_ROUND is not None:
-                pen.setCapStyle(CAP_ROUND)
+            pen.setCapStyle(CAP_ROUND)
             painter.setPen(pen)
             painter.drawLine(QPointF(plot.left(), y),
                              QPointF(plot.right(), y))
@@ -390,7 +327,7 @@ class DelayChartWidget(QWidget):
             pass
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and self.visible:
+        if event.button() == LEFT_BUTTON and self.visible:
             self._press_pos = _cursor_pos(event)
             self._pan_view = self._current_view()
 
@@ -412,7 +349,7 @@ class DelayChartWidget(QWidget):
         QToolTip.showText(_global_pos(event), text, self)
 
     def mouseReleaseEvent(self, event):
-        if event.button() != Qt.LeftButton or self._press_pos is None:
+        if event.button() != LEFT_BUTTON or self._press_pos is None:
             return
         pos = _cursor_pos(event)
         moved = abs(pos.x() - self._press_pos.x()) + \
@@ -448,17 +385,18 @@ class DelayChartDialog(QDialog):
     dialog closes before it is called.
     """
 
-    def __init__(self, points, date_format, parent=None, books=None,
-                 colors=None, time_range='all', on_time_range_changed=None,
-                 on_show=None):
+    def __init__(self, points, date_format, decimal_sep='.', parent=None,
+                 books=None, colors=None, time_range='all',
+                 on_time_range_changed=None, on_show=None):
         super().__init__(parent)
         self.on_show = on_show
         self.setWindowTitle(_("Time between purchase and reading"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
-        self.chart = DelayChartWidget(points, date_format, self, books=books,
-                                      colors=colors, time_range=time_range,
+        self.chart = DelayChartWidget(points, date_format, decimal_sep, self,
+                                      books=books, colors=colors,
+                                      time_range=time_range,
                                       on_point_clicked=self._show)
         layout.addWidget(self.chart, 1)
 

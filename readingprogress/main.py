@@ -1,7 +1,8 @@
 import os
+import traceback
 import zipfile
 
-from calibre.gui2 import info_dialog
+from calibre.gui2 import error_dialog, info_dialog
 from calibre.gui2.actions import InterfaceAction
 from calibre.utils.config import JSONConfig
 from calibre.utils.localization import get_lang
@@ -11,8 +12,11 @@ from calibre_plugins.readingprogress.chart_common import (
     all_colors_are_light_defaults,
 )
 from calibre_plugins.readingprogress.config_helpers import (
+    column_problems,
+    custom_column_types,
     date_format,
     decimal_separator,
+    describe_column_problems,
     migrate_legacy_keys,
 )
 from calibre_plugins.readingprogress.localization import _
@@ -166,10 +170,64 @@ class ReadingProgressAction(InterfaceAction):
         try:
             for tb in self.gui.findChildren(QToolButton):
                 if tb.defaultAction() is self.qaction:
-                    tb.setPopupMode(QToolButton.MenuButtonPopup)
+                    tb.setPopupMode(
+                        QToolButton.ToolButtonPopupMode.MenuButtonPopup)
                     return
         except Exception as e:
             print(f'ReadingProgress: PopupMode error: {e}')
+
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
+    def _read_library(self, fetch):
+        """``fetch(db_api, read_column, last_read_column)`` after checking
+        the configured columns.
+
+        :return: its result, or ``None`` if the columns are unusable, the
+            library has no data or reading failed – the user has then
+            been told why.
+        """
+        from calibre_plugins.readingprogress.export_reading_status import (
+            NoDataError,
+        )
+
+        db_api = self.gui.current_db.new_api
+        read_column = config['read_column']
+        last_read_column = config['last_read_column']
+        try:
+            problems = column_problems(custom_column_types(db_api),
+                                       read_column, last_read_column)
+            if not problems:
+                return fetch(db_api, read_column, last_read_column)
+        except NoDataError:
+            self.gui.status_bar.show_message(
+                _('No data available for this analysis.'), 8000)
+            return None
+        except Exception:
+            error_dialog(self.gui, _('Export failed'),
+                         _('Could not read the library.'),
+                         det_msg=traceback.format_exc(), show=True)
+            return None
+        error_dialog(
+            self.gui, _('Column not usable'),
+            '\n'.join(describe_column_problems(problems, _)) + '\n\n'
+            + _('You can change the column names in the plugin settings.'),
+            show=True)
+        return None
+
+    @staticmethod
+    def _colors():
+        return {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+
+    @staticmethod
+    def _save_time_range(key):
+        config['time_range'] = key
+
+    def _show_in_library(self, book_ids):
+        from calibre_plugins.readingprogress.export_reading_status import (
+            id_search,
+        )
+        self.gui.search.set_search_string(id_search(book_ids))
 
     # ------------------------------------------------------------------
     # Actions
@@ -181,21 +239,11 @@ class ReadingProgressAction(InterfaceAction):
             forecast_backlog,
         )
 
-        try:
-            info = export_snapshots(
-                db_api=self.gui.current_db.new_api,
-                read_column=config['read_column'],
-                last_read_column=config['last_read_column'],
-            )
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
+        info = self._read_library(export_snapshots)
+        if info is None:
             return
 
         target_date, reduction_factor = _target_settings()
-
-        date_format = _date_format()
-
         self.gui.status_bar.show_message(
             _('Reading status: {read}/{total} read, backlog {backlog}').format(
                 read=info['read'], total=info['total'],
@@ -203,66 +251,45 @@ class ReadingProgressAction(InterfaceAction):
 
         show_forecast = bool(config['show_forecast'])
         forecast = forecast_backlog(info['rows']) if show_forecast else None
-        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
-
-        dlg = ChartDialog(info['rows'], target_date, reduction_factor,
-                          date_format, self.gui,
-                          show_forecast=show_forecast, forecast=forecast,
-                          colors=colors, time_range=config['time_range'],
-                          on_time_range_changed=self._save_time_range)
-        dlg.exec_()
-
-    @staticmethod
-    def _save_time_range(key):
-        config['time_range'] = key
+        ChartDialog(info['rows'], target_date, reduction_factor,
+                    _date_format(), self.gui,
+                    show_forecast=show_forecast, forecast=forecast,
+                    colors=self._colors(), time_range=config['time_range'],
+                    on_time_range_changed=self._save_time_range).exec()
 
     def show_delay(self):
         from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
             compute_reading_time,
-            id_search,
         )
 
-        try:
-            info = compute_reading_time(
-                db_api=self.gui.current_db.new_api,
-                read_column=config['read_column'],
-                last_read_column=config['last_read_column'],
-            )
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
-            return
+        def fetch(db_api, read_column, last_read_column):
+            info = compute_reading_time(db_api, read_column, last_read_column)
+            ids = [p[2] for p in info['points']]
+            titles = db_api.all_field_for('title', ids)
+            authors = db_api.all_field_for('authors', ids)
+            books = {i: (titles.get(i) or '',
+                         ' & '.join(authors.get(i) or ()))
+                     for i in ids}
+            return info['points'], books
 
-        if not info['points']:
+        result = self._read_library(fetch)
+        if result is None:
+            return
+        points, books = result
+        if not points:
             self.gui.status_bar.show_message(
                 _('No data available for this analysis.'), 8000)
             return
 
-        s = info['statistics']
-        self.gui.status_bar.show_message(
-            _('Median: {med} days, mean: {mean} days (n={n})').format(
-                med=int(round(s['median'])),
-                mean=int(round(s['mean'])),
-                n=s['count']), 5000)
-
-        db_api = self.gui.current_db.new_api
-        ids = [p[2] for p in info['points']]
-        titles = db_api.all_field_for('title', ids)
-        authors = db_api.all_field_for('authors', ids)
-        books = {i: (titles.get(i) or '', ' & '.join(authors.get(i) or ()))
-                 for i in ids}
-        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
-
-        def show_in_library(book_ids):
-            self.gui.search.set_search_string(id_search(book_ids))
-
-        dlg = DelayChartDialog(
-            info['points'], _date_format(), self.gui, books=books,
-            colors=colors, time_range=config['time_range'],
+        # Median and mean are in the chart header, computed for the
+        # selected time range.
+        DelayChartDialog(
+            points, _date_format(), _decimal_separator(), self.gui,
+            books=books, colors=self._colors(),
+            time_range=config['time_range'],
             on_time_range_changed=self._save_time_range,
-            on_show=show_in_library)
-        dlg.exec_()
+            on_show=self._show_in_library).exec()
 
     def show_rates(self):
         from calibre_plugins.readingprogress.export_reading_status import (
@@ -273,109 +300,76 @@ class ReadingProgressAction(InterfaceAction):
             RatesChartDialog,
         )
 
-        try:
-            info = export_snapshots(
-                db_api=self.gui.current_db.new_api,
-                read_column=config['read_column'],
-                last_read_column=config['last_read_column'],
-            )
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
+        info = self._read_library(export_snapshots)
+        if info is None:
             return
-
-        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
-        dlg = RatesChartDialog(
-            compute_rates(info['rows']), _date_format(),
-            _decimal_separator(), self.gui, colors=colors,
-            time_range=config['time_range'],
-            on_time_range_changed=self._save_time_range)
-        dlg.exec_()
+        RatesChartDialog(
+            compute_rates(info['rows']), _decimal_separator(), self.gui,
+            colors=self._colors(), time_range=config['time_range'],
+            on_time_range_changed=self._save_time_range).exec()
 
     def show_quality(self):
         from calibre_plugins.readingprogress.export_reading_status import (
             find_date_problems,
-            id_search,
         )
         from calibre_plugins.readingprogress.quality_dialog import (
             QualityDialog,
         )
 
-        db_api = self.gui.current_db.new_api
-        try:
-            problems = find_date_problems(
-                db_api, config['read_column'], config['last_read_column'])
-            read_flags = db_api.all_field_for(
-                config['read_column'], db_api.all_book_ids())
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
-            return
+        def fetch(db_api, read_column, last_read_column):
+            problems = find_date_problems(db_api, read_column,
+                                          last_read_column)
+            read_flags = db_api.all_field_for(read_column,
+                                              db_api.all_book_ids())
+            return problems, sum(1 for v in read_flags.values() if v is True)
 
+        result = self._read_library(fetch)
+        if result is None:
+            return
+        problems, read_total = result
         if not problems:
             info_dialog(
                 self.gui, _('Data quality'),
                 _('All read books have a usable read date.'), show=True)
             return
 
-        def show_in_library(book_ids):
-            self.gui.search.set_search_string(id_search(book_ids))
-
-        read_total = sum(1 for v in read_flags.values() if v is True)
         QualityDialog(problems, read_total, _date_format(), self.gui,
-                      on_show=show_in_library).exec_()
+                      on_show=self._show_in_library).exec()
 
     def show_age(self):
         from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
+            MAX_AGE_YEARS,
             age_buckets,
             backlog_ages,
-            id_search,
             median_age_years,
         )
 
-        try:
-            ages = backlog_ages(self.gui.current_db.new_api,
-                                config['read_column'])
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
+        ages = self._read_library(
+            lambda db_api, read_column, _last_read: backlog_ages(
+                db_api, read_column))
+        if ages is None:
             return
         if not ages:
             self.gui.status_bar.show_message(
                 _('No data available for this analysis.'), 8000)
             return
 
-        max_years = 10
         summary = {
             'median_years': median_age_years(ages),
             'oldest_year': min(a[1] for a in ages).year,
         }
-        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
-
-        def show_in_library(book_ids):
-            self.gui.search.set_search_string(id_search(book_ids))
-
-        AgeChartDialog(age_buckets(ages, max_years), max_years, summary,
-                       _decimal_separator(), self.gui, colors=colors,
-                       on_show=show_in_library).exec_()
+        AgeChartDialog(age_buckets(ages), MAX_AGE_YEARS, summary,
+                       _decimal_separator(), self.gui, colors=self._colors(),
+                       on_show=self._show_in_library).exec()
 
     def save_report(self):
         from datetime import date
 
-        from calibre.gui2 import choose_save_file, error_dialog
-        from calibre_plugins.readingprogress.age_dialog import bucket_label
+        from calibre.gui2 import choose_save_file
         from calibre_plugins.readingprogress.chart_dialog import ChartWidget
         from calibre_plugins.readingprogress.export_reading_status import (
-            MISSING_LAST_READ,
-            age_buckets,
-            backlog_ages,
-            compute_rates,
-            compute_reading_time,
-            export_snapshots,
-            find_date_problems,
-            forecast_backlog,
-            median_age_years,
+            collect_report_data,
         )
         from calibre_plugins.readingprogress.rates_dialog import (
             RatesChartWidget,
@@ -385,6 +379,14 @@ class ReadingProgressAction(InterfaceAction):
             build_report,
             report_format,
         )
+
+        target_date, reduction_factor = _target_settings()
+        data = self._read_library(
+            lambda db_api, read_column, last_read_column: collect_report_data(
+                db_api, read_column, last_read_column, target_date,
+                reduction_factor))
+        if data is None:
+            return
 
         today = date.today()
         path = choose_save_file(
@@ -399,59 +401,17 @@ class ReadingProgressAction(InterfaceAction):
         if fmt == HTML and not path.lower().endswith(('.html', '.htm')):
             path += '.html'
 
-        db_api = self.gui.current_db.new_api
-        read_column = config['read_column']
-        last_read_column = config['last_read_column']
-        try:
-            info = export_snapshots(db_api, read_column, last_read_column)
-            rates = compute_rates(info['rows'])
-            forecast = forecast_backlog(info['rows'])
-            delay = compute_reading_time(
-                db_api, read_column, last_read_column)['statistics']
-            ages = backlog_ages(db_api, read_column)
-            problems = find_date_problems(
-                db_api, read_column, last_read_column)
-        except Exception as e:
-            self.gui.status_bar.show_message(
-                _('Export failed: {}').format(e), 5000)
-            return
-
-        max_years = 10
-        buckets = age_buckets(ages, max_years)
-        target_date, reduction_factor = _target_settings()
-        missing = sum(1 for p in problems
-                      if p['problem'] == MISSING_LAST_READ)
-        data = {
-            'total': info['total'],
-            'read': info['read'],
-            'backlog': info['backlog'],
-            'last12': {'added': sum(r[1] for r in rates[-12:]),
-                       'read': sum(r[2] for r in rates[-12:])},
-            'target_date': target_date,
-            'target_tbr': round(info['backlog'] * reduction_factor),
-            'forecast': forecast,
-            'delay': delay,
-            'age': {
-                'median_years': median_age_years(ages),
-                'buckets': [(bucket_label(i, len(buckets), max_years),
-                             len(ids)) for i, ids in enumerate(buckets)],
-            },
-            'quality': {'missing': missing,
-                        'before_added': len(problems) - missing},
-        }
-
         images = []
         if fmt == HTML:
-            colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+            colors = self._colors()
             charts = [
                 (_('Burn-up chart'), ChartWidget(
-                    info['rows'], target_date, reduction_factor,
+                    data['rows'], target_date, reduction_factor,
                     _date_format(), show_forecast=bool(
                         config['show_forecast']),
-                    forecast=forecast, colors=colors)),
+                    forecast=data['forecast'], colors=colors)),
                 (_('Purchase rate vs. reading rate'), RatesChartWidget(
-                    rates, _date_format(), _decimal_separator(),
-                    colors=colors)),
+                    data['rates'], _decimal_separator(), colors=colors)),
             ]
             for caption, widget in charts:
                 png = _chart_png_base64(widget)

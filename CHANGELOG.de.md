@@ -1,9 +1,9 @@
-## [Unveröffentlicht]
+## [1.7.0] – 2026-10-26
 
 ### Hinzugefügt
 
-- **PNG-Export und Zwischenablage:** Knöpfe „Als PNG speichern…" und
-  „In Zwischenablage kopieren" in allen Chart-Dialogen. Sie erfassen
+- **PNG-Export und Zwischenablage:** Knöpfe „Als PNG speichern…“ und
+  „In Zwischenablage kopieren“ in allen Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
 - **Bericht:** „Bericht speichern…“ im Menü der Werkzeugleiste schreibt
@@ -35,12 +35,12 @@
   die letzten 12 Monate zusammen, der Tooltip zeigt die Werte jedes
   Monats. Zeitraum-Auswahl und PNG-/Zwischenablage-Export wie beim
   Burn-up-Chart.
-- **Zeitraum (Burn-up-Chart):** Eine Auswahl „Zeitraum" im
+- **Zeitraum (Burn-up-Chart):** Eine Auswahl „Zeitraum“ im
   Chart-Dialog: „Alles", „Letzte 5 Jahre", „Letzte 2 Jahre". Die
   begrenzten Zeiträume enden heute, damit der jüngere Verlauf das Chart
   füllt; der Titel nennt dann den Zeitraum, und die Legende zeigt nur
-  die Datenreihen. Zoom und
-  Verschieben bleiben im Zeitraum, und die Wahl wird gespeichert.
+  die Datenreihen. Zoom und Verschieben bleiben im Zeitraum, und die
+  Wahl wird gespeichert.
 
 ### Geändert
 
@@ -50,10 +50,16 @@
   berechnet Median und Mittelwert für diesen Zeitraum neu, die Punkte
   nutzen die einstellbare Farbe von „Gelesen“, und das Chart lässt sich
   als PNG speichern oder in die Zwischenablage kopieren.
-
+- **Setzt calibre 8.0 oder neuer voraus.** Das Plugin nutzt nur noch
+  Qt 6; der Kompatibilitätscode für Qt 5 ist entfallen.
+- **Klarere Fehlermeldungen:** Fehlt die Spalte „gelesen“ oder
+  „zuletzt gelesen“ oder hat sie den falschen Typ, nennen die Charts
+  die Spalte und wo man sie ändert, statt einer kurzen Meldung in der
+  Statuszeile. Die Einstellungen warnen schon beim Speichern. Andere
+  Lesefehler öffnen einen Dialog mit Details.
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 99 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 110 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht
@@ -63,6 +69,16 @@
 
 - Beim Hineinzoomen ins Burn-up-Chart ragen Linien nicht mehr in die
   Achsenränder.
+- Die Beschriftung der Y-Achse stimmt wieder: Schritte wie 2,5 wurden zu
+  „0, 2, 5, 7, 10, 12“ abgeschnitten, kleine Achsen zeigten „0, 0, 1,
+  1“. Buchzahlen haben jetzt ganzzahlige Schritte.
+- Die Achse des Verzögerungs-Charts in Jahren nutzt das
+  Dezimaltrennzeichen der calibre-Sprache („1,5“ statt „1.5“).
+- Eine leere Bibliothek oder eine ohne Aufnahmedaten zeigt jetzt „Keine
+  Daten für diese Auswertung verfügbar.“ statt eines unübersetzten
+  Fehlers.
+- Ein Zieldatum in der Vergangenheit bleibt in den Einstellungen
+  erhalten, statt beim Speichern auf heute zu springen.
 
 ## [1.6.0] – 2026-10-16
 

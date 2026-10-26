@@ -21,6 +21,37 @@ def test_compute_y_axis():
     assert cc.compute_y_axis(1000) == (200, 1000)
 
 
+def test_integer_axis_has_whole_steps():
+    # Without integer=True these give steps of 2.5, 0.25 and 0.5, whose
+    # labels were truncated to "0, 2, 5, 7, …" and "0, 0, 0, 1, …".
+    assert cc.compute_y_axis(11, integer=True) == (5, 15)
+    assert cc.compute_y_axis(1.1, integer=True) == (1, 2)
+    assert cc.compute_y_axis(2.2, integer=True) == (1, 3)
+    assert cc.compute_y_axis(96, integer=True) == (20, 100)
+    assert cc.compute_y_axis(0, integer=True) == (1, 1)
+    for value in (0.3, 1.1, 2.2, 7.3, 11, 12.5, 37, 96, 480, 1234):
+        step, _y_max = cc.compute_y_axis(value, integer=True)
+        assert step == int(step) and step >= 1
+
+
+def test_axis_ticks():
+    assert cc.axis_ticks(10, 2) == [0, 2, 4, 6, 8, 10]
+    assert cc.axis_ticks(0.75, 0.25) == [0, 0.25, 0.5, 0.75]
+    assert cc.axis_ticks(7.3, 2) == [0, 2, 4, 6]
+    ticks = cc.axis_ticks(1.0, 0.1)
+    assert len(ticks) == 11 and ticks[-1] == pytest.approx(1.0)
+
+
+def test_tick_decimals_and_format():
+    assert cc.tick_decimals(5) == 0
+    assert cc.tick_decimals(2.5) == 1
+    assert cc.tick_decimals(0.25) == 2
+    assert cc.tick_decimals(1 / 3) == 3
+    assert cc.format_number(1.5, 1, ',') == '1,5'
+    assert cc.format_number(1.25, 2) == '1.25'
+    assert cc.format_number(7, 0, ',') == '7'
+
+
 def test_compute_y_axis_small_value():
     step, y_max = cc.compute_y_axis(1)
     assert step == pytest.approx(0.2)
@@ -244,8 +275,8 @@ def test_visible_y_max():
 
 
 def test_delay_unit():
-    assert cc.delay_unit(0) == ('days', 1.0, 0)
-    assert cc.delay_unit(90) == ('days', 1.0, 0)
+    assert cc.delay_unit(0) == ('days', 1.0)
+    assert cc.delay_unit(90) == ('days', 1.0)
     assert cc.delay_unit(91)[0] == 'months'
-    assert cc.delay_unit(730) == ('months', pytest.approx(1 / 30.44), 0)
-    assert cc.delay_unit(731) == ('years', pytest.approx(1 / 365.25), 1)
+    assert cc.delay_unit(730) == ('months', pytest.approx(1 / 30.44))
+    assert cc.delay_unit(731) == ('years', pytest.approx(1 / 365.25))

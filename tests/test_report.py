@@ -17,8 +17,7 @@ def _data(**overrides):
         'forecast': {'ok': True, 'zero_date': date(2031, 5, 1)},
         'delay': {'count': 40, 'mean': 300.4, 'median': 120.0,
                   'min': 0, 'max': 2000},
-        'age': {'median_years': 2.4,
-                'buckets': [('< 1 year', 60), ('1–2 years', 90)]},
+        'age': {'median_years': 2.4, 'max_years': 10, 'counts': [60, 90]},
         'quality': {'missing': 3, 'before_added': 4},
     }
     data.update(overrides)
@@ -59,7 +58,8 @@ def test_forecast_variants():
 
 def test_optional_sections_left_out():
     sections = report.build_sections(
-        _data(delay=None, age={'median_years': None, 'buckets': []},
+        _data(delay=None, age={'median_years': None, 'max_years': 10,
+                              'counts': [0]},
               quality={'missing': 0, 'before_added': 0}, total=0, read=0),
         _tr, '%Y-%m-%d')
     headings = [s['heading'] for s in sections]
@@ -68,15 +68,16 @@ def test_optional_sections_left_out():
 
 
 def test_html_escapes_and_embeds_images():
-    data = _data(age={'median_years': 1.0,
-                      'buckets': [('<b>', 1), ('x', 0)]})
-    text = report.build_report(data, report.HTML, _tr, '%Y-%m-%d',
+    data = _data(age={'median_years': 1.0, 'max_years': 10,
+                      'counts': [1, 0]})
+    text = report.build_report(data, report.HTML, lambda t: '<b>' + t,
+                               '%Y-%m-%d',
                                title='A & B',
                                images=[('Chart <1>', 'QUJD')])
     assert text.startswith('<!DOCTYPE html>')
     assert '<title>A &amp; B</title>' in text
-    assert '<td>&lt;b&gt;</td>' in text
-    assert '<th class="num">Books</th>' in text
+    assert '<td>&lt;b&gt;&lt; 1 year</td>' in text
+    assert '<th class="num">&lt;b&gt;Books</th>' in text
     assert '<p class="note">' in text
     assert 'alt="Chart &lt;1&gt;" src="data:image/png;base64,QUJD"' in text
     assert text.rstrip().endswith('</body></html>')
@@ -93,3 +94,11 @@ def test_report_format():
     assert report.report_format('/x/report.MARKDOWN') == report.MARKDOWN
     assert report.report_format('/x/report.html') == report.HTML
     assert report.report_format('/x/report') == report.HTML
+
+
+def test_bucket_label():
+    assert report.bucket_label(_tr, 0, 11, 10) == '< 1 year'
+    assert report.bucket_label(_tr, 3, 11, 10) == '3–4 years'
+    assert report.bucket_label(_tr, 10, 11, 10) == '10+ years'
+    # A last bucket below the cap is an ordinary one-year bucket
+    assert report.bucket_label(_tr, 4, 5, 10) == '4–5 years'

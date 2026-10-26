@@ -1,7 +1,7 @@
 from calibre.customize import InterfaceActionBase
 from calibre.utils.config import JSONConfig
 
-__version__ = (1, 6, 0)
+__version__ = (1, 7, 0)
 __version_str__ = '.'.join(str(x) for x in __version__)
 
 
@@ -17,7 +17,7 @@ class ReadingProgressPlugin(InterfaceActionBase):
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Daniel'
     version = __version__
-    minimum_calibre_version = (5, 0, 0)
+    minimum_calibre_version = (8, 0, 0)
 
     actual_plugin = 'calibre_plugins.readingprogress.main:ReadingProgressAction'
 

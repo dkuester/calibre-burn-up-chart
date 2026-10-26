@@ -11,9 +11,9 @@ worth.
 
 ## Done
 
-### Next release
+### 1.7.0
 
-Merged into `main`, shipping with the next release:
+Shipping with 1.7.0:
 
 - **PNG export and clipboard:** All chart dialogs get "Save as PNG…"
   and "Copy to clipboard" buttons. They capture the chart as currently
@@ -36,11 +36,13 @@ Merged into `main`, shipping with the next release:
   mean, the configurable read color, and PNG/clipboard export.
 - **Report:** saves the key figures of all charts as Markdown or as a
   single HTML page with the burn-up and rate charts embedded.
-- **Tests and CI:** 99 `pytest` tests with a 100% coverage gate on the
+- **Requires calibre 8.0:** the plugin uses Qt 6 only, so the Qt 5
+  compatibility code is gone.
+- **Tests and CI:** 110 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
-  `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
-  and 3.12 for every push to `main` and every pull request. A `v*` tag
-  publishes the release.
+  `export_reading_status`, `report`). CI runs `ruff` and `pytest` on
+  Python 3.10 and 3.12 for every push to `main` and every pull request.
+  A `v*` tag publishes the release.
 - **Moved to GitHub:** Until October 2026 the project lived on Codeberg
   and used Forgejo Actions. The Codeberg repository is archived.
 

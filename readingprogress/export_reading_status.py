@@ -30,6 +30,11 @@ STANDALONE_LIBRARY = os.path.expanduser("~/Calibre-Bibliothek")
 STANDALONE_LOG     = "/tmp/readingprogress_log.csv"
 
 
+class NoDataError(RuntimeError):
+    """The library has no book with a date added, so there is nothing to
+    chart."""
+
+
 def to_date(value):
     if value is None:
         return None
@@ -116,7 +121,7 @@ def export_snapshots(db_api, read_column=None, last_read_column=None,
     events.sort()
 
     if not events:
-        raise RuntimeError("No usable events found.")
+        raise NoDataError("No usable events found.")
 
     if today is None:
         today = date.today()
@@ -390,7 +395,11 @@ def backlog_ages(db_api, read_column=None, today=None):
     return ages
 
 
-def age_buckets(ages, max_years=10):
+# Books at least this many years old share the last age bucket
+MAX_AGE_YEARS = 10
+
+
+def age_buckets(ages, max_years=MAX_AGE_YEARS):
     """Groups :func:`backlog_ages` into whole years of age.
 
     Bucket ``n`` holds the books aged ``n`` to ``n + 1`` years; the last
@@ -416,27 +425,6 @@ def median_age_years(ages):
     mid = len(days) // 2
     median = days[mid] if len(days) % 2 else (days[mid - 1] + days[mid]) / 2
     return median / 365.25
-
-if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
-    from calibre.library import db as calibre_db_factory
-
-    api = calibre_db_factory(STANDALONE_LIBRARY).new_api
-    info = export_snapshots(api, log_path=STANDALONE_LOG)
-
-    print(f"{info['month_count']} monthly snapshots written to "
-          f"{STANDALONE_LOG}")
-    print(f"Currently: {info['read']}/{info['total']} read "
-          f"| backlog: {info['backlog']}")
-    if info["missing_timestamp"]:
-        print(f"Note: {info['missing_timestamp']} books without timestamp "
-              f"skipped.")
-    if info["missing_last_read"]:
-        print(f"Note: {info['missing_last_read']} read books without "
-              f"#last_read recorded at timestamp.")
-    if info["last_read_before_added"]:
-        print(f"Note: {info['last_read_before_added']} books with "
-              f"last_read < timestamp recorded at timestamp.")
-
 
 def compute_reading_time(db_api, read_column=None, last_read_column=None):
     """
@@ -502,3 +490,62 @@ def delay_statistics(points):
         "min":    values[0],
         "max":    values[-1],
     }
+
+
+def collect_report_data(db_api, read_column, last_read_column, target_date,
+                        reduction_factor, today=None):
+    """All figures of the report (see ``report.build_sections``).
+
+    Also holds ``rows`` (from :func:`export_snapshots`), ``rates`` (from
+    :func:`compute_rates`) for the charts embedded in the HTML report.
+    Raises :class:`NoDataError` for a library without dates added.
+    """
+    info = export_snapshots(db_api, read_column, last_read_column,
+                            today=today)
+    rates = compute_rates(info["rows"])
+    ages = backlog_ages(db_api, read_column, today=today)
+    problems = find_date_problems(db_api, read_column, last_read_column)
+    missing = sum(1 for p in problems if p["problem"] == MISSING_LAST_READ)
+    last12 = rates[-12:]
+    return {
+        "total": info["total"],
+        "read": info["read"],
+        "backlog": info["backlog"],
+        "last12": {"added": sum(r[1] for r in last12),
+                   "read": sum(r[2] for r in last12)},
+        "target_date": target_date,
+        "target_tbr": round(info["backlog"] * reduction_factor),
+        "forecast": forecast_backlog(info["rows"]),
+        "delay": compute_reading_time(
+            db_api, read_column, last_read_column)["statistics"],
+        "age": {
+            "median_years": median_age_years(ages),
+            "max_years": MAX_AGE_YEARS,
+            "counts": [len(ids) for ids in age_buckets(ages)],
+        },
+        "quality": {"missing": missing,
+                    "before_added": len(problems) - missing},
+        "rows": info["rows"],
+        "rates": rates,
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
+    from calibre.library import db as calibre_db_factory
+
+    api = calibre_db_factory(STANDALONE_LIBRARY).new_api
+    info = export_snapshots(api, log_path=STANDALONE_LOG)
+
+    print(f"{info['month_count']} monthly snapshots written to "
+          f"{STANDALONE_LOG}")
+    print(f"Currently: {info['read']}/{info['total']} read "
+          f"| backlog: {info['backlog']}")
+    if info["missing_timestamp"]:
+        print(f"Note: {info['missing_timestamp']} books without timestamp "
+              f"skipped.")
+    if info["missing_last_read"]:
+        print(f"Note: {info['missing_last_read']} read books without "
+              f"#last_read recorded at timestamp.")
+    if info["last_read_before_added"]:
+        print(f"Note: {info['last_read_before_added']} books with "
+              f"last_read < timestamp recorded at timestamp.")

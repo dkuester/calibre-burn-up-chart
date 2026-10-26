@@ -6,7 +6,7 @@
 
 [![Release](https://img.shields.io/github/v/release/dkuester/calibre-burn-up-chart?label=release)](https://github.com/dkuester/calibre-burn-up-chart/releases/latest)
 [![CI](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml)
-[![calibre](https://img.shields.io/badge/calibre-5.0%2B-informational)](#voraussetzungen)
+[![calibre](https://img.shields.io/badge/calibre-8.0%2B-informational)](#voraussetzungen)
 [![Lizenz](https://img.shields.io/github/license/dkuester/calibre-burn-up-chart)](LICENSE)
 
 [Installation](#installation) · [Funktionen](#funktionen) · [Einstellungen](#einstellungen) · [Entwicklung](#entwicklung) · [Änderungen](CHANGELOG.de.md) · [Roadmap](ROADMAP.de.md) · [English](README.md)
@@ -38,14 +38,14 @@ Python-Installation ist nicht nötig.
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme und zeigt sie zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
-| **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
-| **Export** | Beide Charts als PNG speichern oder in die Zwischenablage kopieren, genau wie angezeigt (Zoom, Verschiebung, Theme). |
+| **Interaktiv** | Tooltips in jedem Chart. Im Burn-up- und im Verzögerungs-Chart Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
+| **Export** | Jedes Chart als PNG speichern oder in die Zwischenablage kopieren, genau wie angezeigt (Zoom, Verschiebung, Theme). |
 | **Eigene Farben, passendes Theme** | Jede Datenreihe und Referenzlinie lässt sich umfärben. Die Charts folgen dem hellen oder dunklen Theme von calibre. |
 | **Zweisprachig** | Deutsche und englische Oberfläche, je nach Sprache von calibre. Weitere Sprachen lassen sich unter `translations/<lang>/` ergänzen. |
 
 ## Voraussetzungen
 
-- calibre 5.0 oder neuer
+- calibre 8.0 oder neuer
 - Zwei benutzerdefinierte Spalten in der Bibliothek (Namen in den Einstellungen änderbar):
 
 | Spalte | Typ | Zweck |
