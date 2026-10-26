@@ -62,7 +62,52 @@ Details in the [changelog](CHANGELOG.md).
 
 Features we intend to build, but without a fixed target version.
 
-Nothing at the moment; the next candidates come from the ideas below.
+### Required pace to reach the goal
+
+One line in the burn-up chart and in the report, e.g. "For TBR = 0 by
+2050: read 4.6 books/month or buy at most 2.1 books/month." Turns the
+goal into a monthly number to act on. All data is already there; small
+effort.
+
+### Yearly reading goal (with the Reading Goal plugin)
+
+The "Reading Goal" plugin already manages yearly goals ("60 books in
+2026") and stores per year the goal, the books read and monthly counts
+(`plugins/Reading_Goal_Data_<library id>.json`). Instead of a second
+goal setting, read that data (read-only) and build a report from it:
+progress against the expected pace as a chart and in the report,
+enriched with our figures (TBR, purchases, reading delay). Shown only
+when the plugin and data for the current library exist.
+
+### Started series with their next volume
+
+A list of series that are started but not finished: series, progress
+("60/76"), the next unread volume (number and title) and when something
+from the series was last read, so stalled series stand out. Clicking
+shows the next volume in calibre, as in the data quality check and the
+age chart. Series with a single book in the library are left out. With
+gaps, show both the lowest unread volume and the first one after the
+highest read volume.
+
+### TBR by series
+
+Which series make up the largest part of the TBR, as bars. Helps decide
+what to read down – or what no longer to read at all.
+
+### Series progress chart
+
+One stacked bar (read/unread) per started series, sorted by progress.
+Visually appealing, but close to "Started series" in content.
+
+### Series checks in the data quality dialog
+
+- The same series under several names ("Expanse", "The Expanse-Serie",
+  "The Expanse")
+- Duplicate volume numbers within a series (editions in two languages,
+  omnibus volumes)
+- Gaps: an earlier volume unread while a later one is read
+
+Cleaner series data also makes the series analyses above more reliable.
 
 ## Ideas
 
