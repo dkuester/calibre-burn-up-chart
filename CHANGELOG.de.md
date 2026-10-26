@@ -6,6 +6,11 @@
   „In Zwischenablage kopieren" in allen Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
+- **Bericht:** „Bericht speichern…“ im Menü der Werkzeugleiste schreibt
+  die Kennzahlen (Bibliothek, letzte 12 Monate, Ziel und Prognose,
+  Leseverzögerung, Altersverteilung des SuB, Datenqualität) als
+  Markdown oder als einzelne HTML-Seite, die zusätzlich das Burn-up-
+  und das Kaufraten-Chart enthält.
 - **Altersverteilung des SuB:** Ein neues Chart zeigt die ungelesenen
   Bücher nach ganzen Jahren seit der Aufnahme (ab 10 Jahren in einem
   gemeinsamen Balken), mit Anzahl, Anteil und Median-Alter. Ein Klick
@@ -48,7 +53,7 @@
 
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 93 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 99 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht

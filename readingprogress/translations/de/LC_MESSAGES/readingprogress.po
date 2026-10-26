@@ -359,3 +359,91 @@ msgstr "{title}\n{authors}\nGelesen am {date} · {days} Tage bis zum Lesen\nKlic
 
 msgid "Click a point to show the book in calibre."
 msgstr "Klick auf einen Punkt zeigt das Buch in calibre."
+
+# Report
+msgid "Save report…"
+msgstr "Bericht speichern…"
+
+msgid "Save report"
+msgstr "Bericht speichern"
+
+msgid "HTML page"
+msgstr "HTML-Seite"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Reading progress report – {date}"
+msgstr "Lesefortschritt – Bericht vom {date}"
+
+msgid "Report saved: {path}"
+msgstr "Bericht gespeichert: {path}"
+
+msgid "Library"
+msgstr "Bibliothek"
+
+msgid "Books in total"
+msgstr "Bücher gesamt"
+
+msgid "Read"
+msgstr "Gelesen"
+
+msgid "Unread (TBR)"
+msgstr "Ungelesen (SuB)"
+
+msgid "Last 12 months"
+msgstr "Letzte 12 Monate"
+
+msgid "Books added"
+msgstr "Zugänge"
+
+msgid "Change of the TBR"
+msgstr "Veränderung des SuB"
+
+msgid "Goal and forecast"
+msgstr "Ziel und Prognose"
+
+msgid "Goal"
+msgstr "Ziel"
+
+msgid "TBR = 0 on {date}"
+msgstr "SuB = 0 am {date}"
+
+msgid "Gentle reduction"
+msgstr "Sanfter Abbau"
+
+msgid "TBR = {tbr} on {date}"
+msgstr "SuB = {tbr} am {date}"
+
+msgid "Not enough data for a forecast."
+msgstr "Zu wenige Daten für eine Prognose."
+
+msgid "The TBR is not shrinking at the current rate."
+msgstr "Bei der aktuellen Leserate schrumpft der SuB nicht."
+
+msgid "{days} days"
+msgstr "{days} Tage"
+
+msgid "Range"
+msgstr "Spanne"
+
+msgid "{min}–{max} days"
+msgstr "{min}–{max} Tage"
+
+msgid "Books"
+msgstr "Bücher"
+
+msgid "Share"
+msgstr "Anteil"
+
+msgid "Median age: {years} years"
+msgstr "Median-Alter: {years} Jahre"
+
+msgid "Read books without a read date"
+msgstr "Gelesene Bücher ohne Lesedatum"
+
+msgid "Read before being added"
+msgstr "Gelesen vor der Aufnahme"
+
+msgid "The charts count these books as read on the day they were added."
+msgstr "Die Charts zählen diese Bücher als am Aufnahmetag gelesen."

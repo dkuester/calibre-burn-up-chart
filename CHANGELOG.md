@@ -5,6 +5,10 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in all chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **Report:** "Save report…" in the toolbar menu writes the key figures
+  (library, last 12 months, goal and forecast, reading delay, age of the
+  TBR, data quality) as Markdown, or as a single HTML page that also
+  embeds the burn-up and purchase-rate charts.
 - **Age of the TBR:** A new chart shows the unread books by whole years
   since they were added (books of 10 years and more share one bar),
   with counts, shares and the median age. Clicking a bar shows its
@@ -42,7 +46,7 @@
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 93 tests with a 100% coverage gate on the
+- Test suite extended to 99 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks

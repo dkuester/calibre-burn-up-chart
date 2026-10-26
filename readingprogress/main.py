@@ -88,6 +88,32 @@ def _load_icon():
     return QIcon(pixmap)
 
 
+def _target_settings():
+    """(target_date, reduction_factor) from the settings."""
+    from datetime import datetime
+    try:
+        target_date = datetime.fromisoformat(config['target_date']).date()
+    except ValueError:
+        target_date = datetime(2050, 9, 4).date()
+    return target_date, float(config['reduction_factor'])
+
+
+def _chart_png_base64(widget, width=1200, height=700):
+    """Renders ``widget`` off screen and returns it as base64 PNG."""
+    import base64
+    import tempfile
+    widget.resize(width, height)
+    fd, path = tempfile.mkstemp(suffix='.png')
+    os.close(fd)
+    try:
+        if not widget.grab().save(path, 'PNG'):
+            return None
+        with open(path, 'rb') as f:
+            return base64.b64encode(f.read()).decode('ascii')
+    finally:
+        os.remove(path)
+
+
 def _date_format():
     """Locale date format for the current Calibre UI language."""
     return date_format(get_lang().split('_')[0])
@@ -127,6 +153,7 @@ class ReadingProgressAction(InterfaceAction):
         menu.addAction(_('Age of the TBR'), self.show_age)
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
+        menu.addAction(_('Save report…'), self.save_report)
         self.qaction.setMenu(menu)
 
         # Reconfigure the QToolButton after the toolbar is created:
@@ -148,8 +175,6 @@ class ReadingProgressAction(InterfaceAction):
     # Actions
     # ------------------------------------------------------------------
     def show_chart(self):
-        from datetime import datetime
-
         from calibre_plugins.readingprogress.chart_dialog import ChartDialog
         from calibre_plugins.readingprogress.export_reading_status import (
             export_snapshots,
@@ -167,11 +192,7 @@ class ReadingProgressAction(InterfaceAction):
                 _('Export failed: {}').format(e), 5000)
             return
 
-        try:
-            target_date = datetime.fromisoformat(config['target_date']).date()
-        except ValueError:
-            target_date = datetime(2050, 9, 4).date()
-        reduction_factor = float(config['reduction_factor'])
+        target_date, reduction_factor = _target_settings()
 
         date_format = _date_format()
 
@@ -338,3 +359,118 @@ class ReadingProgressAction(InterfaceAction):
         AgeChartDialog(age_buckets(ages, max_years), max_years, summary,
                        _decimal_separator(), self.gui, colors=colors,
                        on_show=show_in_library).exec_()
+
+    def save_report(self):
+        from datetime import date
+
+        from calibre.gui2 import choose_save_file, error_dialog
+        from calibre_plugins.readingprogress.age_dialog import bucket_label
+        from calibre_plugins.readingprogress.chart_dialog import ChartWidget
+        from calibre_plugins.readingprogress.export_reading_status import (
+            MISSING_LAST_READ,
+            age_buckets,
+            backlog_ages,
+            compute_rates,
+            compute_reading_time,
+            export_snapshots,
+            find_date_problems,
+            forecast_backlog,
+            median_age_years,
+        )
+        from calibre_plugins.readingprogress.rates_dialog import (
+            RatesChartWidget,
+        )
+        from calibre_plugins.readingprogress.report import (
+            HTML,
+            build_report,
+            report_format,
+        )
+
+        today = date.today()
+        path = choose_save_file(
+            self.gui, 'readingprogress-report', _('Save report'),
+            filters=[(_('HTML page'), ['html']), (_('Markdown'), ['md'])],
+            all_files=False,
+            initial_filename='reading-progress-{}.html'.format(
+                today.isoformat()))
+        if not path:
+            return
+        fmt = report_format(path)
+        if fmt == HTML and not path.lower().endswith(('.html', '.htm')):
+            path += '.html'
+
+        db_api = self.gui.current_db.new_api
+        read_column = config['read_column']
+        last_read_column = config['last_read_column']
+        try:
+            info = export_snapshots(db_api, read_column, last_read_column)
+            rates = compute_rates(info['rows'])
+            forecast = forecast_backlog(info['rows'])
+            delay = compute_reading_time(
+                db_api, read_column, last_read_column)['statistics']
+            ages = backlog_ages(db_api, read_column)
+            problems = find_date_problems(
+                db_api, read_column, last_read_column)
+        except Exception as e:
+            self.gui.status_bar.show_message(
+                _('Export failed: {}').format(e), 5000)
+            return
+
+        max_years = 10
+        buckets = age_buckets(ages, max_years)
+        target_date, reduction_factor = _target_settings()
+        missing = sum(1 for p in problems
+                      if p['problem'] == MISSING_LAST_READ)
+        data = {
+            'total': info['total'],
+            'read': info['read'],
+            'backlog': info['backlog'],
+            'last12': {'added': sum(r[1] for r in rates[-12:]),
+                       'read': sum(r[2] for r in rates[-12:])},
+            'target_date': target_date,
+            'target_tbr': round(info['backlog'] * reduction_factor),
+            'forecast': forecast,
+            'delay': delay,
+            'age': {
+                'median_years': median_age_years(ages),
+                'buckets': [(bucket_label(i, len(buckets), max_years),
+                             len(ids)) for i, ids in enumerate(buckets)],
+            },
+            'quality': {'missing': missing,
+                        'before_added': len(problems) - missing},
+        }
+
+        images = []
+        if fmt == HTML:
+            colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+            charts = [
+                (_('Burn-up chart'), ChartWidget(
+                    info['rows'], target_date, reduction_factor,
+                    _date_format(), show_forecast=bool(
+                        config['show_forecast']),
+                    forecast=forecast, colors=colors)),
+                (_('Purchase rate vs. reading rate'), RatesChartWidget(
+                    rates, _date_format(), _decimal_separator(),
+                    colors=colors)),
+            ]
+            for caption, widget in charts:
+                png = _chart_png_base64(widget)
+                widget.deleteLater()
+                if png:
+                    images.append((caption, png))
+
+        text = build_report(
+            data, fmt, _, _date_format(), _decimal_separator(),
+            title=_('Reading progress report – {date}').format(
+                date=today.strftime(_date_format())),
+            images=images)
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(text)
+        except OSError as e:
+            error_dialog(self.gui, _('Export failed'),
+                         _('Could not write {path}.').format(path=path),
+                         det_msg=str(e), show=True)
+            return
+        self.gui.status_bar.show_message(
+            _('Report saved: {path}').format(path=path), 8000)

@@ -34,6 +34,7 @@ Python-Installation ist nicht nötig.
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
 | **Altersverteilung des SuB** | Ungelesene Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen Balken zeigt diese Bücher in calibre. |
+| **Bericht** | Speichert die Kennzahlen als Markdown oder als einzelne HTML-Seite mit Burn-up- und Raten-Chart. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme und zeigt sie zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
@@ -67,13 +68,14 @@ Python-Installation ist nicht nötig.
 
 ## Benutzung
 
-Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts und einer Datenprüfung:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts, einer Datenprüfung und einem Bericht:
 
 - **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
 - **Zeit zwischen Kauf und Lesen**: die Leseverzögerung pro Buch.
 - **Kaufrate vs. Leserate**: Zugänge und gelesene Bücher pro Monat.
 - **Altersverteilung des SuB**: ungelesene Bücher nach Jahren seit der Aufnahme.
 - **Datenqualität prüfen**: gelesene Bücher ohne brauchbares Lesedatum, um sie in calibre zu korrigieren.
+- **Bericht speichern…**: die Kennzahlen als Markdown oder als HTML-Seite mit Charts.
 
 ## Einstellungen
 
@@ -119,6 +121,7 @@ readingprogress/
 ├── chart_dialog.py          # Burn-up-Chart-Dialog (QPainter)
 ├── quality_dialog.py        # Dialog für die Datenqualität
 ├── rates_dialog.py          # Dialog für Kaufrate vs. Leserate
+├── report.py                # Qt-freier Markdown-/HTML-Bericht
 ├── delay_dialog.py          # Dialog für die Leseverzögerung
 ├── export_reading_status.py # liest die laufende calibre-Datenbank
 ├── localization.py          # gettext-Setup

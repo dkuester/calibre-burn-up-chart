@@ -34,7 +34,9 @@ Merged into `main`, shipping with the next release:
 - **Reading-delay chart on par:** tooltips naming the book, click to
   show it in calibre, zoom and pan, time range with its own median and
   mean, the configurable read color, and PNG/clipboard export.
-- **Tests and CI:** 93 `pytest` tests with a 100% coverage gate on the
+- **Report:** saves the key figures of all charts as Markdown or as a
+  single HTML page with the burn-up and rate charts embedded.
+- **Tests and CI:** 99 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -75,10 +77,6 @@ Broader ideas, none of them committed.
 ### UX improvements
 
 - Status bar widget showing current backlog permanently
-
-### Sharing
-
-- Markdown / HTML report of key metrics
 
 ## Not planned
 

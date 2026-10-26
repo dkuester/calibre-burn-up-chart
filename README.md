@@ -33,6 +33,7 @@ Python installation is needed.
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
+| **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts. |
 | **Data quality check** | Lists read books without a read date or read before being added, and shows them in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
@@ -65,13 +66,14 @@ Python installation is needed.
 
 ## Usage
 
-The toolbar button opens a menu with four charts and a data check:
+The toolbar button opens a menu with four charts, a data check and a report:
 
 - **Burn-up chart**: library size, books read and backlog over time.
 - **Time between purchase and reading**: the reading delay per book.
 - **Purchase rate vs. reading rate**: books added and read per month.
 - **Age of the TBR**: unread books by years since they were added.
 - **Check data quality**: read books without a usable read date, to fix them in calibre.
+- **Save report…**: the key figures as Markdown, or as an HTML page with charts.
 
 ## Configuration
 
@@ -117,6 +119,7 @@ readingprogress/
 ├── chart_dialog.py          # burn-up chart dialog (QPainter)
 ├── quality_dialog.py        # data quality dialog
 ├── rates_dialog.py          # purchase rate vs. reading rate dialog
+├── report.py                # Qt-free Markdown/HTML report
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database
 ├── localization.py          # gettext setup
