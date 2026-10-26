@@ -20,6 +20,15 @@ Fertig, noch nicht veröffentlicht:
   kaufen.“ Eine Zeile gilt für SuB = 0, eine für den sanften Abbau,
   beide bei der Kauf- und Leserate der letzten 12 Monate. Macht aus dem
   Ziel eine Monatszahl, nach der man handeln kann.
+- **Jahresziel (mit dem Plugin „Reading Goal“):** Das Plugin „Reading
+  Goal“ führt pro Bibliothek eine Jahresliste von Büchern
+  (`plugins/Reading_Goal_Data_<Bibliotheks-ID>.json`); das Ziel ist
+  diese Liste, keine eigene Zahl. Statt einer zweiten Ziel-Einstellung
+  liest das Plugin diese Daten (nur lesend) und zeigt den Fortschritt
+  gegenüber dem Soll als Chart und im Bericht, angereichert mit unseren
+  Zahlen (alle gelesenen Bücher, Zugänge, SuB, Leseverzögerung).
+  Erscheint nur, wenn „Reading Goal“ Daten für die aktuelle Bibliothek
+  hat.
 
 ## Erledigt
 
@@ -77,17 +86,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### Jahresziel (mit dem Plugin „Reading Goal“)
-
-Das Plugin „Reading Goal“ verwaltet bereits Jahresziele („60 Bücher in
-2026“) und speichert pro Jahr Ziel, gelesene Bücher und Monatszahlen
-(`plugins/Reading_Goal_Data_<Bibliotheks-ID>.json`). Statt einer
-zweiten Ziel-Einstellung lesen wir diese Daten (nur lesend) und bauen
-daraus einen Bericht: Fortschritt gegenüber dem Soll als Chart und im
-Bericht, angereichert mit unseren Zahlen (SuB, Zugänge,
-Leseverzögerung). Erscheint nur, wenn das Plugin und Daten für die
-aktuelle Bibliothek vorhanden sind.
 
 ### Angefangene Reihen mit dem nächsten Band
 
