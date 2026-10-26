@@ -150,6 +150,9 @@ class ReadingProgressAction(InterfaceAction):
         # Menu with both options – appears when clicking the arrow
         menu = QMenu(self.gui)
         menu.addAction(_('Burn-up chart'), self.show_chart)
+        # Only shown while Reading Goal has data for the current library
+        self.goal_action = menu.addAction(_('Reading goal'),
+                                          self.show_goal)
         menu.addAction(_('Time between purchase and reading'),
                        self.show_delay)
         menu.addAction(_('Purchase rate vs. reading rate'),
@@ -158,6 +161,7 @@ class ReadingProgressAction(InterfaceAction):
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
         menu.addAction(_('Save report…'), self.save_report)
+        menu.aboutToShow.connect(self._update_goal_action)
         self.qaction.setMenu(menu)
 
         # Reconfigure the QToolButton after the toolbar is created:
@@ -215,6 +219,29 @@ class ReadingProgressAction(InterfaceAction):
             show=True)
         return None
 
+    def _goal_years(self):
+        """Goal years of the Reading Goal plugin for the current library
+        (see ``reading_goal.parse_goal_data()``), or ``None``. Its file is
+        only read, never written."""
+        from calibre.utils.config import config_dir
+        from calibre_plugins.readingprogress.reading_goal import (
+            goal_data_path,
+            load_goal_data,
+        )
+        try:
+            library_id = self.gui.current_db.library_id
+        except Exception:
+            return None
+        return load_goal_data(goal_data_path(config_dir, library_id))
+
+    def _update_goal_action(self):
+        try:
+            visible = self._goal_years() is not None
+        except Exception as e:
+            print(f'ReadingProgress: Reading Goal data error: {e}')
+            visible = False
+        self.goal_action.setVisible(visible)
+
     @staticmethod
     def _colors():
         return {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
@@ -257,6 +284,27 @@ class ReadingProgressAction(InterfaceAction):
                     colors=self._colors(), time_range=config['time_range'],
                     on_time_range_changed=self._save_time_range,
                     decimal_sep=_decimal_separator()).exec()
+
+    def show_goal(self):
+        from datetime import date
+
+        from calibre_plugins.readingprogress.goal_dialog import YearGoalDialog
+        from calibre_plugins.readingprogress.reading_goal import (
+            library_events,
+        )
+
+        years = self._goal_years()
+        if years is None:
+            self.gui.status_bar.show_message(
+                _('The Reading Goal plugin has no data for this library.'),
+                8000)
+            return
+        events = self._read_library(library_events)
+        if events is None:
+            return
+        YearGoalDialog(years, events, date.today(), _date_format(),
+                       _decimal_separator(), self.gui, colors=self._colors(),
+                       on_show=self._show_in_library).exec()
 
     def show_delay(self):
         from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog
@@ -372,8 +420,15 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.export_reading_status import (
             collect_report_data,
         )
+        from calibre_plugins.readingprogress.goal_dialog import (
+            YearGoalChartWidget,
+        )
         from calibre_plugins.readingprogress.rates_dialog import (
             RatesChartWidget,
+        )
+        from calibre_plugins.readingprogress.reading_goal import (
+            library_events,
+            report_data,
         )
         from calibre_plugins.readingprogress.report import (
             HTML,
@@ -382,14 +437,24 @@ class ReadingProgressAction(InterfaceAction):
         )
 
         target_date, reduction_factor = _target_settings()
-        data = self._read_library(
-            lambda db_api, read_column, last_read_column: collect_report_data(
-                db_api, read_column, last_read_column, target_date,
-                reduction_factor))
-        if data is None:
-            return
-
         today = date.today()
+        years = self._goal_years()
+
+        def fetch(db_api, read_column, last_read_column):
+            data = collect_report_data(db_api, read_column,
+                                       last_read_column, target_date,
+                                       reduction_factor)
+            events = (library_events(db_api, read_column, last_read_column)
+                      if years else None)
+            data['goal'] = (report_data(years, events, today)
+                            if years else None)
+            return data, events
+
+        result = self._read_library(fetch)
+        if result is None:
+            return
+        data, events = result
+
         path = choose_save_file(
             self.gui, 'readingprogress-report', _('Save report'),
             filters=[(_('HTML page'), ['html']), (_('Markdown'), ['md'])],
@@ -415,6 +480,11 @@ class ReadingProgressAction(InterfaceAction):
                 (_('Purchase rate vs. reading rate'), RatesChartWidget(
                     data['rates'], _decimal_separator(), colors=colors)),
             ]
+            if years:
+                charts.append((_('Reading goal'), YearGoalChartWidget(
+                    years, events, today, _date_format(),
+                    _decimal_separator(), colors=colors,
+                    year=data['goal']['summary']['year'])))
             for caption, widget in charts:
                 png = _chart_png_base64(widget)
                 widget.deleteLater()

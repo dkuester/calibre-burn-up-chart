@@ -477,3 +477,217 @@ msgstr "Nötiges Tempo (SuB = {tbr})"
 
 msgid "Required pace at the current purchase rate ({added}) and reading rate ({read}) per month, mean of the last 12 months."
 msgstr "Nötiges Tempo bei der aktuellen Kaufrate ({added}) und Leserate ({read}) pro Monat, Mittel der letzten 12 Monate."
+
+# Yearly reading goal (data of the Reading Goal plugin)
+msgid "Reading goal"
+msgstr "Jahresziel"
+
+msgid "Reading goal (Reading Goal plugin)"
+msgstr "Jahresziel (Plugin „Reading Goal“)"
+
+msgid "The Reading Goal plugin has no data for this library."
+msgstr "Das Plugin „Reading Goal“ hat keine Daten für diese Bibliothek."
+
+msgid "Reading goal {year}: {read} of {goal} books ({percent})"
+msgstr "Jahresziel {year}: {read} von {goal} Büchern ({percent})"
+
+msgid "Target today: {expected} · {status}"
+msgstr "Soll heute: {expected} · {status}"
+
+msgid "Required: {pace}"
+msgstr "Nötig: {pace}"
+
+msgid "Pages: {pages}"
+msgstr "Seiten: {pages}"
+
+msgid "Read in {year} in total (own data): {own}"
+msgstr "{year} insgesamt gelesen (eigene Daten): {own}"
+
+msgid "on target"
+msgstr "im Soll"
+
+msgid "the year has not started yet"
+msgstr "das Jahr hat noch nicht begonnen"
+
+msgid "goal reached"
+msgstr "Ziel erreicht"
+
+msgid "goal already reached"
+msgstr "Ziel schon erreicht"
+
+msgid "{books} books short of the goal"
+msgstr "{books} Bücher unter dem Ziel"
+
+msgid "{books} books ahead of the target"
+msgstr "{books} Bücher vor dem Soll"
+
+msgid "{books} books behind the target"
+msgstr "{books} Bücher hinter dem Soll"
+
+msgid "{books} books/month until {date}"
+msgstr "{books} Bücher/Monat bis {date}"
+
+msgid "{read} of {goal} pages ({percent})"
+msgstr "{read} von {goal} Seiten ({percent})"
+
+msgid "{pages} pages/day needed"
+msgstr "nötig: {pages} Seiten/Tag"
+
+msgid "{books} books, {on_list} of them from the list"
+msgstr "{books} Bücher, davon {on_list} von der Liste"
+
+msgid "Reading goal {year} (Reading Goal plugin)"
+msgstr "Jahresziel {year} (Plugin „Reading Goal“)"
+
+msgid "Books on the list"
+msgstr "Bücher auf der Liste"
+
+msgid "Target today"
+msgstr "Soll heute"
+
+msgid "Status"
+msgstr "Stand"
+
+msgid "Required pace"
+msgstr "Nötiges Tempo"
+
+msgid "Projection for {date}"
+msgstr "Hochrechnung für {date}"
+
+msgid "{books} books"
+msgstr "{books} Bücher"
+
+msgid "Pages"
+msgstr "Seiten"
+
+msgid "Read in {year} in total (own data)"
+msgstr "{year} insgesamt gelesen (eigene Daten)"
+
+msgid "Read list books from the TBR"
+msgstr "Gelesene Listenbücher aus dem SuB"
+
+msgid "{books} of {read} (added before {year})"
+msgstr "{books} von {read} (vor {year} aufgenommen)"
+
+msgid "Time between purchase and reading (median)"
+msgstr "Zeit zwischen Kauf und Lesen (Median)"
+
+msgid "Reading Goal counts only the books on its yearly list; the figures marked as own data come from your library."
+msgstr "„Reading Goal“ zählt nur die Bücher auf seiner Jahresliste; die als eigene Daten markierten Zahlen stammen aus deiner Bibliothek."
+
+msgid "{books} read list books have a different read date in your library or are not marked as read there."
+msgstr "{books} gelesene Listenbücher haben in deiner Bibliothek ein anderes Lesedatum oder sind dort nicht als gelesen markiert."
+
+msgid "Reading goal {year} by month"
+msgstr "Jahresziel {year} nach Monaten"
+
+msgid "Month"
+msgstr "Monat"
+
+msgid "From the list"
+msgstr "Von der Liste"
+
+msgid "Read in total"
+msgstr "Insgesamt gelesen"
+
+msgid "Read in total and added: own data. Read books without a read date are not counted."
+msgstr "Insgesamt gelesen und aufgenommen: eigene Daten. Gelesene Bücher ohne Lesedatum zählen nicht mit."
+
+msgid "Other challenges {year}"
+msgstr "Weitere Challenges {year}"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Progress"
+msgstr "Fortschritt"
+
+msgid "Period"
+msgstr "Zeitraum"
+
+msgid "Reading goals by year"
+msgstr "Jahresziele nach Jahren"
+
+msgid "Read in total (own data)"
+msgstr "Insgesamt gelesen (eigene Daten)"
+
+msgid "Read from the list"
+msgstr "Von der Liste gelesen"
+
+msgid "Target (evenly over the year)"
+msgstr "Soll (gleichmäßig übers Jahr)"
+
+msgid "Projection at the pace so far"
+msgstr "Hochrechnung beim bisherigen Tempo"
+
+msgid "Previous year {year}"
+msgstr "Vorjahr {year}"
+
+msgid "Goal: {books}"
+msgstr "Ziel: {books}"
+
+msgid "Per month"
+msgstr "Pro Monat"
+
+msgid "{date}: {count} of {goal} books"
+msgstr "{date}: {count} von {goal} Büchern"
+
+msgid "{title} – {authors}"
+msgstr "{title} – {authors}"
+
+msgid ""
+"{month} {year}\n"
+"From the list: {list}\n"
+"Read in total: {read}\n"
+"Added: {added}"
+msgstr ""
+"{month} {year}\n"
+"Von der Liste: {list}\n"
+"Insgesamt gelesen: {read}\n"
+"Aufgenommen: {added}"
+
+msgid "Year:"
+msgstr "Jahr:"
+
+msgid "Compare with the previous year"
+msgstr "Mit dem Vorjahr vergleichen"
+
+msgid "Click a step to show its books in calibre."
+msgstr "Klick auf eine Stufe zeigt deren Bücher in calibre."
+
+# Month abbreviations
+msgid "Jan"
+msgstr "Jan"
+
+msgid "Feb"
+msgstr "Feb"
+
+msgid "Mar"
+msgstr "Mär"
+
+msgid "Apr"
+msgstr "Apr"
+
+msgid "May"
+msgstr "Mai"
+
+msgid "Jun"
+msgstr "Jun"
+
+msgid "Jul"
+msgstr "Jul"
+
+msgid "Aug"
+msgstr "Aug"
+
+msgid "Sep"
+msgstr "Sep"
+
+msgid "Oct"
+msgstr "Okt"
+
+msgid "Nov"
+msgstr "Nov"
+
+msgid "Dec"
+msgstr "Dez"

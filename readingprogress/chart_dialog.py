@@ -511,8 +511,9 @@ class LegendRenderer:
             entries += reference_entries
         self.draw_entries(painter, plot, entries, chrome)
 
-    def draw_entries(self, painter, plot, entries, chrome):
-        """Draws a legend box in the top right corner of ``plot``.
+    def draw_entries(self, painter, plot, entries, chrome, left=False):
+        """Draws a legend box in the top right (``left``: top left)
+        corner of ``plot``.
 
         ``entries`` are ``(text, color, pen_style)``; a ``pen_style`` of
         ``None`` draws a filled swatch instead of a line.
@@ -529,7 +530,7 @@ class LegendRenderer:
         box_width = padding * 2 + line_width + 8 + max_text_width
         box_height = padding * 2 + row_height * len(entries)
 
-        box_x = plot.right() - box_width - 10
+        box_x = plot.left() + 10 if left else plot.right() - box_width - 10
         box_y = plot.top() + 10
 
         painter.setPen(QPen(chrome['border'], 1))

@@ -32,10 +32,11 @@ Python-Installation ist nicht nötig.
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
 | **Nötiges Tempo** | Unter dem Titel: wie viele Bücher pro Monat man lesen oder höchstens kaufen darf, um das Ziel (SuB = 0 und sanfter Abbau) bis zum Zieldatum zu erreichen, gemessen an den letzten 12 Monaten. |
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
+| **Jahresziel** | Mit dem separat installierten Plugin [„Reading Goal“](https://www.mobileread.com/forums/showthread.php?t=355769): gelesene Listenbücher gegen das Soll über das Jahr, Hochrechnung, nötiges Tempo, Seiten, Monatswerte, Vorjahresvergleich und alle gelesenen Bücher aus den eigenen Daten. Die Daten von „Reading Goal“ werden nur gelesen. |
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
 | **Altersverteilung des SuB** | Ungelesene Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen Balken zeigt diese Bücher in calibre. |
-| **Bericht** | Speichert die Kennzahlen als Markdown oder als einzelne HTML-Seite mit Burn-up- und Raten-Chart. |
+| **Bericht** | Speichert die Kennzahlen als Markdown oder als einzelne HTML-Seite mit Burn-up- und Raten-Chart, mit „Reading Goal“ auch mit Jahresziel. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme und zeigt sie zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
@@ -69,9 +70,10 @@ Python-Installation ist nicht nötig.
 
 ## Benutzung
 
-Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts, einer Datenprüfung und einem Bericht:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „Reading Goal“), einer Datenprüfung und einem Bericht:
 
 - **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
+- **Jahresziel**: Fortschritt der Jahresliste des Plugins „Reading Goal“ gegenüber dem Soll. Erscheint nur, wenn das Plugin Daten für die aktuelle Bibliothek hat.
 - **Zeit zwischen Kauf und Lesen**: die Leseverzögerung pro Buch.
 - **Kaufrate vs. Leserate**: Zugänge und gelesene Bücher pro Monat.
 - **Altersverteilung des SuB**: ungelesene Bücher nach Jahren seit der Aufnahme.
@@ -120,8 +122,10 @@ readingprogress/
 ├── chart_common.py          # Qt-freie Chart-Berechnung und Farben
 ├── age_dialog.py            # Dialog für die Altersverteilung des SuB
 ├── chart_dialog.py          # Burn-up-Chart-Dialog (QPainter)
+├── goal_dialog.py           # Dialog für das Jahresziel
 ├── quality_dialog.py        # Dialog für die Datenqualität
 ├── rates_dialog.py          # Dialog für Kaufrate vs. Leserate
+├── reading_goal.py          # Qt-frei, liest die Daten von „Reading Goal“ (nur lesend)
 ├── report.py                # Qt-freier Markdown-/HTML-Bericht
 ├── delay_dialog.py          # Dialog für die Leseverzögerung
 ├── export_reading_status.py # liest die laufende calibre-Datenbank

@@ -11,6 +11,19 @@
   12 months). If even buying nothing is not enough, the line says how
   much to read then. The lines stay in the 5- and 2-year views. The
   report shows the same figures in "Goal and forecast".
+- **Yearly reading goal (with the Reading Goal plugin):** If the
+  separately installed "Reading Goal" plugin has data for the current
+  library, the menu gets "Reading goal". Its goal is a yearly list of
+  books; the chart shows the list books read over the year against a
+  target that grows evenly to the goal on 31 December, the projection at
+  the pace so far, all books read according to your own data (grey) and
+  books per month in a strip below. The header has the target for today,
+  how far ahead or behind you are, the books per month still needed and
+  the pages. A year selector, a previous-year comparison, tooltips with
+  the books (a click shows them in calibre) and PNG/clipboard export
+  complete it. The report gets the same figures plus the months, other
+  challenges, all goal years and how many list books came from the TBR.
+  Reading Goal's files are only read, never written.
 
 ## [1.7.0] – 2026-10-26
 

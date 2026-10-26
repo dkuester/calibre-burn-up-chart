@@ -31,10 +31,11 @@ Python installation is needed.
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
 | **Required pace** | Below the title: how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date, based on the last 12 months. |
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
+| **Yearly reading goal** | With the separately installed [Reading Goal](https://www.mobileread.com/forums/showthread.php?t=355769) plugin: list books read against the target over the year, projection, required pace, pages, monthly figures, previous-year comparison and all books read according to your own data. Reading Goal's data is only read. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
-| **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts. |
+| **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts, plus the yearly goal with Reading Goal. |
 | **Data quality check** | Lists read books without a read date or read before being added, and shows them in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
@@ -67,9 +68,10 @@ Python installation is needed.
 
 ## Usage
 
-The toolbar button opens a menu with four charts, a data check and a report:
+The toolbar button opens a menu with four charts (five with Reading Goal), a data check and a report:
 
 - **Burn-up chart**: library size, books read and backlog over time.
+- **Reading goal**: progress of the Reading Goal plugin's yearly list against the target. Shown only when the plugin has data for the current library.
 - **Time between purchase and reading**: the reading delay per book.
 - **Purchase rate vs. reading rate**: books added and read per month.
 - **Age of the TBR**: unread books by years since they were added.
@@ -118,8 +120,10 @@ readingprogress/
 ├── chart_common.py          # Qt-free chart math and colors
 ├── age_dialog.py            # age-of-the-TBR dialog
 ├── chart_dialog.py          # burn-up chart dialog (QPainter)
+├── goal_dialog.py           # yearly reading goal dialog
 ├── quality_dialog.py        # data quality dialog
 ├── rates_dialog.py          # purchase rate vs. reading rate dialog
+├── reading_goal.py          # Qt-free, read-only Reading Goal data
 ├── report.py                # Qt-free Markdown/HTML report
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database

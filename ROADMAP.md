@@ -19,6 +19,14 @@ Done, not yet released:
   TBR = 0, one for the gentle reduction, both at the purchase and
   reading rates of the last 12 months. Turns the goal into a monthly
   number to act on.
+- **Yearly reading goal (with the Reading Goal plugin):** the "Reading
+  Goal" plugin keeps a yearly list of books per library
+  (`plugins/Reading_Goal_Data_<library id>.json`); its goal is that
+  list, not a number of its own. Instead of a second goal setting, the
+  plugin reads that data (read-only) and shows progress against the
+  target as a chart and in the report, enriched with our figures (all
+  books read, books added, TBR, reading delay). Shown only when Reading
+  Goal has data for the current library.
 
 ## Done
 
@@ -72,16 +80,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### Yearly reading goal (with the Reading Goal plugin)
-
-The "Reading Goal" plugin already manages yearly goals ("60 books in
-2026") and stores per year the goal, the books read and monthly counts
-(`plugins/Reading_Goal_Data_<library id>.json`). Instead of a second
-goal setting, read that data (read-only) and build a report from it:
-progress against the expected pace as a chart and in the report,
-enriched with our figures (TBR, purchases, reading delay). Shown only
-when the plugin and data for the current library exist.
 
 ### Started series with their next volume
 

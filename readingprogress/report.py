@@ -7,6 +7,7 @@ Tests import it flat (see ``tests/conftest.py``).
 """
 
 import html
+from datetime import date
 
 MARKDOWN = 'md'
 HTML = 'html'
@@ -82,6 +83,193 @@ def bucket_label(tr, index, bucket_count, max_years):
     return tr("{start}–{end} years").format(start=index, end=index + 1)
 
 
+# Month abbreviations, translated where they are shown
+MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+# |ahead| below this counts as on target (books)
+ON_TARGET = 0.05
+
+
+def month_name(tr, month):
+    """Translated abbreviation of ``month`` (1–12)."""
+    return tr(MONTH_NAMES[month - 1])
+
+
+def goal_title(summary, tr, decimal_sep='.'):
+    """'Reading goal 2026: 22 of 30 books (73 %)' for a
+    ``reading_goal.year_summary()``."""
+    return tr("Reading goal {year}: {read} of {goal} books "
+              "({percent})").format(
+        year=summary['year'], read=summary['read'], goal=summary['goal'],
+        percent=_percent(summary['read'], summary['goal'], decimal_sep))
+
+
+def goal_status_text(summary, tr, decimal_sep='.'):
+    """Where the goal stands: ahead of or behind the target for today,
+    or how a finished year ended."""
+    if summary['state'] == 'planned':
+        return tr("the year has not started yet")
+    if summary['state'] == 'finished':
+        missing = summary['goal'] - summary['read']
+        if missing <= 0:
+            return tr("goal reached")
+        return tr("{books} books short of the goal").format(books=missing)
+    ahead = summary['ahead']
+    if ahead >= ON_TARGET:
+        return tr("{books} books ahead of the target").format(
+            books=_number(ahead, 1, decimal_sep))
+    if ahead <= -ON_TARGET:
+        return tr("{books} books behind the target").format(
+            books=_number(-ahead, 1, decimal_sep))
+    return tr("on target")
+
+
+def goal_pace_text(summary, tr, date_format, decimal_sep='.'):
+    """Books per month still needed by 31 December, or ``None`` once the
+    year is over."""
+    needed = summary['needed_per_month']
+    if needed is None:
+        return None
+    if needed == 0:
+        return tr("goal already reached")
+    return tr("{books} books/month until {date}").format(
+        books=pace_number(needed, decimal_sep),
+        date=date(summary['year'], 12, 31).strftime(date_format))
+
+
+def goal_pages_text(summary, tr, decimal_sep='.'):
+    """'7574 of 12140 pages (62 %)', plus the pages per day still
+    needed while the year runs."""
+    text = tr("{read} of {goal} pages ({percent})").format(
+        read=summary['read_pages'], goal=summary['goal_pages'],
+        percent=_percent(summary['read_pages'], summary['goal_pages'],
+                         decimal_sep))
+    if summary['pages_per_day']:
+        text += ', ' + tr("{pages} pages/day needed").format(
+            pages=_number(summary['pages_per_day'], 0, decimal_sep))
+    return text
+
+
+def goal_own_text(summary, tr):
+    """'58 books, 22 of them from the list' (own data)."""
+    return tr("{books} books, {on_list} of them from the list").format(
+        books=summary['own_read'], on_list=summary['own_on_list'])
+
+
+def goal_header_lines(summary, tr, date_format, decimal_sep='.'):
+    """Key-figure lines below the title of the yearly-goal chart."""
+    status = goal_status_text(summary, tr, decimal_sep)
+    if summary['state'] == 'running':
+        first = tr("Target today: {expected} · {status}").format(
+            expected=_number(summary['expected'], 1, decimal_sep),
+            status=status)
+    else:
+        first = _capitalize(status)
+    pace = goal_pace_text(summary, tr, date_format, decimal_sep)
+    if pace is not None:
+        first += ' · ' + tr("Required: {pace}").format(pace=pace)
+    return [
+        first,
+        tr("Pages: {pages}").format(
+            pages=goal_pages_text(summary, tr, decimal_sep)),
+        tr("Read in {year} in total (own data): {own}").format(
+            year=summary['year'], own=goal_own_text(summary, tr)),
+    ]
+
+
+def _period(challenge, date_format):
+    if challenge['start'] is None or challenge['end'] is None:
+        return '–'
+    return '{} – {}'.format(challenge['start'].strftime(date_format),
+                            challenge['end'].strftime(date_format))
+
+
+def goal_sections(goal, tr, date_format, decimal_sep='.'):
+    """Report sections for ``goal``, the dict from
+    ``reading_goal.report_data()``."""
+    s = goal['summary']
+    year = s['year']
+    rows = [
+        (tr("Books on the list"), str(s['goal'])),
+        (tr("Read"), '{} ({})'.format(
+            s['read'], _percent(s['read'], s['goal'], decimal_sep))),
+    ]
+    if s['state'] == 'running':
+        rows.append((tr("Target today"),
+                     _number(s['expected'], 1, decimal_sep)))
+    rows.append((tr("Status"),
+                 _capitalize(goal_status_text(s, tr, decimal_sep))))
+    pace = goal_pace_text(s, tr, date_format, decimal_sep)
+    if pace is not None:
+        rows.append((tr("Required pace"), _capitalize(pace)))
+    if s['projection'] is not None:
+        rows.append((tr("Projection for {date}").format(
+                        date=date(year, 12, 31).strftime(date_format)),
+                     tr("{books} books").format(
+                         books=_number(s['projection'], 0, decimal_sep))))
+    rows.append((tr("Pages"), goal_pages_text(s, tr, decimal_sep)))
+    rows.append((tr("Read in {year} in total (own data)").format(year=year),
+                 goal_own_text(s, tr)))
+    rows.append((tr("Read list books from the TBR"),
+                 tr("{books} of {read} (added before {year})").format(
+                     books=s['from_tbr'], read=len(s['read_books']),
+                     year=year)))
+    if s['delay_median'] is not None:
+        rows.append((tr("Time between purchase and reading (median)"),
+                     tr("{days} days").format(
+                         days=int(round(s['delay_median'])))))
+    note = tr("Reading Goal counts only the books on its yearly list; "
+              "the figures marked as own data come from your library.")
+    if s['date_mismatches']:
+        note += ' ' + tr("{books} read list books have a different read "
+                         "date in your library or are not marked as "
+                         "read there.").format(books=s['date_mismatches'])
+    sections = [{
+        'heading': tr("Reading goal {year} (Reading Goal plugin)").format(
+            year=year),
+        'rows': rows,
+        'note': note,
+    }]
+
+    if s['month_count']:
+        sections.append({
+            'heading': tr("Reading goal {year} by month").format(year=year),
+            'table': (
+                [tr("Month"), tr("From the list"), tr("Read in total"),
+                 tr("Added"), tr("Change of the TBR")],
+                [[month_name(tr, i + 1), str(m['list']), str(m['read']),
+                  str(m['added']), '{:+d}'.format(m['added'] - m['read'])]
+                 for i, m in enumerate(s['months'][:s['month_count']])],
+            ),
+            'note': tr("Read in total and added: own data. Read books "
+                       "without a read date are not counted."),
+        })
+
+    if s['challenges']:
+        sections.append({
+            'heading': tr("Other challenges {year}").format(year=year),
+            'table': (
+                [tr("Challenge"), tr("Books"), tr("Progress"),
+                 tr("Period")],
+                [[c['name'], str(c['count']), '{} %'.format(c['progress']),
+                  _period(c, date_format)] for c in s['challenges']],
+            ),
+        })
+
+    sections.append({
+        'heading': tr("Reading goals by year"),
+        'table': (
+            [tr("Year"), tr("Books on the list"), tr("Read"), tr("Share"),
+             tr("Read in total (own data)")],
+            [[str(r['year']), str(r['goal']), str(r['read']),
+              _percent(r['read'], r['goal'], decimal_sep),
+              str(r['own_read'])] for r in goal['years']],
+        ),
+    })
+    return sections
+
+
 def build_sections(data, tr, date_format, decimal_sep='.'):
     """Report content as a list of sections.
 
@@ -99,6 +287,8 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
     - ``age``: dict with ``median_years`` (or ``None``), ``max_years``
       and ``counts``, the number of books per ``age_buckets()`` bucket
     - ``quality``: dict with ``missing`` and ``before_added``
+    - ``goal`` (optional): dict from ``reading_goal.report_data()``, or
+      ``None`` without Reading Goal data (see :func:`goal_sections`)
     """
     sections = []
 
@@ -147,6 +337,10 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
             added=pace_number(data['pace']['added_rate'], decimal_sep),
             read=pace_number(data['pace']['read_rate'], decimal_sep)),
     })
+
+    if data.get('goal'):
+        sections += goal_sections(data['goal'], tr, date_format,
+                                  decimal_sep)
 
     delay = data['delay']
     if delay is not None:

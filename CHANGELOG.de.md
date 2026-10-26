@@ -12,6 +12,20 @@
   nennt die Zeile, wie viel man dann lesen muss. Die Zeilen bleiben
   auch in der 5- und 2-Jahres-Ansicht stehen. Der Bericht zeigt
   dieselben Zahlen unter „Ziel und Prognose“.
+- **Jahresziel (mit dem Plugin „Reading Goal“):** Hat das separat
+  installierte Plugin „Reading Goal“ Daten für die aktuelle Bibliothek,
+  bekommt das Menü den Eintrag „Jahresziel“. Das Ziel ist dort eine
+  Jahresliste von Büchern; das Chart zeigt die gelesenen Listenbücher
+  über das Jahr gegen ein Soll, das gleichmäßig bis zum Ziel am
+  31. Dezember steigt, dazu die Hochrechnung beim bisherigen Tempo, alle
+  gelesenen Bücher laut eigenen Daten (grau) und darunter die Bücher pro
+  Monat. Der Kopf nennt das Soll für heute, den Vorsprung oder Rückstand,
+  die nötigen Bücher pro Monat und die Seiten. Dazu kommen eine
+  Jahresauswahl, ein Vorjahresvergleich, Tooltips mit den Büchern (Klick
+  zeigt sie in calibre) und PNG-/Zwischenablage-Export. Der Bericht
+  bekommt dieselben Zahlen, dazu die Monate, weitere Challenges, alle
+  Zieljahre und wie viele Listenbücher aus dem SuB kamen. Die Dateien
+  von „Reading Goal“ werden nur gelesen, nie geschrieben.
 
 ## [1.7.0] – 2026-10-26
 
