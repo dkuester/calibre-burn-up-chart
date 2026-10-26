@@ -39,3 +39,28 @@ def migrate_legacy_keys(current, legacy):
             value = legacy[old_key]
         result[new_key] = value
     return result
+
+
+# Composite column "Days in TBR" created from the settings dialog
+DAYS_IN_TBR_LABEL = "days_in_tbr"
+
+
+def days_in_tbr_template(read_column, last_read_column):
+    """Calibre template for the "Days in TBR" composite column.
+
+    Read books: days between adding and ``last_read_column`` (0 if read
+    before adding, empty without a read date). Unread books: days since
+    adding, up to today. Uses raw field values (``$$``) because the
+    displayed dates are localized ("30 Dez 2025") and days_between()
+    cannot parse every language.
+    """
+    return (
+        "program:\n"
+        "if $${read} == 'true' then\n"
+        "  d = days_between($${last_read}, $$timestamp);\n"
+        "  if d then cmp(d, 0, '0', '0', format_number(d, '{{0:.0f}}'))"
+        " else '' fi\n"
+        "else\n"
+        "  format_number(days_between(today(), $$timestamp), '{{0:.0f}}')\n"
+        "fi"
+    ).format(read=read_column, last_read=last_read_column)

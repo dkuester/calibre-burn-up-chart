@@ -32,6 +32,7 @@ Python-Installation ist nicht nötig.
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
+| **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
 | **Interaktiv** | Tooltips an jedem Datenpunkt, Zoom per Mausrad, Verschieben per Ziehen, Doppelklick setzt zurück. |
@@ -81,6 +82,7 @@ Der Knopf in der Werkzeugleiste öffnet ein Menü mit drei Charts:
 | Prognoselinie anzeigen | Zeichnet die Prognoselinie (standardmäßig an). |
 | Farben | Farbe jeder Datenreihe und Referenzlinie. Leer heißt „dem Theme folgen“; *Farben auf Theme-Standard zurücksetzen* entfernt alle eigenen Farben. |
 | Benutzerdefinierte Spalte „gelesen“ / „zuletzt gelesen“ | Suchnamen der beiden Spalten, falls deine anders heißen. |
+| Spalte „Tage im SuB“ anlegen | Legt eine Spalte `#days_in_tbr` an, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben. Danach calibre neu starten. |
 
 Die Einstellungen liegen in `plugins/readingprogress.json` im
 Konfigurationsordner von calibre und bleiben über Neustarts erhalten.

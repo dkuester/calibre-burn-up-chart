@@ -5,6 +5,11 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in both chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **"Days in TBR" column:** A button in the plugin settings creates a
+  calibre column `#days_in_tbr` that calibre computes itself from the
+  date added and the read columns: days between adding and reading for
+  read books, days since adding for unread ones. It is always up to
+  date, sorts numerically and changes no book data.
 - **Purchase rate vs. reading rate:** A third chart, opened from the
   toolbar menu. It shows books added and books read per month as
   12-month averages and shades the area between them by whether the
@@ -21,7 +26,7 @@
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 78 tests with a 100% coverage gate on the
+- Test suite extended to 79 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks
