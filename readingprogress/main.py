@@ -31,6 +31,7 @@ def _setup_config():
     config.defaults['read_column'] = '#gelesen'
     config.defaults['last_read_column'] = '#last_read'
     config.defaults['show_forecast'] = True
+    config.defaults['time_range'] = 'all'
     for color_key in DEFAULT_COLORS:
         config.defaults[f'color_{color_key}'] = ''   # '' = follow theme
     config.defaults['_migrated_keys'] = False
@@ -174,8 +175,13 @@ class ReadingProgressAction(InterfaceAction):
         dlg = ChartDialog(info['rows'], target_date, reduction_factor,
                           date_format, self.gui,
                           show_forecast=show_forecast, forecast=forecast,
-                          colors=colors)
+                          colors=colors, time_range=config['time_range'],
+                          on_time_range_changed=self._save_time_range)
         dlg.exec_()
+
+    @staticmethod
+    def _save_time_range(key):
+        config['time_range'] = key
 
     def show_delay(self):
         from calibre_plugins.readingprogress.delay_dialog import DelayChartDialog

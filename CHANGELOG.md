@@ -5,16 +5,26 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in both chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **Time range (burn-up chart):** A "Time range" selector in the chart
+  dialog: "All time", "Last 5 years", "Last 2 years". The limited
+  ranges end today, so recent history fills the chart; the title then
+  names the range and the legend lists only the data series. Zoom and pan stay within the range, and
+  the choice is remembered.
 
 ### Changed
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 66 tests with a 100% coverage gate on the
+- Test suite extended to 72 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks
   when a new helper is added.
+
+### Fixed
+
+- Lines no longer spill into the axis margins when the burn-up chart is
+  zoomed in.
 
 ## [1.6.0] – 2026-10-16
 

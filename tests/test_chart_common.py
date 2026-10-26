@@ -197,3 +197,47 @@ def test_ensure_png_suffix():
     assert cc.ensure_png_suffix('/tmp/chart') == '/tmp/chart.png'
     assert cc.ensure_png_suffix('/tmp/chart.png') == '/tmp/chart.png'
     assert cc.ensure_png_suffix('/tmp/chart.PNG') == '/tmp/chart.PNG'
+
+
+def test_years_before():
+    assert cc.years_before(date(2026, 10, 26), 2) == date(2024, 10, 26)
+    assert cc.years_before(date(2028, 2, 29), 5) == date(2023, 2, 28)
+
+
+def test_fit_x_range_all():
+    first, today, target = date(2010, 1, 31), date(2026, 10, 31), \
+        date(2050, 9, 4)
+    assert cc.fit_x_range(first, today, target, 'all') == (first, target)
+
+
+def test_fit_x_range_unknown_key_means_all():
+    first, today, target = date(2010, 1, 31), date(2026, 10, 31), \
+        date(2050, 9, 4)
+    assert cc.fit_x_range(first, today, target, 'bogus') == (first, target)
+
+
+def test_fit_x_range_limited_ends_today():
+    first, today, target = date(2010, 1, 31), date(2026, 10, 31), \
+        date(2050, 9, 4)
+    assert cc.fit_x_range(first, today, target, '2y') == \
+        (date(2024, 10, 31), today)
+    assert cc.fit_x_range(first, today, target, '5y') == \
+        (date(2021, 10, 31), today)
+
+
+def test_fit_x_range_never_before_first():
+    first, today, target = date(2025, 6, 30), date(2026, 10, 31), \
+        date(2050, 9, 4)
+    assert cc.fit_x_range(first, today, target, '5y') == (first, today)
+
+
+def test_visible_y_max():
+    rows = [
+        (date(2020, 1, 31), 10, 2, 8),
+        (date(2024, 1, 31), 50, 30, 20),
+        (date(2026, 1, 31), 60, 45, 15),
+    ]
+    assert cc.visible_y_max(rows, date(2023, 1, 1), date(2026, 12, 31)) == 60
+    assert cc.visible_y_max(rows, date(2019, 1, 1), date(2021, 1, 1)) == 10
+    # No row inside the window: fall back to all rows.
+    assert cc.visible_y_max(rows, date(2027, 1, 1), date(2028, 1, 1)) == 60

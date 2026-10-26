@@ -11,15 +11,18 @@ from calibre.gui2 import choose_save_file, error_dialog
 from calibre_plugins.readingprogress.chart_common import (
     DARK_DEFAULT_COLORS,
     DEFAULT_COLORS,
+    TIME_RANGES,
     View,
     chrome_colors,
     compute_y_axis,
     ensure_png_suffix,
     export_filename,
+    fit_x_range,
     is_dark_background,
     nice_step,
     pan_view,
     resolve_series_colors,
+    visible_y_max,
     year_tick_step,
     zoom_view,
 )
@@ -27,10 +30,12 @@ from calibre_plugins.readingprogress.localization import _
 from qt.core import (
     QApplication,
     QColor,
+    QComboBox,
     QDialog,
     QFont,
     QFontMetrics,
     QHBoxLayout,
+    QLabel,
     QPainter,
     QPalette,
     QPen,
@@ -370,18 +375,24 @@ class AnnotationRenderer:
     """Draws the title and the 'Today' annotation."""
 
     def draw_title(self, painter, plot, rows, target_date, reduction_factor,
-                   date_format, chrome):
+                   date_format, chrome, years=None):
+        """``years`` = length of a limited time range; such a view ends
+        today, so the title names the range instead of the goal."""
         font = QFont()
         font.setPointSize(14)
         font.setBold(True)
         painter.setFont(font)
         painter.setPen(chrome['text'])
 
-        current_backlog = rows[-1][3]
-        target_soft_i = round(current_backlog * reduction_factor)
-        date_str = target_date.strftime(date_format)
-        title = _("Reading progress for TBR = {tbr} on {date}").format(
-            tbr=target_soft_i, date=date_str)
+        if years is not None:
+            title = _("Reading progress over the last {years} years").format(
+                years=years)
+        else:
+            current_backlog = rows[-1][3]
+            target_soft_i = round(current_backlog * reduction_factor)
+            date_str = target_date.strftime(date_format)
+            title = _("Reading progress for TBR = {tbr} on {date}").format(
+                tbr=target_soft_i, date=date_str)
         painter.drawText(
             QRectF(plot.left(), 15, plot.width(), 30),
             ALIGN_CENTER, title,
@@ -460,7 +471,10 @@ class LegendRenderer:
     """Draws the legend."""
 
     def draw(self, painter, plot, target_date, date_format, target_soft,
-             show_forecast=False, colors=None, chrome=None):
+             show_forecast=False, colors=None, chrome=None,
+             show_reference=True):
+        """``show_reference=False`` lists only the data series, for a
+        view that ends today and so shows no goal/forecast lines."""
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -474,6 +488,8 @@ class LegendRenderer:
             (_("Total library"), colors['total'], PEN_SOLID),
             (_("Read (cumulative)"), colors['read'], PEN_SOLID),
             (_("Backlog (TBR)"), colors['backlog'], PEN_SOLID),
+        ]
+        reference_entries = [
             (_("Goal: TBR = 0 on {date}").format(date=date_str),
              colors['goal'], PEN_DASH),
             (_("Constant library (buy rate = read rate)"),
@@ -483,8 +499,10 @@ class LegendRenderer:
              colors['soft'], PEN_DASHDOT),
         ]
         if show_forecast:
-            entries.append((_("Forecast (last 12 months)"),
-                            colors['forecast'], PEN_DASH))
+            reference_entries.append((_("Forecast (last 12 months)"),
+                                      colors['forecast'], PEN_DASH))
+        if show_reference:
+            entries += reference_entries
 
         line_width = 30
         padding = 10
@@ -523,7 +541,8 @@ class ChartWidget(QWidget):
     """Draws the burn-up chart; holds only the orchestration."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None, show_forecast=True, forecast=None, colors=None):
+                 parent=None, show_forecast=True, forecast=None, colors=None,
+                 time_range='all'):
         super().__init__(parent)
         self.rows = rows
         self.target_date = target_date
@@ -535,6 +554,7 @@ class ChartWidget(QWidget):
         bg = self.chrome['background']
         self._dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         self.colors = self._build_colors(colors)
+        self.time_range = time_range
         self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
         self._pan_view = None      # view captured at drag start
@@ -575,8 +595,7 @@ class ChartWidget(QWidget):
         )
 
         if self._view is None:
-            x_min = self.rows[0][0]
-            x_max = self.target_date
+            x_min, x_max = self._fit_x_range()
             y_step, y_max = compute_y_axis(self._data_y_max())
         else:
             x_min = self._view.x_min
@@ -593,12 +612,18 @@ class ChartWidget(QWidget):
         self._axes.draw(painter, scale, x_max, y_max, y_step, self.chrome)
         self._annotation.draw_title(painter, plot, self.rows,
                                     self.target_date, self.reduction_factor,
-                                    self.date_format, self.chrome)
+                                    self.date_format, self.chrome,
+                                    years=dict(TIME_RANGES).get(
+                                        self.time_range))
 
         current_backlog = self.rows[-1][3]
         today = self.rows[-1][0]
         target_soft = current_backlog * self.reduction_factor
 
+        # Lines outside the visible window (zoom, time range) must not
+        # spill into the margins.
+        painter.save()
+        painter.setClipRect(plot)
         self._series.draw_reference_line(
             painter, scale, start=(today, current_backlog),
             end=(self.target_date, 0),
@@ -625,20 +650,24 @@ class ChartWidget(QWidget):
 
         if self.show_forecast:
             self._draw_forecast(painter, scale)
+        painter.restore()
+
+        if self.show_forecast:
+            self._draw_forecast_note(painter, scale)
 
         self._annotation.draw_today(painter, scale, today, current_backlog,
                                     self.colors['backlog'], self.chrome)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
                            target_soft, self.show_forecast, self.colors,
-                           self.chrome)
+                           self.chrome, show_reference=x_max > today)
 
         painter.end()
 
-    def _draw_forecast(self, painter, scale):
-        """Draws the forecast line and its 'realistic' zero-date note."""
+    def _forecast_end(self):
+        """(end_date, end_y) of the forecast line, or None."""
         fc = self.forecast
         if not fc or not fc.get('ok'):
-            return
+            return None
         slope = fc['slope']
         intercept = fc['intercept']
         anchor = fc['anchor']
@@ -653,18 +682,34 @@ class ChartWidget(QWidget):
             end_y = intercept + slope * (end_date - anchor).days
             if end_y < 0:
                 end_y = 0.0
+        return end_date, end_y
 
+    def _draw_forecast(self, painter, scale):
+        """Draws the forecast line."""
+        end = self._forecast_end()
+        if end is None:
+            return
         self._series.draw_reference_line(
-            painter, scale, start=(anchor, intercept),
-            end=(end_date, end_y),
+            painter, scale,
+            start=(self.forecast['anchor'], self.forecast['intercept']),
+            end=end,
             color=self.colors['forecast'], style=PEN_DASH, width=2)
 
-        if zero_date is not None:
-            x_end = scale.date_to_x(end_date)
-            y_end = scale.value_to_y(end_y)
-            self._annotation.draw_forecast_note(
-                painter, scale, zero_date, self.date_format, x_end, y_end,
-                self.chrome)
+    def _draw_forecast_note(self, painter, scale):
+        """Draws the 'realistic' zero-date note at the end of the forecast
+        line, if that end lies inside the visible window."""
+        end = self._forecast_end()
+        if end is None or self.forecast['zero_date'] is None:
+            return
+        end_date, end_y = end
+        x_end = scale.date_to_x(end_date)
+        plot = scale.plot
+        if x_end < plot.left() or x_end > plot.right():
+            return
+        y_end = scale.value_to_y(end_y)
+        self._annotation.draw_forecast_note(
+            painter, scale, self.forecast['zero_date'], self.date_format,
+            x_end, y_end, self.chrome)
 
     # ------------------------------------------------------------------
     # Scaling / view helpers
@@ -689,19 +734,27 @@ class ChartWidget(QWidget):
             max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
         )
 
+    def _fit_x_range(self):
+        """(x_min, x_max) of the unzoomed view for the time range."""
+        return fit_x_range(self.rows[0][0], self.rows[-1][0],
+                           self.target_date, self.time_range)
+
     def _data_y_max(self):
-        return max(
-            max(r[1] for r in self.rows),
-            max(r[2] for r in self.rows),
-            max(r[3] for r in self.rows),
-        )
+        """Largest value within the time range (ignoring zoom)."""
+        return visible_y_max(self.rows, *self._fit_x_range())
 
     def _current_view(self):
         """`View` of the current, possibly zoomed view."""
         if self._view is not None:
             return self._view
         _, y_max = compute_y_axis(self._data_y_max())
-        return View(self.rows[0][0], self.target_date, y_max)
+        return View(*self._fit_x_range(), y_max)
+
+    def set_time_range(self, time_range):
+        """Switches the time range and resets zoom/pan."""
+        self.time_range = time_range
+        self._view = None
+        self.update()
 
     def _scale_for(self, plot):
         x_min, x_max, y_max = self._current_view()
@@ -750,8 +803,7 @@ class ChartWidget(QWidget):
         if plot.width() <= 0 or plot.height() <= 0:
             return
         x_min, x_max, y_max = self._current_view()
-        fit_x_min = self.rows[0][0]
-        fit_x_max = self.target_date
+        fit_x_min, fit_x_max = self._fit_x_range()
         _, fit_y_max = compute_y_axis(self._data_y_max())
 
         fx = min(max((pos.x() - plot.left()) / plot.width(), 0.0), 1.0)
@@ -773,8 +825,7 @@ class ChartWidget(QWidget):
         shift_days = -(pos.x() - self._pan_start.x()) * days_per_pixel
 
         self._view = pan_view(
-            x_min, x_max, y_max, self.rows[0][0], self.target_date,
-            shift_days)
+            x_min, x_max, y_max, *self._fit_x_range(), shift_days)
 
     def _show_tooltip(self, event):
         pos = _cursor_pos(event)
@@ -805,7 +856,8 @@ class ChartDialog(QDialog):
     """Dialog that holds the chart widget, export buttons and Close."""
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
-                 parent=None, show_forecast=True, forecast=None, colors=None):
+                 parent=None, show_forecast=True, forecast=None, colors=None,
+                 time_range='all', on_time_range_changed=None):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
@@ -814,13 +866,38 @@ class ChartDialog(QDialog):
         self.chart = ChartWidget(rows, target_date, reduction_factor,
                                  date_format, self,
                                  show_forecast=show_forecast,
-                                 forecast=forecast, colors=colors)
+                                 forecast=forecast, colors=colors,
+                                 time_range=time_range)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
+        self._add_time_range_box(row, time_range, on_time_range_changed)
         add_export_buttons(row, self.chart, 'burn-up')
         row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.accept)
         row.addWidget(btn)
         layout.addLayout(row)
+
+    def _add_time_range_box(self, row, time_range, on_changed):
+        """Adds the 'Time range' selector; ``on_changed(key)`` persists it."""
+        labels = {
+            'all': _("All time"),
+            '5y': _("Last 5 years"),
+            '2y': _("Last 2 years"),
+        }
+        box = QComboBox(self)
+        for key, _years in TIME_RANGES:
+            box.addItem(labels[key], key)
+        index = box.findData(time_range)
+        box.setCurrentIndex(index if index >= 0 else 0)
+
+        def changed(index):
+            key = box.itemData(index)
+            self.chart.set_time_range(key)
+            if on_changed is not None:
+                on_changed(key)
+
+        box.currentIndexChanged.connect(changed)
+        row.addWidget(QLabel(_("Time range:"), self))
+        row.addWidget(box)
