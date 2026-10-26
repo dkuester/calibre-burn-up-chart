@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: readingprogress 1.6.0\n"
+"Project-Id-Version: readingprogress 1.7.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-16 12:00+0200\n"
-"PO-Revision-Date: 2026-10-16 12:00+0200\n"
+"PO-Revision-Date: 2026-10-26 18:00+0100\n"
 "Last-Translator: Daniel\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -34,17 +34,11 @@ msgid "Time between purchase and reading"
 msgstr "Zeit zwischen Kauf und Lesen"
 
 # Status bar messages
-msgid "Export failed: {}"
-msgstr "Export fehlgeschlagen: {}"
-
 msgid "Reading status: {read}/{total} read, backlog {backlog}"
 msgstr "Lesestatus: {read}/{total} gelesen, Backlog {backlog}"
 
 msgid "No data available for this analysis."
 msgstr "Keine Daten für diese Auswertung verfügbar."
-
-msgid "Median: {med} days, mean: {mean} days (n={n})"
-msgstr "Median: {med} Tage, Mittel: {mean} Tage (n={n})"
 
 # Config dialog
 msgid "Target date:"
@@ -249,8 +243,23 @@ msgstr "Die Spalte {key} ist in dieser Bibliothek vorhanden."
 msgid "Column {key} created. Restart calibre to see it."
 msgstr "Spalte {key} angelegt. calibre neu starten, um sie zu sehen."
 
-msgid "Column not found"
-msgstr "Spalte nicht gefunden"
+msgid "Column not usable"
+msgstr "Spalte nicht verwendbar"
+
+msgid "The column {column} is not of type \"{type}\"."
+msgstr "Die Spalte {column} hat nicht den Typ „{type}“."
+
+msgid "Yes/No"
+msgstr "Ja/Nein"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "You can change the column names in the plugin settings."
+msgstr "Die Spaltennamen lassen sich in den Plugin-Einstellungen ändern."
+
+msgid "Could not read the library."
+msgstr "Die Bibliothek konnte nicht gelesen werden."
 
 msgid "The column {column} does not exist in this library."
 msgstr "Die Spalte {column} gibt es in dieser Bibliothek nicht."

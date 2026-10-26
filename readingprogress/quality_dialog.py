@@ -28,13 +28,6 @@ from qt.core import (
 )
 
 
-def _enum(owner, scope, name):
-    """Qt enum member, scoped (Qt 6) or flat (Qt 5)."""
-    scoped = getattr(owner, scope, None)
-    value = getattr(scoped, name, None) if scoped is not None else None
-    return value if value is not None else getattr(owner, name)
-
-
 class _SortItem(QTableWidgetItem):
     """Table cell that sorts by ``key`` instead of its display text."""
 
@@ -112,10 +105,9 @@ class QualityDialog(QDialog):
                    _("Last read"), _("Days before")]
         table = QTableWidget(len(self.problems), len(headers), self)
         table.setHorizontalHeaderLabels(headers)
-        table.setEditTriggers(
-            _enum(QAbstractItemView, 'EditTrigger', 'NoEditTriggers'))
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(
-            _enum(QAbstractItemView, 'SelectionBehavior', 'SelectRows'))
+            QAbstractItemView.SelectionBehavior.SelectRows)
         table.verticalHeader().setVisible(False)
 
         for r, p in enumerate(self.problems):
@@ -138,7 +130,7 @@ class QualityDialog(QDialog):
 
         # Start sorted by date added, so bulk-import days stand out.
         table.setSortingEnabled(True)
-        table.sortItems(3, _enum(Qt, 'SortOrder', 'AscendingOrder'))
+        table.sortItems(3, Qt.SortOrder.AscendingOrder)
         # Size columns after sorting, so the sort arrow is accounted for;
         # the padding leaves room for it on the other columns too.
         table.resizeColumnsToContents()

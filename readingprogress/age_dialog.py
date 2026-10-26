@@ -6,6 +6,7 @@ those books in calibre's book list.
 """
 
 from calibre_plugins.readingprogress.chart_common import (
+    axis_ticks,
     compute_y_axis,
     is_dark_background,
 )
@@ -13,6 +14,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     ALIGN_CENTER,
     ALIGN_RIGHT,
     ALIGN_VCENTER,
+    LEFT_BUTTON,
     MARGIN_LEFT,
     MARGIN_RIGHT,
     PEN_DOT,
@@ -21,13 +23,15 @@ from calibre_plugins.readingprogress.chart_dialog import (
     RENDER_TEXT_ANTIALIASING,
     _cursor_pos,
     _global_pos,
-    _qt_enum,
     add_export_buttons,
     build_series_colors,
     chrome_for,
     show_paint_error,
 )
 from calibre_plugins.readingprogress.localization import _
+from calibre_plugins.readingprogress.report import (
+    bucket_label as report_bucket_label,
+)
 from qt.core import (
     QDialog,
     QFont,
@@ -55,18 +59,13 @@ BAR_SHARE = 0.7
 # Headroom above the highest bar for its count label
 Y_HEADROOM = 1.1
 
-CURSOR_HAND  = _qt_enum(['CursorShape', 'PointingHandCursor'],
-                        ['PointingHandCursor'])
-CURSOR_ARROW = _qt_enum(['CursorShape', 'ArrowCursor'], ['ArrowCursor'])
+CURSOR_HAND  = Qt.CursorShape.PointingHandCursor
+CURSOR_ARROW = Qt.CursorShape.ArrowCursor
 
 
 def bucket_label(index, bucket_count, max_years):
-    """'< 1 year', '2–3 years' or, for a capped last bucket, '10+ years'."""
-    if index == 0:
-        return _("< 1 year")
-    if index == max_years and index == bucket_count - 1:
-        return _("{years}+ years").format(years=index)
-    return _("{start}–{end} years").format(start=index, end=index + 1)
+    """Translated label of an age bucket (see ``report.bucket_label``)."""
+    return report_bucket_label(_, index, bucket_count, max_years)
 
 
 class AgeChartWidget(QWidget):
@@ -108,7 +107,7 @@ class AgeChartWidget(QWidget):
 
     def _y_axis(self):
         largest = max(len(b) for b in self.buckets)
-        return compute_y_axis(Y_HEADROOM * largest)
+        return compute_y_axis(Y_HEADROOM * largest, integer=True)
 
     def _bar_rect(self, plot, index, y_max):
         slot = plot.width() / len(self.buckets)
@@ -190,8 +189,7 @@ class AgeChartWidget(QWidget):
         painter.setFont(font)
         fm = QFontMetrics(font)
 
-        value = y_step
-        while value <= y_max + 0.01:
+        for value in axis_ticks(y_max, y_step)[1:]:
             y = plot.bottom() - plot.height() * value / y_max
             pen = QPen(self.chrome['grid'], 1)
             pen.setStyle(PEN_DOT)
@@ -204,7 +202,6 @@ class AgeChartWidget(QWidget):
             painter.drawText(QRectF(plot.left() - 10 - width, y - 8,
                                     width, 16),
                              ALIGN_RIGHT | ALIGN_VCENTER, text)
-            value += y_step
 
         slot = plot.width() / len(self.buckets)
         for index in range(len(self.buckets)):
@@ -270,7 +267,7 @@ class AgeChartWidget(QWidget):
             self.update()
 
     def mousePressEvent(self, event):
-        if event.button() != Qt.LeftButton:
+        if event.button() != LEFT_BUTTON:
             return
         index = self._bar_at(_cursor_pos(event))
         if index is not None and self.on_bar_clicked is not None:

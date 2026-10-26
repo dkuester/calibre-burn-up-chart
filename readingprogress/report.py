@@ -22,6 +22,16 @@ def _percent(part, whole, decimal_sep):
     return _number(100 * part / whole, 0, decimal_sep) + ' %'
 
 
+def bucket_label(tr, index, bucket_count, max_years):
+    """Label of age bucket ``index`` (see ``age_buckets()``): '< 1 year',
+    '2–3 years' or, for a capped last bucket, '10+ years'."""
+    if index == 0:
+        return tr("< 1 year")
+    if index == max_years and index == bucket_count - 1:
+        return tr("{years}+ years").format(years=index)
+    return tr("{start}–{end} years").format(start=index, end=index + 1)
+
+
 def build_sections(data, tr, date_format, decimal_sep='.'):
     """Report content as a list of sections.
 
@@ -34,8 +44,8 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
     - ``target_date``, ``target_tbr``: goal from the settings
     - ``forecast``: dict from ``forecast_backlog()``
     - ``delay``: dict from ``delay_statistics()`` or ``None``
-    - ``age``: dict with ``median_years`` (or ``None``) and ``buckets``,
-      a list of (label, count)
+    - ``age``: dict with ``median_years`` (or ``None``), ``max_years``
+      and ``counts``, the number of books per ``age_buckets()`` bucket
     - ``quality``: dict with ``missing`` and ``before_added``
     """
     sections = []
@@ -98,13 +108,16 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
 
     age = data['age']
     if age['median_years'] is not None:
-        total = sum(count for _label, count in age['buckets'])
+        counts = age['counts']
+        buckets = [(bucket_label(tr, i, len(counts), age['max_years']), n)
+                   for i, n in enumerate(counts)]
+        total = sum(counts)
         sections.append({
             'heading': tr("Age of the TBR"),
             'table': (
                 [tr("Time in the TBR"), tr("Books"), tr("Share")],
                 [[label, str(count), _percent(count, total, decimal_sep)]
-                 for label, count in age['buckets']],
+                 for label, count in buckets],
             ),
             'note': tr("Median age: {years} years").format(
                 years=_number(age['median_years'], 1, decimal_sep)),

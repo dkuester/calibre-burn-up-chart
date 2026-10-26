@@ -6,7 +6,7 @@
 
 [![Release](https://img.shields.io/github/v/release/dkuester/calibre-burn-up-chart?label=release)](https://github.com/dkuester/calibre-burn-up-chart/releases/latest)
 [![CI](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml)
-[![calibre](https://img.shields.io/badge/calibre-5.0%2B-informational)](#requirements)
+[![calibre](https://img.shields.io/badge/calibre-8.0%2B-informational)](#requirements)
 [![License](https://img.shields.io/github/license/dkuester/calibre-burn-up-chart)](LICENSE)
 
 [Installation](#installation) · [Features](#features) · [Configuration](#configuration) · [Development](#development) · [Changelog](CHANGELOG.md) · [Roadmap](ROADMAP.md) · [Deutsch](README.de.md)
@@ -37,14 +37,14 @@ Python installation is needed.
 | **Data quality check** | Lists read books without a read date or read before being added, and shows them in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
-| **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
-| **Export** | Save either chart as a PNG or copy it to the clipboard, exactly as shown (zoom, pan, theme). |
+| **Interactive** | Tooltips in every chart. In the burn-up and reading-delay charts, zoom with the mouse wheel, pan by dragging, double-click to reset. |
+| **Export** | Save any chart as a PNG or copy it to the clipboard, exactly as shown (zoom, pan, theme). |
 | **Your colors, your theme** | Every series and reference line can be recolored. Charts follow calibre's light or dark theme. |
 | **Bilingual** | English and German interface, following calibre's language. More languages can be added in `translations/<lang>/`. |
 
 ## Requirements
 
-- calibre 5.0 or newer
+- calibre 8.0 or newer
 - Two custom columns in your library (names can be changed in the settings):
 
 | Column | Type | Purpose |

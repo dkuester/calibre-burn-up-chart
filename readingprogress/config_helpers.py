@@ -64,3 +64,49 @@ def days_in_tbr_template(read_column, last_read_column):
         "  format_number(days_between(today(), $$timestamp), '{{0:.0f}}')\n"
         "fi"
     ).format(read=read_column, last_read=last_read_column)
+
+
+# Datatype each configured column must have, and its name in messages
+COLUMN_DATATYPES = {
+    "read": ("bool", "Yes/No"),
+    "last_read": ("datetime", "Date"),
+}
+
+
+def custom_column_types(db_api):
+    """``{lookup name: datatype}`` of the library's custom columns."""
+    fm = db_api.field_metadata
+    return {key: fm[key]["datatype"] for key in fm.custom_field_keys()}
+
+
+def column_problems(datatypes, read_column, last_read_column):
+    """Configured columns the charts cannot use.
+
+    :param datatypes: from :func:`custom_column_types`
+    :return: list of ``(column, expected_type_name, actual_datatype)``;
+        ``actual_datatype`` is ``None`` if the column does not exist.
+    """
+    problems = []
+    for role, column in (("read", read_column),
+                         ("last_read", last_read_column)):
+        expected, type_name = COLUMN_DATATYPES[role]
+        actual = datatypes.get(column)
+        if actual != expected:
+            problems.append((column, type_name, actual))
+    return problems
+
+
+def describe_column_problems(problems, tr):
+    """One translated line per problem from :func:`column_problems`."""
+    # Literal tr() calls, so the type names are found for translation
+    type_names = {"Yes/No": tr("Yes/No"), "Date": tr("Date")}
+    lines = []
+    for column, type_name, actual in problems:
+        if actual is None:
+            lines.append(tr("The column {column} does not exist in this "
+                            "library.").format(column=column))
+        else:
+            lines.append(tr("The column {column} is not of type "
+                            "\"{type}\".").format(column=column,
+                                                  type=type_names[type_name]))
+    return lines

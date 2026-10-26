@@ -73,3 +73,43 @@ def test_days_in_tbr_template_uses_configured_columns():
     assert 'days_between(today(), $$timestamp)' in t
     assert "'{0:.0f}'" in t
     assert '#gelesen' not in t
+
+
+class _FieldMetadata(dict):
+    def custom_field_keys(self):
+        return [k for k in self if k.startswith('#')]
+
+
+class _Db:
+    def __init__(self, types):
+        self.field_metadata = _FieldMetadata(
+            {k: {'datatype': v} for k, v in types.items()})
+
+
+def test_custom_column_types():
+    db = _Db({'title': 'text', '#gelesen': 'bool', '#last_read': 'datetime'})
+    assert ch.custom_column_types(db) == {'#gelesen': 'bool',
+                                          '#last_read': 'datetime'}
+
+
+def test_column_problems_none_when_types_match():
+    types = {'#gelesen': 'bool', '#last_read': 'datetime'}
+    assert ch.column_problems(types, '#gelesen', '#last_read') == []
+
+
+def test_column_problems_missing_and_wrong_type():
+    types = {'#read': 'text'}
+    assert ch.column_problems(types, '#read', '#last_read') == [
+        ('#read', 'Yes/No', 'text'),
+        ('#last_read', 'Date', None),
+    ]
+
+
+def test_describe_column_problems_translates():
+    lines = ch.describe_column_problems(
+        [('#read', 'Yes/No', 'text'), ('#last_read', 'Date', None)],
+        lambda text: '>' + text)
+    assert lines == [
+        '>The column #read is not of type ">Yes/No".',
+        '>The column #last_read does not exist in this library.',
+    ]

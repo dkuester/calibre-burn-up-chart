@@ -1,6 +1,11 @@
 import traceback
 
-from calibre.gui2 import error_dialog, info_dialog, question_dialog
+from calibre.gui2 import (
+    error_dialog,
+    info_dialog,
+    question_dialog,
+    warning_dialog,
+)
 from calibre_plugins.readingprogress import config
 from calibre_plugins.readingprogress.chart_common import (
     DARK_DEFAULT_COLORS,
@@ -9,7 +14,10 @@ from calibre_plugins.readingprogress.chart_common import (
 )
 from calibre_plugins.readingprogress.config_helpers import (
     DAYS_IN_TBR_LABEL,
+    column_problems,
+    custom_column_types,
     days_in_tbr_template,
+    describe_column_problems,
 )
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
@@ -44,8 +52,11 @@ class ConfigWidget(QWidget):
         self.date_edit = QDateEdit()
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat('yyyy-MM-dd')
-        self.date_edit.setDate(QDate(year, month, day))
-        self.date_edit.setMinimumDate(QDate.currentDate())
+        stored = QDate(year, month, day)
+        # A stored date in the past stays selectable instead of being
+        # silently moved to today.
+        self.date_edit.setMinimumDate(min(stored, QDate.currentDate()))
+        self.date_edit.setDate(stored)
         layout.addRow(_('Target date:'), self.date_edit)
 
         # --- Reduction factor ---
@@ -143,6 +154,24 @@ class ConfigWidget(QWidget):
         config['last_read_column'] = (
             self.last_read_column_edit.text().strip() or '#last_read'
         )
+        self._warn_about_columns()
+
+    def _warn_about_columns(self):
+        """Warns (after saving) if the charts cannot use the columns."""
+        db = self._library()
+        if db is None:
+            return
+        try:
+            problems = column_problems(custom_column_types(db),
+                                       config['read_column'],
+                                       config['last_read_column'])
+        except Exception:
+            return
+        if problems:
+            warning_dialog(
+                self, _('Column not usable'),
+                '\n'.join(describe_column_problems(problems, _)),
+                show=True)
 
     def _update_color_button(self, btn, hex_value):
         color = QColor(hex_value)
@@ -155,7 +184,7 @@ class ConfigWidget(QWidget):
         btn.setText(color.name())
 
     def _theme_default(self, key):
-        bg = self.palette().color(QPalette.Window)
+        bg = self.palette().color(QPalette.ColorRole.Window)
         dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         return DARK_DEFAULT_COLORS[key] if dark else DEFAULT_COLORS[key]
 
@@ -219,14 +248,13 @@ class ConfigWidget(QWidget):
         last_read_column = (
             self.last_read_column_edit.text().strip() or '#last_read'
         )
-        existing = db.field_metadata.custom_field_keys()
-        for column in (read_column, last_read_column):
-            if column not in existing:
-                error_dialog(
-                    self, _('Column not found'),
-                    _('The column {column} does not exist in this '
-                      'library.').format(column=column), show=True)
-                return
+        problems = column_problems(custom_column_types(db), read_column,
+                                   last_read_column)
+        if problems:
+            error_dialog(
+                self, _('Column not usable'),
+                '\n'.join(describe_column_problems(problems, _)), show=True)
+            return
 
         key = '#' + DAYS_IN_TBR_LABEL
         if not question_dialog(

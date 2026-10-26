@@ -6,6 +6,7 @@ No external dependencies besides Qt (bundled with Calibre).
 """
 
 import traceback
+from datetime import date
 
 from calibre.gui2 import choose_save_file, error_dialog
 from calibre_plugins.readingprogress.chart_common import (
@@ -13,15 +14,18 @@ from calibre_plugins.readingprogress.chart_common import (
     DEFAULT_COLORS,
     TIME_RANGES,
     View,
+    axis_ticks,
     chrome_colors,
     compute_y_axis,
     ensure_png_suffix,
     export_filename,
     fit_x_range,
+    format_number,
     is_dark_background,
     nice_step,
     pan_view,
     resolve_series_colors,
+    tick_decimals,
     visible_y_max,
     year_tick_step,
     zoom_view,
@@ -53,86 +57,25 @@ from qt.core import (
 LOG_ERROR = '/tmp/readingprogress_paint_error.log'
 
 
-def _qt_enum(*paths):
-    """Resolves a Qt enum value independently of the Qt version.
+# Qt enums (calibre 8+ ships Qt 6, which only has the scoped names)
+ALIGN_CENTER  = Qt.AlignmentFlag.AlignCenter
+ALIGN_LEFT    = Qt.AlignmentFlag.AlignLeft
+ALIGN_RIGHT   = Qt.AlignmentFlag.AlignRight
+ALIGN_VCENTER = Qt.AlignmentFlag.AlignVCenter
 
-    Tries the given attribute paths in order.
-    Example: _qt_enum(['PenStyle', 'DashLine'], ['DashLine'])
-    → Qt.PenStyle.DashLine (modern) or Qt.DashLine (legacy).
-    """
-    for path in paths:
-        if isinstance(path, str):
-            path = [path]
-        obj = Qt
-        ok = True
-        for part in path:
-            obj = getattr(obj, part, None)
-            if obj is None:
-                ok = False
-                break
-        if ok:
-            return obj
-    return None
+PEN_SOLID   = Qt.PenStyle.SolidLine
+PEN_DASH    = Qt.PenStyle.DashLine
+PEN_DOT     = Qt.PenStyle.DotLine
+PEN_DASHDOT = Qt.PenStyle.DashDotLine
+PEN_NOPEN   = Qt.PenStyle.NoPen
 
+CAP_ROUND  = Qt.PenCapStyle.RoundCap
+JOIN_ROUND = Qt.PenJoinStyle.RoundJoin
 
-def _render_hint(*paths):
-    """Resolves a QPainter.RenderHint independently of the Qt version."""
-    for path in paths:
-        if isinstance(path, str):
-            path = [path]
-        obj = QPainter
-        ok = True
-        for part in path:
-            obj = getattr(obj, part, None)
-            if obj is None:
-                ok = False
-                break
-        if ok:
-            return obj
-    return None
+LEFT_BUTTON = Qt.MouseButton.LeftButton
 
-
-# Robustly resolved enums (with fallback to numeric Qt values)
-ALIGN_CENTER  = _qt_enum(['AlignmentFlag', 'AlignCenter'],
-                         ['AlignCenter'])  or 0x0004
-ALIGN_LEFT    = _qt_enum(['AlignmentFlag', 'AlignLeft'],
-                         ['AlignLeft'])    or 0x0001
-ALIGN_RIGHT   = _qt_enum(['AlignmentFlag', 'AlignRight'],
-                         ['AlignRight'])   or 0x0002
-ALIGN_VCENTER = _qt_enum(['AlignmentFlag', 'AlignVCenter'],
-                         ['AlignVCenter']) or 0x0080
-
-PEN_SOLID   = _qt_enum(['PenStyle', 'SolidLine'],
-                       ['SolidLine'])   or 1
-PEN_DASH    = _qt_enum(['PenStyle', 'DashLine'],
-                       ['DashLine'])    or 2
-PEN_DOT     = _qt_enum(['PenStyle', 'DotLine'],
-                       ['DotLine'])     or 3
-PEN_DASHDOT = _qt_enum(['PenStyle', 'DashDotLine'],
-                       ['DashDotLine']) or 4
-PEN_NOPEN   = _qt_enum(['PenStyle', 'NoPen'],
-                       ['NoPen'])       or 0
-
-CAP_ROUND  = _qt_enum(['PenCapStyle', 'RoundCap'],
-                      ['RoundCap'])
-JOIN_ROUND = _qt_enum(['PenJoinStyle', 'RoundJoin'],
-                      ['RoundJoin'])
-
-# Render hints (version-independent)
-RENDER_ANTIALIASING = _render_hint(
-    ['RenderHint', 'Antialiasing'],   # Qt 6
-    ['Antialiasing'],                  # Qt 5
-)
-RENDER_TEXT_ANTIALIASING = _render_hint(
-    ['RenderHint', 'TextAntialiasing'],
-    ['TextAntialiasing'],
-)
-
-# Numeric fallbacks (stable across Qt versions)
-if RENDER_ANTIALIASING is None:
-    RENDER_ANTIALIASING = 0x01
-if RENDER_TEXT_ANTIALIASING is None:
-    RENDER_TEXT_ANTIALIASING = 0x02
+RENDER_ANTIALIASING      = QPainter.RenderHint.Antialiasing
+RENDER_TEXT_ANTIALIASING = QPainter.RenderHint.TextAntialiasing
 
 
 # Plot area margins (in pixels)
@@ -148,22 +91,18 @@ TOOLTIP_RADIUS  = 14.0
 
 
 def _cursor_pos(event):
-    """Cursor position as QPointF, independent of the Qt5/Qt6 API."""
-    pos = getattr(event, 'position', None)
-    return QPointF(pos()) if pos is not None else QPointF(event.pos())
+    """Cursor position of a mouse/wheel event as QPointF."""
+    return event.position()
 
 
 def _global_pos(event):
-    """Global cursor position as QPoint, independent of the Qt5/Qt6 API."""
-    gp = getattr(event, 'globalPosition', None)
-    if gp is not None:
-        return gp().toPoint()
-    return event.globalPos()
+    """Global cursor position of a mouse event as QPoint."""
+    return event.globalPosition().toPoint()
 
 
 def chrome_for(widget):
     """Chrome QColor dict for ``widget``'s current palette (light/dark)."""
-    bg = widget.palette().color(QPalette.Window)
+    bg = widget.palette().color(QPalette.ColorRole.Window)
     pal = chrome_colors((bg.red(), bg.green(), bg.blue()))
     return {
         'background': bg,
@@ -299,7 +238,9 @@ class AxesRenderer:
     """Draws axes, grid, tick labels and axis titles."""
 
     def draw(self, painter, scale, x_max, y_max, y_step, chrome,
-             y_title=None):
+             y_title=None, x_title=None, decimal_sep='.'):
+        """``y_title``/``x_title`` default to "Number of books"/"Year".
+        Tick labels get as many decimals as ``y_step`` needs."""
         plot = scale.plot
         painter.setPen(QPen(chrome['axis'], 1))
         painter.drawLine(QPointF(plot.left(),  plot.top()),
@@ -313,8 +254,8 @@ class AxesRenderer:
         fm = QFontMetrics(font)
 
         # Y axis
-        y_value = 0
-        while y_value <= y_max + 0.01:
+        decimals = tick_decimals(y_step)
+        for y_value in axis_ticks(y_max, y_step):
             y_pix = scale.value_to_y(y_value)
             pen = QPen(chrome['grid'], 1)
             pen.setStyle(PEN_DOT)
@@ -322,27 +263,21 @@ class AxesRenderer:
             painter.drawLine(QPointF(plot.left(),  y_pix),
                              QPointF(plot.right(), y_pix))
             painter.setPen(chrome['text'])
-            text = str(int(y_value))
+            text = format_number(y_value, decimals, decimal_sep)
             width = fm.horizontalAdvance(text)
             painter.drawText(
                 QRectF(plot.left() - 10 - width, y_pix - 8, width, 16),
                 ALIGN_RIGHT | ALIGN_VCENTER, text,
             )
-            y_value += y_step
 
         # X axis: year markers
         year_span = (x_max - scale.x_min).days / 365.25
         step = year_tick_step(year_span)
 
-        from datetime import date as _date
         for year in range(scale.x_min.year + 1, x_max.year + 1):
             if year % step != 0:
                 continue
-            try:
-                d = _date(year, 1, 1)
-            except ValueError:
-                continue
-            x_pix = scale.date_to_x(d)
+            x_pix = scale.date_to_x(date(year, 1, 1))
             if x_pix < plot.left() or x_pix > plot.right():
                 continue
             painter.setPen(QPen(chrome['axis'], 1))
@@ -363,7 +298,7 @@ class AxesRenderer:
         painter.setPen(chrome['text'])
         painter.drawText(
             QRectF(plot.left(), plot.bottom() + 28, plot.width(), 20),
-            ALIGN_CENTER, _("Year"),
+            ALIGN_CENTER, x_title or _("Year"),
         )
 
         painter.save()
@@ -381,10 +316,8 @@ class SeriesRenderer:
 
     def draw_series(self, painter, scale, rows, index, color, width):
         pen = QPen(color, width)
-        if CAP_ROUND is not None:
-            pen.setCapStyle(CAP_ROUND)
-        if JOIN_ROUND is not None:
-            pen.setJoinStyle(JOIN_ROUND)
+        pen.setCapStyle(CAP_ROUND)
+        pen.setJoinStyle(JOIN_ROUND)
         painter.setPen(pen)
 
         points = []
@@ -400,8 +333,7 @@ class SeriesRenderer:
                             width):
         pen = QPen(color, width)
         pen.setStyle(style)
-        if CAP_ROUND is not None:
-            pen.setCapStyle(CAP_ROUND)
+        pen.setCapStyle(CAP_ROUND)
         painter.setPen(pen)
 
         x1 = scale.date_to_x(start[0])
@@ -650,12 +582,12 @@ class ChartWidget(QWidget):
 
         if self._view is None:
             x_min, x_max = self._fit_x_range()
-            y_step, y_max = compute_y_axis(self._data_y_max())
+            y_step, y_max = compute_y_axis(self._data_y_max(), integer=True)
         else:
             x_min = self._view.x_min
             x_max = self._view.x_max
             y_max = self._view.y_max
-            y_step = nice_step(y_max)
+            y_step = nice_step(y_max, integer=True)
         x_days = (x_max - x_min).days
         if x_days <= 0:
             painter.end()
@@ -792,7 +724,7 @@ class ChartWidget(QWidget):
         """`View` of the current, possibly zoomed view."""
         if self._view is not None:
             return self._view
-        _, y_max = compute_y_axis(self._data_y_max())
+        _step, y_max = compute_y_axis(self._data_y_max(), integer=True)
         return View(*self._fit_x_range(), y_max)
 
     def set_time_range(self, time_range):
@@ -822,7 +754,7 @@ class ChartWidget(QWidget):
             pass
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == LEFT_BUTTON:
             self._pan_start = _cursor_pos(event)
             self._pan_view = self._current_view()
 
@@ -834,7 +766,7 @@ class ChartWidget(QWidget):
             self._show_tooltip(event)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == LEFT_BUTTON:
             self._pan_start = None
             self._pan_view = None
 
@@ -849,7 +781,7 @@ class ChartWidget(QWidget):
             return
         x_min, x_max, y_max = self._current_view()
         fit_x_min, fit_x_max = self._fit_x_range()
-        _, fit_y_max = compute_y_axis(self._data_y_max())
+        _step, fit_y_max = compute_y_axis(self._data_y_max(), integer=True)
 
         fx = min(max((pos.x() - plot.left()) / plot.width(), 0.0), 1.0)
 
@@ -921,6 +853,6 @@ class ChartDialog(QDialog):
         add_export_buttons(row, self.chart, 'burn-up')
         row.addStretch()
         btn = QPushButton(_("Close"))
-        btn.clicked.connect(self.accept)
+        btn.clicked.connect(self.reject)
         row.addWidget(btn)
         layout.addLayout(row)
