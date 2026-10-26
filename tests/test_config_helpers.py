@@ -63,3 +63,13 @@ def test_all_colors_are_light_defaults_auto():
 def test_decimal_separator():
     assert ch.decimal_separator('de') == ','
     assert ch.decimal_separator('en') == '.'
+
+
+def test_days_in_tbr_template_uses_configured_columns():
+    t = ch.days_in_tbr_template('#read', '#lastread')
+    assert t.startswith('program:\n')
+    assert "$$#read == 'true'" in t
+    assert 'days_between($$#lastread, $$timestamp)' in t
+    assert 'days_between(today(), $$timestamp)' in t
+    assert "'{0:.0f}'" in t
+    assert '#gelesen' not in t

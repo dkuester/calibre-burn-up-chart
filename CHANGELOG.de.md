@@ -6,6 +6,12 @@
   „In Zwischenablage kopieren" in beiden Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
+- **Spalte „Tage im SuB“:** Ein Knopf in den Plugin-Einstellungen legt
+  eine calibre-Spalte `#days_in_tbr` an, die calibre selbst aus
+  Aufnahmedatum und den Lese-Spalten berechnet: bei gelesenen Büchern
+  die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit
+  der Aufnahme. Sie ist immer aktuell, sortiert numerisch und verändert
+  keine Buchdaten.
 - **Kaufrate vs. Leserate:** Ein drittes Chart, aufrufbar über das
   Menü am Werkzeugleisten-Knopf. Es zeigt Zugänge und gelesene Bücher
   pro Monat als Mittel über 12 Monate und färbt die Fläche dazwischen
@@ -24,7 +30,7 @@
 
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 78 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 79 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht

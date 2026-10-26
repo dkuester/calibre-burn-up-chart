@@ -1,8 +1,15 @@
+import traceback
+
+from calibre.gui2 import error_dialog, info_dialog, question_dialog
 from calibre_plugins.readingprogress import config
 from calibre_plugins.readingprogress.chart_common import (
     DARK_DEFAULT_COLORS,
     DEFAULT_COLORS,
     is_dark_background,
+)
+from calibre_plugins.readingprogress.config_helpers import (
+    DAYS_IN_TBR_LABEL,
+    days_in_tbr_template,
 )
 from calibre_plugins.readingprogress.localization import _
 from qt.core import (
@@ -92,6 +99,15 @@ class ConfigWidget(QWidget):
         layout.addRow(_('Custom column "last read":'),
                       self.last_read_column_edit)
 
+        # --- "Days in TBR" composite column ---
+        self.tbr_column_btn = QPushButton(_('Create column "Days in TBR"'))
+        self.tbr_column_btn.clicked.connect(self._create_days_in_tbr_column)
+        self.tbr_column_status = QLabel()
+        self.tbr_column_status.setWordWrap(True)
+        layout.addRow(self.tbr_column_btn)
+        layout.addRow(self.tbr_column_status)
+        self._refresh_tbr_column_state()
+
         # --- Explanation ---
         hint = QLabel(_(
             '<b>Target date:</b> Date by which the backlog (TBR) should '
@@ -101,7 +117,11 @@ class ConfigWidget(QWidget):
             '<br><br>'
             '<b>Custom columns:</b> Names of your Calibre columns (with '
             'leading #) used to mark books as read and to store the last '
-            'read date.'
+            'read date.<br><br>'
+            '<b>Days in TBR:</b> A column calibre computes itself: for '
+            'read books the days between adding and reading, for unread '
+            'books the days since adding. Sort by it to find the books '
+            'you have owned longest without reading them.'
         ))
         hint.setWordWrap(True)
         layout.addRow(hint)
@@ -150,3 +170,96 @@ class ConfigWidget(QWidget):
         for key, btn in self._color_buttons.items():
             self._update_color_button(btn, self._theme_default(key))
             self._color_modified[key] = False
+
+    # ------------------------------------------------------------------
+    # "Days in TBR" column
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _library():
+        """new_api of the open library, or None outside the GUI."""
+        from calibre.gui2.ui import get_gui
+        gui = get_gui()
+        return gui.current_db.new_api if gui is not None else None
+
+    def _refresh_tbr_column_state(self):
+        db = self._library()
+        key = '#' + DAYS_IN_TBR_LABEL
+        if db is None:
+            self.tbr_column_btn.setEnabled(False)
+            self.tbr_column_status.setText(
+                _('Only available while a library is open.'))
+        elif key in db.field_metadata.custom_field_keys():
+            self.tbr_column_btn.setEnabled(False)
+            self.tbr_column_status.setText(
+                _('Column {key} exists in this library.').format(key=key))
+        elif self._column_pending(db):
+            self.tbr_column_btn.setEnabled(False)
+            self.tbr_column_status.setText(
+                _('Column {key} created. Restart calibre to see it.').format(
+                    key=key))
+        else:
+            self.tbr_column_status.setText('')
+
+    @staticmethod
+    def _column_pending(db):
+        """True if the column was created but calibre not restarted yet
+        (it is in the database, but not loaded)."""
+        try:
+            labels = {row[0] for row in db.backend.execute(
+                'SELECT label FROM custom_columns')}
+        except Exception:
+            return False
+        return DAYS_IN_TBR_LABEL in labels
+
+    def _create_days_in_tbr_column(self):
+        db = self._library()
+        if db is None:
+            return
+        read_column = self.read_column_edit.text().strip() or '#gelesen'
+        last_read_column = (
+            self.last_read_column_edit.text().strip() or '#last_read'
+        )
+        existing = db.field_metadata.custom_field_keys()
+        for column in (read_column, last_read_column):
+            if column not in existing:
+                error_dialog(
+                    self, _('Column not found'),
+                    _('The column {column} does not exist in this '
+                      'library.').format(column=column), show=True)
+                return
+
+        key = '#' + DAYS_IN_TBR_LABEL
+        if not question_dialog(
+                self, _('Create column?'),
+                _('This adds the column {key} ("Days in TBR") to the '
+                  'current library. calibre computes its values from '
+                  '{read} and {last_read}; no book data is changed. '
+                  'calibre has to be restarted afterwards.').format(
+                    key=key, read=read_column,
+                    last_read=last_read_column)):
+            return
+        try:
+            db.create_custom_column(
+                DAYS_IN_TBR_LABEL, _('Days in TBR'), 'composite', False,
+                display={
+                    'composite_template': days_in_tbr_template(
+                        read_column, last_read_column),
+                    'composite_sort': 'number',
+                    'make_category': False,
+                    'contains_html': False,
+                    'use_decorations': False,
+                })
+        except Exception as e:
+            error_dialog(
+                self, _('Could not create the column'), str(e),
+                det_msg=traceback.format_exc(), show=True)
+            return
+
+        self.tbr_column_btn.setEnabled(False)
+        self.tbr_column_status.setText(
+            _('Column {key} created. Restart calibre to see it.').format(
+                key=key))
+        info_dialog(
+            self, _('Column created'),
+            _('Restart calibre to see the column "Days in TBR".'),
+            show=True)

@@ -23,7 +23,10 @@ Merged into `main`, shipping with the next release:
 - **Purchase rate vs. reading rate:** a third chart with books added
   and read per month (12-month averages), shaded by whether the backlog
   shrinks or grows.
-- **Tests and CI:** 78 `pytest` tests with a 100% coverage gate on the
+- **"Days in TBR" column:** a button in the settings creates a calibre
+  column that calibre computes itself, so it is always up to date and
+  no values are written into the library.
+- **Tests and CI:** 79 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -47,11 +50,7 @@ Details in the [changelog](CHANGELOG.md).
 
 Features we intend to build, but without a fixed target version.
 
-### Export to Calibre column
-
-Write computed values into a custom column, e.g. "days until read" per
-book. Then the Calibre interface itself can sort and filter by that
-value – e.g. "show me the books I have owned longest without reading".
+Nothing at the moment; the next candidates come from the ideas below.
 
 ## Ideas
 

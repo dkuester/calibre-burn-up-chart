@@ -31,6 +31,7 @@ Python installation is needed.
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
+| **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
 | **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
@@ -79,6 +80,7 @@ The toolbar button opens a menu with three charts:
 | Show forecast line | Draws the forecast line (on by default). |
 | Colors | Color of each series and reference line. Empty means "follow the theme"; *Reset colors to theme defaults* clears all custom colors. |
 | Custom column "read" / "last read" | Lookup names of the two columns, if yours are named differently. |
+| Create column "Days in TBR" | Adds a column `#days_in_tbr` that calibre computes itself: days between adding and reading for read books, days since adding for unread ones. Sort by it to find the books you have owned longest without reading. Restart calibre afterwards. |
 
 The settings are stored in `plugins/readingprogress.json` in calibre's
 configuration folder and persist across restarts.

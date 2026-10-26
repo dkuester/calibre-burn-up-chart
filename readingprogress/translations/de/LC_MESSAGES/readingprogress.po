@@ -86,8 +86,8 @@ msgstr "Benutzerdefinierte Spalte \"gelesen\":"
 msgid "Custom column \"last read\":"
 msgstr "Benutzerdefinierte Spalte \"zuletzt gelesen\":"
 
-msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date."
-msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen."
+msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date.<br><br><b>Days in TBR:</b> A column calibre computes itself: for read books the days between adding and reading, for unread books the days since adding. Sort by it to find the books you have owned longest without reading them."
+msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen.<br><br><b>Tage im SuB:</b> Eine Spalte, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben."
 
 # Chart dialog
 msgid "Reading progress"
@@ -232,3 +232,40 @@ msgstr "Mittel"
 # paintEvent error fallback
 msgid "Error drawing:\n{type}: {error}\n\nDetails: {log}"
 msgstr "Fehler beim Zeichnen:\n{type}: {error}\n\nDetails: {log}"
+
+# "Days in TBR" column (settings dialog)
+msgid "Create column \"Days in TBR\""
+msgstr "Spalte „Tage im SuB“ anlegen"
+
+msgid "Days in TBR"
+msgstr "Tage im SuB"
+
+msgid "Only available while a library is open."
+msgstr "Nur verfügbar, solange eine Bibliothek geöffnet ist."
+
+msgid "Column {key} exists in this library."
+msgstr "Die Spalte {key} ist in dieser Bibliothek vorhanden."
+
+msgid "Column {key} created. Restart calibre to see it."
+msgstr "Spalte {key} angelegt. calibre neu starten, um sie zu sehen."
+
+msgid "Column not found"
+msgstr "Spalte nicht gefunden"
+
+msgid "The column {column} does not exist in this library."
+msgstr "Die Spalte {column} gibt es in dieser Bibliothek nicht."
+
+msgid "Create column?"
+msgstr "Spalte anlegen?"
+
+msgid "This adds the column {key} (\"Days in TBR\") to the current library. calibre computes its values from {read} and {last_read}; no book data is changed. calibre has to be restarted afterwards."
+msgstr "Damit wird die Spalte {key} („Tage im SuB“) in der aktuellen Bibliothek angelegt. calibre berechnet ihre Werte aus {read} und {last_read}; Buchdaten werden nicht verändert. Danach muss calibre neu gestartet werden."
+
+msgid "Could not create the column"
+msgstr "Spalte konnte nicht angelegt werden"
+
+msgid "Column created"
+msgstr "Spalte angelegt"
+
+msgid "Restart calibre to see the column \"Days in TBR\"."
+msgstr "calibre neu starten, um die Spalte „Tage im SuB“ zu sehen."

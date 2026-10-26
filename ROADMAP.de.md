@@ -25,7 +25,10 @@ In `main` gemergt, kommt mit der nächsten Version:
 - **Kaufrate vs. Leserate:** ein drittes Chart mit Zugängen und
   gelesenen Büchern pro Monat (Mittel über 12 Monate), gefärbt danach,
   ob der SuB schrumpft oder wächst.
-- **Tests und CI:** 78 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Spalte „Tage im SuB“:** ein Knopf in den Einstellungen legt eine
+  calibre-Spalte an, die calibre selbst berechnet. Sie ist damit immer
+  aktuell, und es werden keine Werte in die Bibliothek geschrieben.
+- **Tests und CI:** 79 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -49,12 +52,7 @@ Details im [Changelog](CHANGELOG.de.md).
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
 
-### Export in Calibre-Spalte
-
-Berechnete Werte in eine benutzerdefinierte Spalte schreiben, z.B.
-„Tage bis zum Lesen" pro Buch. Dann kann die Calibre-Oberfläche selbst
-danach sortieren und filtern – z.B. „zeig mir die Bücher, die ich am
-längsten besitze, ohne sie gelesen zu haben".
+Derzeit nichts; die nächsten Kandidaten kommen aus den Ideen unten.
 
 ## Ideen
 
