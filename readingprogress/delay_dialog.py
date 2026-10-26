@@ -20,6 +20,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     PEN_DOT,
     RENDER_ANTIALIASING,
     RENDER_TEXT_ANTIALIASING,
+    add_export_buttons,
     chrome_for,
     show_paint_error,
 )
@@ -327,7 +328,7 @@ class DelayChartWidget(QWidget):
 
 
 class DelayChartDialog(QDialog):
-    """Dialog that shows the delay chart and a Close button."""
+    """Dialog that shows the delay chart, export buttons and Close."""
 
     def __init__(self, points, statistics, parent=None):
         super().__init__(parent)
@@ -339,6 +340,7 @@ class DelayChartDialog(QDialog):
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
+        add_export_buttons(row, self.chart, 'delay')
         row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.accept)

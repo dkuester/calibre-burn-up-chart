@@ -96,6 +96,28 @@ msgstr "Lesefortschritt"
 msgid "Close"
 msgstr "Schließen"
 
+# Export buttons (both chart dialogs)
+msgid "Save as PNG…"
+msgstr "Als PNG speichern…"
+
+msgid "Copy to clipboard"
+msgstr "In Zwischenablage kopieren"
+
+msgid "Save chart as PNG"
+msgstr "Chart als PNG speichern"
+
+msgid "PNG images"
+msgstr "PNG-Bilder"
+
+msgid "Export failed"
+msgstr "Export fehlgeschlagen"
+
+msgid "Could not write {path}."
+msgstr "{path} konnte nicht geschrieben werden."
+
+msgid "Chart copied to clipboard"
+msgstr "Chart in die Zwischenablage kopiert"
+
 msgid "Reading progress for TBR = {tbr} on {date}"
 msgstr "Lesefortschritt für SuB = {tbr} am {date}"
 
