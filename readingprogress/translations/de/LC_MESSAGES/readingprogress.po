@@ -324,3 +324,28 @@ msgstr "Liste als CSV speichern"
 
 msgid "CSV files"
 msgstr "CSV-Dateien"
+
+# Age of the TBR chart
+msgid "Age of the TBR"
+msgstr "Altersverteilung des SuB"
+
+msgid "< 1 year"
+msgstr "< 1 Jahr"
+
+msgid "{years}+ years"
+msgstr "{years}+ Jahre"
+
+msgid "{start}–{end} years"
+msgstr "{start}–{end} Jahre"
+
+msgid "{count} unread books · median age {median} years · oldest added in {year}"
+msgstr "{count} ungelesene Bücher · Median-Alter {median} Jahre · ältestes seit {year}"
+
+msgid "Time in the TBR"
+msgstr "Zeit im SuB"
+
+msgid "{label}\n{count} books · {share} %\nClick to show them in calibre"
+msgstr "{label}\n{count} Bücher · {share} %\nKlicken, um sie in calibre zu zeigen"
+
+msgid "Click a bar to show its books in calibre."
+msgstr "Klick auf einen Balken zeigt dessen Bücher in calibre."

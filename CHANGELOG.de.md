@@ -6,6 +6,11 @@
   „In Zwischenablage kopieren" in beiden Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
+- **Altersverteilung des SuB:** Ein neues Chart zeigt die ungelesenen
+  Bücher nach ganzen Jahren seit der Aufnahme (ab 10 Jahren in einem
+  gemeinsamen Balken), mit Anzahl, Anteil und Median-Alter. Ein Klick
+  auf einen Balken zeigt dessen Bücher in der Bücherliste von calibre.
+  PNG-/Zwischenablage-Export wie bei den anderen Charts.
 - **Datenqualität prüfen:** Ein neuer Menüeintrag listet gelesene
   Bücher, deren Lesedatum die Charts nicht nutzen können (kein
   Lesedatum oder gelesen vor der Aufnahme), sortierbar nach
@@ -36,7 +41,7 @@
 
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 86 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 91 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht

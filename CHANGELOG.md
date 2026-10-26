@@ -5,6 +5,11 @@
 - **PNG export and clipboard:** "Save as PNG…" and "Copy to clipboard"
   buttons in both chart dialogs. They capture the chart as currently
   shown, including zoom, pan and the active theme.
+- **Age of the TBR:** A new chart shows the unread books by whole years
+  since they were added (books of 10 years and more share one bar),
+  with counts, shares and the median age. Clicking a bar shows its
+  books in calibre's book list. PNG/clipboard export as in the other
+  charts.
 - **Data quality check:** A new menu entry lists read books whose read
   date the charts cannot use (no read date, or read before being added),
   sortable by date added to spot bulk imports. Selected or all of them
@@ -31,7 +36,7 @@
 
 - Project moved from Codeberg to GitHub; CI and releases now run on
   GitHub Actions.
-- Test suite extended to 86 tests with a 100% coverage gate on the
+- Test suite extended to 91 tests with a 100% coverage gate on the
   Qt-free modules; CI runs on Python 3.10 and 3.12.
 - Config defaults and migrations moved from `__init__.py` to
   `main.py`, so building with `calibre-customize -b` no longer breaks

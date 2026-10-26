@@ -33,6 +33,7 @@ Python-Installation ist nicht nötig.
 | **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
+| **Altersverteilung des SuB** | Ungelesene Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen Balken zeigt diese Bücher in calibre. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme und zeigt sie zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert. |
 | **Zeitraum** | Alles zeigen oder nur die letzten 5 bzw. 2 Jahre bis heute. |
@@ -66,11 +67,12 @@ Python-Installation ist nicht nötig.
 
 ## Benutzung
 
-Der Knopf in der Werkzeugleiste öffnet ein Menü mit drei Charts und einer Datenprüfung:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts und einer Datenprüfung:
 
 - **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
 - **Zeit zwischen Kauf und Lesen**: die Leseverzögerung pro Buch.
 - **Kaufrate vs. Leserate**: Zugänge und gelesene Bücher pro Monat.
+- **Altersverteilung des SuB**: ungelesene Bücher nach Jahren seit der Aufnahme.
 - **Datenqualität prüfen**: gelesene Bücher ohne brauchbares Lesedatum, um sie in calibre zu korrigieren.
 
 ## Einstellungen
@@ -113,6 +115,7 @@ readingprogress/
 ├── config_dialog.py         # Einstellungsdialog
 ├── config_helpers.py        # Qt-freie Konfigurations-, Locale- und Migrationshilfen
 ├── chart_common.py          # Qt-freie Chart-Berechnung und Farben
+├── age_dialog.py            # Dialog für die Altersverteilung des SuB
 ├── chart_dialog.py          # Burn-up-Chart-Dialog (QPainter)
 ├── quality_dialog.py        # Dialog für die Datenqualität
 ├── rates_dialog.py          # Dialog für Kaufrate vs. Leserate
