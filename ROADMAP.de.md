@@ -32,7 +32,10 @@ In `main` gemergt, kommt mit der nächsten Version:
   mit Lesedatum vor der Aufnahme (die Charts zählen sie als am
   Aufnahmetag gelesen) und zeigt sie zum Korrigieren in der Bücherliste
   von calibre an.
-- **Tests und CI:** 86 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Altersverteilung des SuB:** ein Balkendiagramm der ungelesenen
+  Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen
+  Balken zeigt diese Bücher in calibre.
+- **Tests und CI:** 91 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -68,7 +71,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 - Genre- und Kategorie-Auswertung
 - Seitenzahl-basierte Analyse
 - Autoren-Analyse
-- Altersverteilung des Backlogs
 - Aktivitäts-Heatmap (GitHub-Contributions-Stil)
 
 ### UX-Verbesserungen

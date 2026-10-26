@@ -124,6 +124,7 @@ class ReadingProgressAction(InterfaceAction):
                        self.show_delay)
         menu.addAction(_('Purchase rate vs. reading rate'),
                        self.show_rates)
+        menu.addAction(_('Age of the TBR'), self.show_age)
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
         self.qaction.setMenu(menu)
@@ -287,3 +288,38 @@ class ReadingProgressAction(InterfaceAction):
         read_total = sum(1 for v in read_flags.values() if v is True)
         QualityDialog(problems, read_total, _date_format(), self.gui,
                       on_show=show_in_library).exec_()
+
+    def show_age(self):
+        from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
+        from calibre_plugins.readingprogress.export_reading_status import (
+            age_buckets,
+            backlog_ages,
+            id_search,
+            median_age_years,
+        )
+
+        try:
+            ages = backlog_ages(self.gui.current_db.new_api,
+                                config['read_column'])
+        except Exception as e:
+            self.gui.status_bar.show_message(
+                _('Export failed: {}').format(e), 5000)
+            return
+        if not ages:
+            self.gui.status_bar.show_message(
+                _('No data available for this analysis.'), 8000)
+            return
+
+        max_years = 10
+        summary = {
+            'median_years': median_age_years(ages),
+            'oldest_year': min(a[1] for a in ages).year,
+        }
+        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+
+        def show_in_library(book_ids):
+            self.gui.search.set_search_string(id_search(book_ids))
+
+        AgeChartDialog(age_buckets(ages, max_years), max_years, summary,
+                       _decimal_separator(), self.gui, colors=colors,
+                       on_show=show_in_library).exec_()

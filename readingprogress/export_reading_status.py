@@ -365,6 +365,58 @@ def problem_csv_rows(problems, date_format, labels):
         ])
     return rows
 
+
+def backlog_ages(db_api, read_column=None, today=None):
+    """Age of every unread book (TBR), as counted by the burn-up chart.
+
+    :return: list of ``(book_id, added, age_days)`` for books that are
+        not marked as read and have a date added.
+    """
+    if read_column is None:
+        read_column = READ_COLUMN
+    if today is None:
+        today = date.today()
+
+    all_ids = db_api.all_book_ids()
+    added_map = db_api.all_field_for("timestamp", all_ids)
+    read_map  = db_api.all_field_for(read_column, all_ids)
+
+    ages = []
+    for book_id in all_ids:
+        added = to_date(added_map.get(book_id))
+        if added is None or read_map.get(book_id) is True:
+            continue
+        ages.append((book_id, added, max(0, (today - added).days)))
+    return ages
+
+
+def age_buckets(ages, max_years=10):
+    """Groups :func:`backlog_ages` into whole years of age.
+
+    Bucket ``n`` holds the books aged ``n`` to ``n + 1`` years; the last
+    bucket (``max_years``) also holds everything older. Trailing empty
+    buckets are dropped.
+
+    :return: list of book-id lists, one per bucket (at least one).
+    """
+    buckets = [[] for _ in range(max_years + 1)]
+    for book_id, _added, age_days in ages:
+        years = min(int(age_days / 365.25), max_years)
+        buckets[years].append(book_id)
+    while len(buckets) > 1 and not buckets[-1]:
+        buckets.pop()
+    return buckets
+
+
+def median_age_years(ages):
+    """Median age in years of :func:`backlog_ages`, or ``None``."""
+    if not ages:
+        return None
+    days = sorted(a[2] for a in ages)
+    mid = len(days) // 2
+    median = days[mid] if len(days) % 2 else (days[mid - 1] + days[mid]) / 2
+    return median / 365.25
+
 if __name__ == "__main__":  # pragma: no cover  (standalone CLI, not unit-tested)
     from calibre.library import db as calibre_db_factory
 

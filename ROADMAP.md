@@ -29,7 +29,9 @@ Merged into `main`, shipping with the next release:
 - **Data quality check:** lists read books without a read date or read
   before being added (the charts count them as read on the day added)
   and shows them in calibre's book list for fixing.
-- **Tests and CI:** 86 `pytest` tests with a 100% coverage gate on the
+- **Age of the TBR:** a bar chart of the unread books by whole years
+  since they were added; clicking a bar shows those books in calibre.
+- **Tests and CI:** 91 `pytest` tests with a 100% coverage gate on the
   Qt-free modules (`chart_common`, `config_helpers`,
   `export_reading_status`). CI runs `ruff` and `pytest` on Python 3.10
   and 3.12 for every push to `main` and every pull request. A `v*` tag
@@ -65,7 +67,6 @@ Broader ideas, none of them committed.
 - Genre and category breakdown
 - Page-count based analysis
 - Author analysis
-- Age distribution of the backlog
 - Activity heatmap (GitHub-contributions style)
 
 ### UX improvements
