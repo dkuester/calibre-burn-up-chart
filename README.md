@@ -30,6 +30,7 @@ Python installation is needed.
 | **Target date** | A goal line "TBR = 0 on …" with a date you choose. |
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
 | **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
+| **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
 | **Interactive** | Tooltips on every data point, zoom with the mouse wheel, pan by dragging, double-click to reset. |
@@ -61,10 +62,11 @@ Python installation is needed.
 
 ## Usage
 
-The toolbar button opens a menu with two charts:
+The toolbar button opens a menu with three charts:
 
 - **Burn-up chart**: library size, books read and backlog over time.
 - **Time between purchase and reading**: the reading delay per book.
+- **Purchase rate vs. reading rate**: books added and read per month.
 
 ## Configuration
 
@@ -106,6 +108,7 @@ readingprogress/
 ├── config_helpers.py        # Qt-free config/locale and migration helpers
 ├── chart_common.py          # Qt-free chart math and colors
 ├── chart_dialog.py          # burn-up chart dialog (QPainter)
+├── rates_dialog.py          # purchase rate vs. reading rate dialog
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database
 ├── localization.py          # gettext setup

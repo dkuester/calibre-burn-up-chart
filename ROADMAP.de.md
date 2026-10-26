@@ -22,7 +22,10 @@ In `main` gemergt, kommt mit der nächsten Version:
   Verschiebung und aktivem Theme.
 - **Zeitraum (Burn-up-Chart):** „Alles", „Letzte 5 Jahre" oder „Letzte
   2 Jahre". Die begrenzten Zeiträume enden heute statt am Zieldatum.
-- **Tests und CI:** 72 `pytest`-Tests mit Pflicht-Coverage von 100 %
+- **Kaufrate vs. Leserate:** ein drittes Chart mit Zugängen und
+  gelesenen Büchern pro Monat (Mittel über 12 Monate), gefärbt danach,
+  ob der SuB schrumpft oder wächst.
+- **Tests und CI:** 78 `pytest`-Tests mit Pflicht-Coverage von 100 %
   auf den Qt-freien Modulen (`chart_common`, `config_helpers`,
   `export_reading_status`). Die CI führt `ruff` und `pytest` unter
   Python 3.10 und 3.12 bei jedem Push auf `main` und jedem Pull-Request
@@ -45,11 +48,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### Kaufrate vs. Leserate
-
-Zwei Linien: Wie viele Bücher kommen pro Monat dazu, wie viele werden
-gelesen. Ergänzt das Burn-up-Chart um die zugrunde liegende Dynamik.
 
 ### Export in Calibre-Spalte
 

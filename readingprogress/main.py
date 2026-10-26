@@ -11,6 +11,7 @@ from calibre_plugins.readingprogress.chart_common import (
 )
 from calibre_plugins.readingprogress.config_helpers import (
     date_format,
+    decimal_separator,
     migrate_legacy_keys,
 )
 from calibre_plugins.readingprogress.localization import _
@@ -91,6 +92,11 @@ def _date_format():
     return date_format(get_lang().split('_')[0])
 
 
+def _decimal_separator():
+    """Decimal separator for the current Calibre UI language."""
+    return decimal_separator(get_lang().split('_')[0])
+
+
 class ReadingProgressAction(InterfaceAction):
 
     name = 'Reading Progress'
@@ -115,6 +121,8 @@ class ReadingProgressAction(InterfaceAction):
         menu.addAction(_('Burn-up chart'), self.show_chart)
         menu.addAction(_('Time between purchase and reading'),
                        self.show_delay)
+        menu.addAction(_('Purchase rate vs. reading rate'),
+                       self.show_rates)
         self.qaction.setMenu(menu)
 
         # Reconfigure the QToolButton after the toolbar is created:
@@ -214,4 +222,32 @@ class ReadingProgressAction(InterfaceAction):
 
         dlg = DelayChartDialog(
             info['points'], info['statistics'], self.gui)
+        dlg.exec_()
+
+    def show_rates(self):
+        from calibre_plugins.readingprogress.export_reading_status import (
+            compute_rates,
+            export_snapshots,
+        )
+        from calibre_plugins.readingprogress.rates_dialog import (
+            RatesChartDialog,
+        )
+
+        try:
+            info = export_snapshots(
+                db_api=self.gui.current_db.new_api,
+                read_column=config['read_column'],
+                last_read_column=config['last_read_column'],
+            )
+        except Exception as e:
+            self.gui.status_bar.show_message(
+                _('Export failed: {}').format(e), 5000)
+            return
+
+        colors = {key: config[f'color_{key}'] for key in DEFAULT_COLORS}
+        dlg = RatesChartDialog(
+            compute_rates(info['rows']), _date_format(),
+            _decimal_separator(), self.gui, colors=colors,
+            time_range=config['time_range'],
+            on_time_range_changed=self._save_time_range)
         dlg.exec_()

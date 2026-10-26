@@ -6,6 +6,13 @@
   „In Zwischenablage kopieren" in beiden Chart-Dialogen. Sie erfassen
   das Chart so, wie es gerade zu sehen ist, also mit Zoom, Verschiebung
   und aktivem Theme.
+- **Kaufrate vs. Leserate:** Ein drittes Chart, aufrufbar über das
+  Menü am Werkzeugleisten-Knopf. Es zeigt Zugänge und gelesene Bücher
+  pro Monat als Mittel über 12 Monate und färbt die Fläche dazwischen
+  danach, ob der SuB schrumpft oder wächst. Eine Kennzahlenzeile fasst
+  die letzten 12 Monate zusammen, der Tooltip zeigt die Werte jedes
+  Monats. Zeitraum-Auswahl und PNG-/Zwischenablage-Export wie beim
+  Burn-up-Chart.
 - **Zeitraum (Burn-up-Chart):** Eine Auswahl „Zeitraum" im
   Chart-Dialog: „Alles", „Letzte 5 Jahre", „Letzte 2 Jahre". Die
   begrenzten Zeiträume enden heute, damit der jüngere Verlauf das Chart
@@ -17,7 +24,7 @@
 
 - Projekt von Codeberg zu GitHub umgezogen; CI und Releases laufen
   jetzt über GitHub Actions.
-- Testsuite auf 72 Tests erweitert, mit Pflicht-Coverage von 100 % auf
+- Testsuite auf 78 Tests erweitert, mit Pflicht-Coverage von 100 % auf
   den Qt-freien Modulen; die CI läuft unter Python 3.10 und 3.12.
 - Konfigurations-Standards und Migrationen von `__init__.py` nach
   `main.py` verschoben, damit der Build mit `calibre-customize -b` nicht
