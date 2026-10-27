@@ -33,6 +33,18 @@
   Double-clicking a row shows its books in calibre; the tab can be saved
   as CSV. The report's "Data quality" section counts the three kinds.
   Nothing is changed.
+- **Bulk-import days in the data quality dialog:** a "Bulk imports" tab
+  lists days on which at least 20 books from at least 15 different
+  series or authors (series, or first author without one) were added,
+  typically when moving or rebuilding the library. Their date added is
+  probably the import date, not the purchase date. Bundles (many books
+  by one author or of one series) do not count. Per day it shows the
+  books, series/authors, the largest group, how many are read, read
+  before being added, without a read date and without a file (the CSV
+  also has the number of authors and the book IDs).
+  Double-clicking a day shows its books in calibre; the tab can be saved
+  as CSV. The read-dates tab says how many of its cases were added on
+  such a day. Nothing is changed.
 
 ## [1.7.0] – 2026-10-26
 

@@ -36,6 +36,19 @@
   Bücher in calibre, der Tab lässt sich als CSV speichern. Der Bericht
   zählt die drei Arten im Abschnitt „Datenqualität“. Es wird nichts
   geändert.
+- **Sammel-Import-Tage in der Datenqualität:** Ein Tab „Sammel-Importe“
+  listet Tage, an denen mindestens 20 Bücher aus mindestens 15
+  verschiedenen Reihen oder von verschiedenen Autoren (Reihe, ohne
+  Reihe der erste Autor) aufgenommen wurden, typisch bei Umzug oder
+  Neuaufbau der Bibliothek. Ihr Aufnahmedatum ist vermutlich das
+  Importdatum, nicht das Kaufdatum. Bundles (viele Bücher eines Autors
+  oder einer Reihe) zählen nicht. Pro Tag stehen Bücher, Reihen/Autoren,
+  die größte Gruppe und wie viele gelesen, vor der Aufnahme gelesen,
+  ohne Lesedatum und ohne Datei sind (die CSV hat zusätzlich die Zahl
+  der Autoren und die Buch-IDs). Ein Doppelklick
+  zeigt die Bücher des Tages in calibre, der Tab lässt sich als CSV
+  speichern. Der Tab zum Lesedatum sagt, wie viele seiner Fälle an
+  einem solchen Tag aufgenommen wurden. Es wird nichts geändert.
 
 ## [1.7.0] – 2026-10-26
 

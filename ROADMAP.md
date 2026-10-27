@@ -37,6 +37,13 @@ Done, not yet released:
   because it mostly paired different volumes ("Black Panther
   (2005-2008)" and "(2008-2010)"). Cleaner series data makes the series
   analyses below more reliable.
+- **Bulk-import days in the data quality dialog:** a "Bulk imports" tab
+  lists days with at least 20 books from at least 15 series or authors.
+  Their date added is the import date, not the purchase date, which
+  skews the burn-up chart, buying rate, backlog age and "read before
+  added". The thresholds come from a real library: its bundles (Vampire
+  Hunter D 28, Wheel of Time 17, Murderbot 14, Tchaikovsky 14 books)
+  span 1 to 7 series or authors, its imports 28 to 106.
 
 ## Done
 
