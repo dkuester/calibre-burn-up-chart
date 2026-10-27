@@ -123,6 +123,20 @@ Welche Reihen den größten Teil des SuB ausmachen, als Balken. Hilft bei
 der Entscheidung, was man abbaut – oder was man gar nicht mehr lesen
 will.
 
+### Reihen zusammenfassen
+
+Wer eine Reihe mal auf Deutsch, mal auf Englisch liest, hat sie unter
+zwei Namen („Die Nebelgeborenen“ und „Mistborn“, „Das Lied von Eis und
+Feuer“ und „A Song of Ice and Fire“). Eine Liste in den Einstellungen
+fasst solche Namen zusammen, z. B. `Die Nebelgeborenen = Mistborn`. Die
+Seriennamen in calibre bleiben unverändert; „Angefangene Reihen“, „SuB
+nach Reihen“ und die Reihen-Prüfung zählen die Namen als eine Reihe.
+Gruppen aus „Mehrere Namen“ in der Datenqualität lassen sich mit einem
+Klick übernehmen. Eine automatische Erkennung (gleicher Autor, andere
+Sprache) wurde an den echten Daten probiert und verworfen: 42 Paare,
+davon nur etwa 5 echte, weil ein Autor mit mehreren Reihen sich mit
+allen paart.
+
 ### Reihen-Fortschritt als Chart
 
 Ein gestapelter Balken (gelesen/ungelesen) pro angefangener Reihe,
