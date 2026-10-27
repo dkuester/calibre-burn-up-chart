@@ -6,9 +6,10 @@
   chart's title say what it takes to reach the goal by the target date,
   e.g. "For TBR = 0 by 04.09.2050: read 26.4 books/month or buy at most
   0.3 books/month." One line is for TBR = 0, one for the gentle
-  reduction. The reading rate needed assumes the current purchase rate,
-  the purchase limit the current reading rate (both means of the last
-  12 months). If even buying nothing is not enough, the line says how
+  reduction. The reading rate needed assumes the typical purchase rate,
+  the purchase limit the typical reading rate (the same robust rates as
+  the forecast, see below). If even buying nothing is not enough, the
+  line says how
   much to read then. The lines stay in the 5- and 2-year views. The
   report shows the same figures in "Goal and forecast".
 - **Yearly reading goal (with the Reading Goal plugin):** If the
@@ -33,6 +34,23 @@
   Double-clicking a row shows its books in calibre; the tab can be saved
   as CSV. The report's "Data quality" section counts the three kinds.
   Nothing is changed.
+
+### Changed
+
+- **Robust forecast with an uncertainty band:** The forecast no longer
+  fits a regression over the last 12 months, which bulk imports and big
+  purchases tilted badly. It now continues today's TBR with the
+  *typical* month: purchase and reading rate as the mean of the last
+  24 full months without the 20 % highest and lowest months. Tested
+  backwards on a real library, this predicts the TBR about ten times
+  better. A shaded band shows where the TBR will be in 80 % of cases;
+  it widens with time and with little history. Instead of an exact day,
+  the chart and the report give a month range ("Realistic: TBR = 0
+  between 03.2031 and 11.2034"), "at the earliest …", or how fast the
+  TBR grows. With fewer than 3 full months (the first month, which
+  holds the initial library, and the current month do not count) there
+  is no forecast but a note; below 12 months it is marked as
+  preliminary. "Show forecast line" switches line, band and note.
 
 ## [1.7.0] – 2026-10-26
 

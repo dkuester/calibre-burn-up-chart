@@ -11,6 +11,7 @@ log_path is passed explicitly.
 """
 
 import csv
+import math
 import os
 import warnings
 from calendar import monthrange
@@ -165,68 +166,191 @@ def export_snapshots(db_api, read_column=None, last_read_column=None,
     }
 
 
-def _no_forecast():
-    return {
-        "slope": 0.0,
-        "intercept": 0.0,
-        "anchor": None,
-        "zero_date": None,
-        "count": 0,
-        "ok": False,
-    }
+# Average month length in days (Gregorian calendar)
+DAYS_PER_MONTH = 365.2425 / 12
+
+# Robust forecast (see forecast_backlog()). Back-tested on a real
+# library: a trimmed mean of up to 24 full months predicts the TBR about
+# ten times better than a regression; below 3 months no estimator can
+# tell a bulk import from a normal month, below 12 the result is shaky.
+FORECAST_MIN_MONTHS = 3
+FORECAST_FULL_MONTHS = 12
+FORECAST_MAX_MONTHS = 24
+# Share of the months dropped at each end of the trimmed mean
+TRIM_SHARE = 0.2
+# Months scanned for the zero dates of the band (100 years)
+FORECAST_HORIZON = 1200
+
+# Statuses of robust_rates() and forecast_backlog()
+FORECAST_NONE = "none"
+FORECAST_PRELIMINARY = "preliminary"
+FORECAST_OK = "ok"
+
+# 90 % quantile of Student's t distribution by degrees of freedom: the
+# band from the 10 % to the 90 % quantile holds 80 % of the outcomes.
+T_QUANTILE_90 = {
+    2: 1.886, 3: 1.638, 4: 1.533, 5: 1.476, 6: 1.440, 7: 1.415, 8: 1.397,
+    9: 1.383, 10: 1.372, 11: 1.363, 12: 1.356, 13: 1.350, 14: 1.345,
+    15: 1.341, 16: 1.337, 17: 1.333, 18: 1.330, 19: 1.328, 20: 1.325,
+    21: 1.323, 22: 1.321, 23: 1.319,
+}
 
 
-def forecast_backlog(rows, months=12):
-    """Linear regression of the backlog over the last ``months`` months.
+def full_months(rates, exclude=None):
+    """``(added, read)`` of the complete calendar months in ``rates``.
 
-    Fits ``backlog = slope * days + intercept`` with ``days`` measured
-    relative to the last snapshot date. ``rows`` is the ``'rows'`` list
-    from :func:`export_snapshots` – ``(date, total, read, backlog)``.
-
-    :return: dict with ``slope`` (backlog change per day, negative =
-        shrinking), ``intercept`` (fitted backlog at the last date),
-        ``anchor`` (the last date), ``zero_date`` (date the trend reaches
-        0, or ``None``), ``count`` (points in the window) and ``ok``
-        (``False`` if fewer than two points are available).
+    ``rates`` is the list from :func:`compute_rates`. The first month
+    holds the initial stock of the library and the current month is not
+    over yet, so neither counts. ``exclude`` maps ``(year, month)`` to a
+    number of books taken off that month's additions (e.g. known bulk
+    imports).
     """
-    if len(rows) < 2:
-        return _no_forecast()
+    exclude = exclude or {}
+    months = []
+    for i, (day, added, read) in enumerate(r[:3] for r in rates):
+        if i == 0 or day < month_end(day.year, day.month):
+            continue
+        months.append((added - exclude.get((day.year, day.month), 0), read))
+    return months
 
-    anchor = rows[-1][0]
-    cutoff = anchor - timedelta(days=months * 30)
-    window = [r for r in rows if r[0] >= cutoff]
-    if len(window) < 2:
-        return _no_forecast()
 
-    xs = [(r[0] - anchor).days for r in window]
-    ys = [r[3] for r in window]
-    n = len(xs)
-    x_mean = sum(xs) / n
-    y_mean = sum(ys) / n
+def trimmed_mean(values, share=TRIM_SHARE):
+    """Mean without the ``share`` lowest and highest values – at least
+    one at each end from three values on, so three or four values give
+    the median. 0.0 for no values."""
+    n = len(values)
+    if n == 0:
+        return 0.0
+    cut = max(1, int(n * share)) if n >= 3 else 0
+    kept = sorted(values)[cut:n - cut]
+    return sum(kept) / len(kept)
 
-    sxx = sum((x - x_mean) ** 2 for x in xs)
-    if sxx == 0:
-        slope = 0.0
-    else:
-        sxy = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
-        slope = sxy / sxx
-    intercept = y_mean - slope * x_mean
 
-    zero_date = None
-    if slope < 0:
-        days_to_zero = -intercept / slope
-        if days_to_zero > 0:
-            zero_date = anchor + timedelta(days=round(days_to_zero))
+def _quantile(values, p):
+    """``p`` quantile of ``values`` with linear interpolation."""
+    ordered = sorted(values)
+    pos = (len(ordered) - 1) * p
+    low = int(pos)
+    high = min(low + 1, len(ordered) - 1)
+    return ordered[low] + (ordered[high] - ordered[low]) * (pos - low)
 
-    return {
-        "slope": slope,
-        "intercept": intercept,
-        "anchor": anchor,
-        "zero_date": zero_date,
-        "count": n,
-        "ok": True,
-    }
 
+def robust_rates(rates, exclude=None):
+    """Typical purchase and reading rate per month.
+
+    Trimmed means (:func:`trimmed_mean`) of the last
+    :data:`FORECAST_MAX_MONTHS` full months (:func:`full_months`).
+
+    :return: dict with ``status`` (:data:`FORECAST_NONE` below
+        :data:`FORECAST_MIN_MONTHS` full months,
+        :data:`FORECAST_PRELIMINARY` below :data:`FORECAST_FULL_MONTHS`,
+        else :data:`FORECAST_OK`), ``months`` (full months used),
+        ``added`` and ``read`` (books per month, ``None`` without enough
+        data) and ``spread`` (robust standard deviation of the monthly
+        TBR change: interquartile range / 1.349, but at least
+        √(added + read) – book counts vary at least like random events,
+        and a few equal months must not give a band of zero width).
+    """
+    months = full_months(rates, exclude)[-FORECAST_MAX_MONTHS:]
+    n = len(months)
+    result = {"status": FORECAST_NONE, "months": n, "added": None,
+              "read": None, "spread": 0.0}
+    if n < FORECAST_MIN_MONTHS:
+        return result
+    changes = [a - r for a, r in months]
+    added = trimmed_mean([a for a, _ in months])
+    read = trimmed_mean([r for _, r in months])
+    iqr = _quantile(changes, 0.75) - _quantile(changes, 0.25)
+    result.update({
+        "status": (FORECAST_PRELIMINARY if n < FORECAST_FULL_MONTHS
+                   else FORECAST_OK),
+        "added": added,
+        "read": read,
+        "spread": max(iqr / 1.349, math.sqrt(max(0.0, added + read))),
+    })
+    return result
+
+
+def forecast_backlog(rows, rates=None, exclude=None):
+    """Robust TBR forecast with an 80 % uncertainty band.
+
+    The TBR continues from today's value (the last of ``rows``, from
+    :func:`export_snapshots`) by ``slope`` = typical purchase rate −
+    typical reading rate per month (:func:`robust_rates`; ``rates``
+    defaults to :func:`compute_rates` of ``rows``). After ``t`` months
+    the band reaches ``± q · spread · √(t + t²/n)``: monthly noise plus
+    the uncertainty of a rate estimated from ``n`` months, with ``q``
+    from Student's t distribution – few months give a wide band.
+
+    :return: the :func:`robust_rates` dict plus ``ok`` (a forecast
+        exists), ``slope`` (books per month), ``anchor`` (today),
+        ``start`` (today's TBR), ``quantile`` (``q``), ``zero_date``
+        (the line reaches 0), ``zero_early`` and ``zero_late`` (the
+        optimistic and pessimistic band edge reach 0); the dates are
+        ``None`` if that never happens within 100 years.
+    """
+    if rates is None:
+        rates = compute_rates(rows)
+    fc = robust_rates(rates, exclude)
+    fc.update({"ok": fc["status"] != FORECAST_NONE, "slope": 0.0,
+               "anchor": rows[-1][0] if rows else None,
+               "start": rows[-1][3] if rows else 0, "quantile": 0.0,
+               "zero_date": None, "zero_early": None, "zero_late": None})
+    if not fc["ok"]:
+        return fc
+    fc["slope"] = fc["added"] - fc["read"]
+    fc["quantile"] = T_QUANTILE_90[fc["months"] - 1]
+    if fc["start"] <= 0:
+        return fc
+    if fc["slope"] < 0:
+        fc["zero_date"] = months_after(fc["anchor"],
+                                       -fc["start"] / fc["slope"])
+    for key, edge in (("zero_early", 0), ("zero_late", 2)):
+        for t in range(1, FORECAST_HORIZON + 1):
+            if forecast_at(fc, t)[edge] <= 0:
+                fc[key] = months_after(fc["anchor"], t)
+                break
+    return fc
+
+
+def months_after(day, months):
+    """``day`` plus ``months`` average months."""
+    return day + timedelta(days=round(months * DAYS_PER_MONTH))
+
+
+def forecast_at(fc, months):
+    """``(low, mid, high)`` TBR of forecast ``fc`` after ``months``
+    months (not cut off at 0)."""
+    mid = fc["start"] + fc["slope"] * months
+    width = fc["quantile"] * fc["spread"] * math.sqrt(
+        months + months * months / fc["months"])
+    return mid - width, mid, mid + width
+
+
+def forecast_line_end(fc, target_date):
+    """``(date, tbr)`` where the forecast line ends: where it reaches 0,
+    at the latest on ``target_date``."""
+    if fc["zero_date"] is not None and fc["zero_date"] <= target_date:
+        return fc["zero_date"], 0.0
+    months = (target_date - fc["anchor"]).days / DAYS_PER_MONTH
+    return target_date, max(0.0, forecast_at(fc, months)[1])
+
+
+def forecast_band(fc, target_date, steps=120):
+    """Outline of the band from today to ``target_date`` as
+    ``(date, low, high)`` points, cut off at 0; the band ends early
+    where its pessimistic edge reaches 0."""
+    end = target_date
+    if fc["zero_late"] is not None and fc["zero_late"] < end:
+        end = fc["zero_late"]
+    days = max(0, (end - fc["anchor"]).days)
+    points = []
+    for i in range(steps + 1):
+        day = fc["anchor"] + timedelta(days=round(days * i / steps))
+        low, _, high = forecast_at(fc, (day - fc["anchor"]).days
+                                   / DAYS_PER_MONTH)
+        points.append((day, max(0.0, low), max(0.0, high)))
+    return points
 
 
 def _trailing_mean(values, window):
@@ -279,9 +403,6 @@ def compute_rates(rows, window=12):
                     _trailing_mean(read, window)))
 
 
-# Average month length in days (Gregorian calendar)
-DAYS_PER_MONTH = 365.2425 / 12
-
 # Statuses returned by required_pace()
 PACE_OK = "ok"
 PACE_REACHED = "reached"
@@ -292,11 +413,14 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
     """Monthly pace needed to bring the backlog to ``target_backlog`` by
     ``target_date``.
 
-    ``rates`` is the list from :func:`compute_rates`; its last trailing
-    means are the current purchase and reading rates. Either reading must
-    rise to ``read_needed`` (buying as before) or buying must drop to
-    ``max_added`` (reading as before); ``max_added <= 0`` means even
-    buying nothing is not enough at the current reading rate.
+    ``rates`` is the dict from :func:`robust_rates` – the typical
+    purchase and reading rates the forecast uses as well. Either reading
+    must rise to ``read_needed`` (buying as before) or buying must drop
+    to ``max_added`` (reading as before); ``max_added <= 0`` means even
+    buying nothing is not enough at the current reading rate. Without
+    enough data for the rates, ``added_rate``, ``read_rate``,
+    ``read_needed`` and ``max_added`` are ``None`` and only
+    ``reduction`` is known.
 
     :return: dict with ``status`` (:data:`PACE_OK`, :data:`PACE_REACHED`
         if the backlog is already at or below the goal,
@@ -306,8 +430,8 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
         ``added_rate``, ``read_rate``, ``read_needed`` and ``max_added``
         (books per month).
     """
-    added_rate = rates[-1][3] if rates else 0.0
-    read_rate = rates[-1][4] if rates else 0.0
+    added_rate = rates["added"]
+    read_rate = rates["read"]
     months = (target_date - today).days / DAYS_PER_MONTH
     pace = {
         "status": PACE_OK,
@@ -327,8 +451,9 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
         return pace
     reduction = (backlog - target_backlog) / months
     pace["reduction"] = reduction
-    pace["read_needed"] = added_rate + reduction
-    pace["max_added"] = read_rate - reduction
+    if added_rate is not None:
+        pace["read_needed"] = added_rate + reduction
+        pace["max_added"] = read_rate - reduction
     return pace
 
 
@@ -549,8 +674,9 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
                         reduction_factor, today=None):
     """All figures of the report (see ``report.build_sections``).
 
-    ``pace`` and ``pace_soft`` are :func:`required_pace` for TBR = 0 and
-    for the gentle reduction. Also holds ``rows`` (from
+    ``forecast`` is :func:`forecast_backlog`; ``pace`` and ``pace_soft``
+    are :func:`required_pace` with its rates for TBR = 0 and for the
+    gentle reduction. Also holds ``rows`` (from
     :func:`export_snapshots`), ``rates`` (from :func:`compute_rates`) for
     the charts embedded in the HTML report.
     Raises :class:`NoDataError` for a library without dates added.
@@ -564,6 +690,7 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
     last12 = rates[-12:]
     target_tbr = round(info["backlog"] * reduction_factor)
     today = info["rows"][-1][0]
+    forecast = forecast_backlog(info["rows"], rates)
     return {
         "total": info["total"],
         "read": info["read"],
@@ -572,9 +699,10 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
                    "read": sum(r[2] for r in last12)},
         "target_date": target_date,
         "target_tbr": target_tbr,
-        "forecast": forecast_backlog(info["rows"]),
-        "pace": required_pace(info["backlog"], rates, today, target_date),
-        "pace_soft": required_pace(info["backlog"], rates, today,
+        "forecast": forecast,
+        "pace": required_pace(info["backlog"], forecast, today,
+                              target_date),
+        "pace_soft": required_pace(info["backlog"], forecast, today,
                                    target_date, target_tbr),
         "delay": compute_reading_time(
             db_api, read_column, last_read_column)["statistics"],

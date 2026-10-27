@@ -32,11 +32,13 @@ def test_collect_report_data(make_db):
     assert data['last12'] == {'added': 4, 'read': 3}
     assert data['target_date'] == date(2030, 1, 1)
     assert data['target_tbr'] == 1
-    assert data['forecast']['ok'] is True
+    assert data['forecast']['status'] == ers.FORECAST_OK
+    assert data['forecast']['months'] == 24
     assert data['pace']['target_backlog'] == 0
     assert data['pace_soft']['target_backlog'] == 1
-    assert data['pace']['added_rate'] == pytest.approx(4 / 12)
-    assert data['pace']['read_rate'] == pytest.approx(3 / 12)
+    # single books in a few of the 24 months: typical month = 0
+    assert data['pace']['added_rate'] == 0.0
+    assert data['pace']['read_rate'] == 0.0
     assert data['pace']['months'] == pytest.approx(
         (date(2030, 1, 1) - TODAY).days / ers.DAYS_PER_MONTH)
     assert data['delay']['count'] == 2

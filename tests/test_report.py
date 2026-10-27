@@ -2,6 +2,7 @@
 
 from datetime import date
 
+import pytest
 import report
 
 
@@ -17,12 +18,20 @@ def _pace(target, read_needed, max_added, added_rate, read_rate,
             'added_rate': added_rate, 'read_rate': read_rate}
 
 
+def _forecast(**overrides):
+    fc = {'status': 'ok', 'ok': True, 'months': 24, 'start': 150,
+          'slope': -2.0, 'zero_date': date(2032, 1, 1),
+          'zero_early': date(2031, 5, 1), 'zero_late': date(2034, 11, 1)}
+    fc.update(overrides)
+    return fc
+
+
 def _data(**overrides):
     data = {
         'total': 200, 'read': 50, 'backlog': 150,
         'last12': {'added': 30, 'read': 12},
         'target_date': date(2050, 9, 4), 'target_tbr': 75,
-        'forecast': {'ok': True, 'zero_date': date(2031, 5, 1)},
+        'forecast': _forecast(),
         'pace': _pace(0, 4.0, 1.5, 2.5, 1.0),
         'pace_soft': _pace(75, 3.2, 2.3, 2.5, 1.0),
         'delay': {'count': 40, 'mean': 300.4, 'median': 120.0,
@@ -45,14 +54,15 @@ def test_markdown_contains_all_sections():
         assert heading in text
     assert '| Read | 50 (25 %) |' in text
     assert '| Change of the TBR | +18 |' in text
-    assert '| Forecast (last 12 months) | TBR = 0 on 01.05.2031 |' in text
+    assert ('| Forecast (typical month of the last 24 months) | TBR = 0 '
+            'between 05.2031 and 11.2034 |') in text
     assert '| Gentle reduction | TBR = 75 on 04.09.2050 |' in text
     assert ('| Required pace (TBR = 0) | Read 4,0 books/month or buy at '
             'most 1,5 books/month |') in text
     assert ('| Required pace (TBR = 75) | Read 3,2 books/month or buy at '
             'most 2,3 books/month |') in text
-    assert ('Required pace at the current purchase rate (2,5) and reading '
-            'rate (1,0) per month') in text
+    assert ('Required pace at the typical purchase rate (2,5) and reading '
+            'rate (1,0) per month: mean of the last 24 full months') in text
     assert '| Median | 120 days |' in text
     assert '| Mean | 300 days |' in text
     assert '| Time in the TBR | Books | Share |' in text
@@ -61,16 +71,41 @@ def test_markdown_contains_all_sections():
     assert 'Median age: 2,4 years' in text
 
 
-def test_forecast_variants():
-    not_ok = report.build_sections(
-        _data(forecast={'ok': False}), _tr, '%Y-%m-%d')
-    growing = report.build_sections(
-        _data(forecast={'ok': True, 'zero_date': None}), _tr, '%Y-%m-%d')
-    assert ('Forecast (last 12 months)',
-            'Not enough data for a forecast.') in not_ok[2]['rows']
-    assert ('Forecast (last 12 months)',
-            'The TBR is not shrinking at the current rate.') \
-        in growing[2]['rows']
+@pytest.mark.parametrize('overrides, label, text', [
+    ({'status': 'none', 'ok': False, 'months': 2}, 'Forecast',
+     'Not enough data for a forecast (2 of 3 full months).'),
+    ({'status': 'preliminary', 'months': 5},
+     'Forecast (preliminary, 5 months)', 'TBR = 0 between 2031-05 and 2034-11'),
+    ({'zero_late': None}, None, 'TBR = 0 at the earliest in 2031-05'),
+    ({'slope': 5.75, 'zero_date': None}, None,
+     'TBR grows by about 5.8 books/month'),
+    ({'slope': 0.0, 'zero_date': None}, None,
+     'The TBR is not shrinking at the current rate.'),
+    ({'start': 0}, None, 'The TBR is already empty.'),
+])
+def test_forecast_variants(overrides, label, text):
+    fc = _forecast(**overrides)
+    assert report.forecast_text(fc, _tr, '%Y-%m-%d') == text
+    if label is not None:
+        assert report.forecast_label(fc, _tr) == label
+
+
+def test_no_rate_note_without_enough_data():
+    pace = dict(_pace(0, 4.0, 1.5, 2.5, 1.0), added_rate=None,
+                read_rate=None, read_needed=None, max_added=None)
+    sections = report.build_sections(
+        _data(forecast=_forecast(status='none', ok=False, months=1),
+              pace=pace, pace_soft=pace), _tr, '%Y-%m-%d')
+    assert sections[2]['note'] is None
+    assert ('Required pace (TBR = 0)',
+            'Reduce the TBR by 1.5 books/month') in sections[2]['rows']
+
+
+@pytest.mark.parametrize('fmt, expected', [
+    ('%d.%m.%Y', '%m.%Y'), ('%Y-%m-%d', '%Y-%m'), ('%m/%d/%Y', '%m/%Y'),
+])
+def test_month_format(fmt, expected):
+    assert report.month_format(fmt) == expected
 
 
 def test_optional_sections_left_out():

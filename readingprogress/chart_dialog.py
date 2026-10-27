@@ -32,10 +32,17 @@ from calibre_plugins.readingprogress.chart_common import (
 )
 from calibre_plugins.readingprogress.export_reading_status import (
     compute_rates,
+    forecast_band,
+    forecast_line_end,
     required_pace,
+    robust_rates,
 )
 from calibre_plugins.readingprogress.localization import _
-from calibre_plugins.readingprogress.report import pace_line
+from calibre_plugins.readingprogress.report import (
+    forecast_label,
+    forecast_text,
+    pace_line,
+)
 from qt.core import (
     QApplication,
     QColor,
@@ -50,6 +57,7 @@ from qt.core import (
     QPen,
     QPoint,
     QPointF,
+    QPolygonF,
     QPushButton,
     QRectF,
     Qt,
@@ -95,6 +103,9 @@ MARGIN_BOTTOM  = 60
 PACE_LINE_TOP    = 46
 PACE_LINE_HEIGHT = 20
 PACE_MARGIN_TOP  = 105   # MARGIN_TOP with pace lines
+
+# Opacity (0–255) of the forecast's uncertainty band
+BAND_ALPHA = 50
 
 # Interaction parameters
 ZOOM_IN_FACTOR  = 1.25
@@ -150,6 +161,12 @@ def show_paint_error(widget, error):
         painter.end()
     except Exception:
         pass
+
+
+def _with_alpha(color, alpha):
+    faded = QColor(color)
+    faded.setAlpha(alpha)
+    return faded
 
 
 def build_series_colors(dark, overrides):
@@ -448,12 +465,12 @@ class AnnotationRenderer:
                         box.center().y())
         painter.drawLine(start, QPointF(x, y))
 
-    def draw_forecast_note(self, painter, scale, date, date_format,
-                           x_end, y_end, chrome):
-        """Small label near the end of the forecast line."""
+    def draw_forecast_note(self, painter, scale, text, x_end, y_end,
+                           chrome, beside=False):
+        """Small label above the point ``(x_end, y_end)``, or below and
+        right of it if ``beside`` (next to today's point, whose own label
+        sits above it)."""
         plot = scale.plot
-        text = _("Realistic: TBR = 0 on {date}").format(
-            date=date.strftime(date_format))
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -463,6 +480,11 @@ class AnnotationRenderer:
 
         bx = x_end - tw / 2
         by = y_end - th - 15
+        if beside:
+            bx = x_end + 15
+            by = y_end + 15
+        if by + th > plot.bottom() - 4:
+            by = plot.bottom() - th - 4
         if bx < plot.left():
             bx = plot.left() + 4
         if bx + tw > plot.right():
@@ -482,10 +504,12 @@ class LegendRenderer:
     """Draws the legend."""
 
     def draw(self, painter, plot, target_date, date_format, target_soft,
-             show_forecast=False, colors=None, chrome=None,
+             forecast_name=None, colors=None, chrome=None,
              show_reference=True):
-        """``show_reference=False`` lists only the data series, for a
-        view that ends today and so shows no goal/forecast lines."""
+        """``forecast_name`` labels the forecast line and its band
+        (``None``: no forecast). ``show_reference=False`` lists only the
+        data series, for a view that ends today and so shows no
+        goal/forecast lines."""
         date_str = target_date.strftime(date_format)
         year_str = target_date.strftime('%Y')
         target_soft_i = round(target_soft)
@@ -504,9 +528,12 @@ class LegendRenderer:
                 tbr=target_soft_i, year=year_str),
              colors['soft'], PEN_DASHDOT),
         ]
-        if show_forecast:
-            reference_entries.append((_("Forecast (last 12 months)"),
-                                      colors['forecast'], PEN_DASH))
+        if forecast_name:
+            reference_entries += [
+                (forecast_name, colors['forecast'], PEN_DASH),
+                (_("Uncertainty (80 % of cases)"),
+                 _with_alpha(colors['forecast'], BAND_ALPHA * 2), None),
+            ]
         if show_reference:
             entries += reference_entries
         self.draw_entries(painter, plot, entries, chrome)
@@ -580,6 +607,7 @@ class ChartWidget(QWidget):
         self._dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         self.colors = self._build_colors(colors)
         self.time_range = time_range
+        self.decimal_sep = decimal_sep
         self.pace_lines = self._pace_lines(decimal_sep)
         self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
@@ -647,6 +675,7 @@ class ChartWidget(QWidget):
         # spill into the margins.
         painter.save()
         painter.setClipRect(plot)
+        self._draw_forecast(painter, scale)
         self._series.draw_reference_line(
             painter, scale, start=(today, current_backlog),
             end=(self.target_date, 0),
@@ -671,68 +700,69 @@ class ChartWidget(QWidget):
                                  index=3, color=self.colors['backlog'],
                                  width=3)
 
-        if self.show_forecast:
-            self._draw_forecast(painter, scale)
         painter.restore()
 
-        if self.show_forecast:
-            self._draw_forecast_note(painter, scale)
+        self._draw_forecast_note(painter, scale)
 
         self._annotation.draw_today(painter, scale, today, current_backlog,
                                     self.colors['backlog'], self.chrome)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
-                           target_soft, self.show_forecast, self.colors,
+                           target_soft, self._forecast_name(), self.colors,
                            self.chrome, show_reference=x_max > today)
 
         painter.end()
 
-    def _forecast_end(self):
-        """(end_date, end_y) of the forecast line, or None."""
-        fc = self.forecast
-        if not fc or not fc.get('ok'):
-            return None
-        slope = fc['slope']
-        intercept = fc['intercept']
-        anchor = fc['anchor']
-        zero_date = fc['zero_date']
+    def _has_forecast(self):
+        return bool(self.show_forecast and self.forecast
+                    and self.forecast['ok'])
 
-        if slope < 0 and zero_date is not None and \
-                zero_date <= self.target_date:
-            end_date = zero_date
-            end_y = 0.0
-        else:
-            end_date = self.target_date
-            end_y = intercept + slope * (end_date - anchor).days
-            if end_y < 0:
-                end_y = 0.0
-        return end_date, end_y
+    def _forecast_name(self):
+        """Legend label of the forecast, or None if none is drawn."""
+        if not self._has_forecast():
+            return None
+        return forecast_label(self.forecast, _)
 
     def _draw_forecast(self, painter, scale):
-        """Draws the forecast line."""
-        end = self._forecast_end()
-        if end is None:
+        """Draws the uncertainty band and the forecast line."""
+        if not self._has_forecast():
             return
+        fc = self.forecast
+        band = forecast_band(fc, self.target_date)
+        outline = [QPointF(scale.date_to_x(d), scale.value_to_y(high))
+                   for d, _low, high in band]
+        outline += [QPointF(scale.date_to_x(d), scale.value_to_y(low))
+                    for d, low, _high in reversed(band)]
+        painter.setPen(QPen(PEN_NOPEN))
+        painter.setBrush(_with_alpha(self.colors['forecast'], BAND_ALPHA))
+        painter.drawPolygon(QPolygonF(outline))
         self._series.draw_reference_line(
-            painter, scale,
-            start=(self.forecast['anchor'], self.forecast['intercept']),
-            end=end,
+            painter, scale, start=(fc['anchor'], fc['start']),
+            end=forecast_line_end(fc, self.target_date),
             color=self.colors['forecast'], style=PEN_DASH, width=2)
 
     def _draw_forecast_note(self, painter, scale):
-        """Draws the 'realistic' zero-date note at the end of the forecast
-        line, if that end lies inside the visible window."""
-        end = self._forecast_end()
-        if end is None or self.forecast['zero_date'] is None:
+        """Draws the 'realistic' outcome of the forecast: at the end of
+        the line where it reaches 0 by the target date, otherwise (it
+        grows, there is not enough data, …) below and right of today –
+        each only if that point lies inside the visible window."""
+        fc = self.forecast
+        if not self.show_forecast or not fc:
             return
-        end_date, end_y = end
+        text = forecast_text(fc, _, self.date_format, self.decimal_sep)
+        if fc['ok']:
+            text = _("Realistic: {forecast}").format(forecast=text)
+        end_date, end_y = fc['anchor'], fc['start']
+        beside = True
+        if fc['zero_date'] is not None and fc['zero_date'] <= self.target_date:
+            end_date, end_y = fc['zero_date'], 0.0
+            beside = False
         x_end = scale.date_to_x(end_date)
         plot = scale.plot
         if x_end < plot.left() or x_end > plot.right():
             return
-        y_end = scale.value_to_y(end_y)
         self._annotation.draw_forecast_note(
-            painter, scale, self.forecast['zero_date'], self.date_format,
-            x_end, y_end, self.chrome)
+            painter, scale, text, x_end, scale.value_to_y(end_y),
+            self.chrome, beside=beside)
 
     # ------------------------------------------------------------------
     # Scaling / view helpers
@@ -756,7 +786,7 @@ class ChartWidget(QWidget):
         if not self.rows or len(self.rows) < 2:
             return []
         today, backlog = self.rows[-1][0], self.rows[-1][3]
-        rates = compute_rates(self.rows)
+        rates = robust_rates(compute_rates(self.rows))
         targets = [0]
         soft = round(backlog * self.reduction_factor)
         if soft != 0:

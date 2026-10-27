@@ -45,5 +45,6 @@ def test_full_pipeline(make_db):
                for i in range(len(rows) - 1))
 
     fc = ers.forecast_backlog(rows)
-    assert fc['ok'] is True
-    assert fc['count'] >= 2
+    assert fc['status'] == ers.FORECAST_OK
+    assert fc['months'] == 24
+    assert fc['start'] == 3
