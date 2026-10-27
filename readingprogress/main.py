@@ -361,6 +361,9 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.export_reading_status import (
             find_date_problems,
         )
+        from calibre_plugins.readingprogress.import_days import (
+            find_import_days,
+        )
         from calibre_plugins.readingprogress.quality_dialog import (
             QualityDialog,
         )
@@ -378,22 +381,24 @@ class ReadingProgressAction(InterfaceAction):
                 collect_series(db_api, read_column))
             return (problems,
                     sum(1 for v in read_flags.values() if v is True),
-                    series_problems)
+                    series_problems,
+                    find_import_days(db_api, read_column, last_read_column))
 
         result = self._read_library(fetch)
         if result is None:
             return
-        problems, read_total, series_problems = result
-        if not problems and not series_problems:
+        problems, read_total, series_problems, import_days = result
+        if not problems and not series_problems and not import_days:
             info_dialog(
                 self.gui, _('Data quality'),
                 _('All read books have a usable read date, and no series '
-                  'problems were found.'), show=True)
+                  'problems or bulk imports were found.'), show=True)
             return
 
         QualityDialog(problems, read_total, _date_format(), self.gui,
                       on_show=self._show_in_library,
-                      series_problems=series_problems).exec()
+                      series_problems=series_problems,
+                      import_days=import_days).exec()
 
     def show_age(self):
         from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
