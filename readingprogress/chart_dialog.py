@@ -601,6 +601,26 @@ class LegendRenderer:
             )
 
 
+def pace_lines(rows, target_date, reduction_factor, date_format,
+               decimal_sep):
+    """Required-pace sentences for TBR = 0 and, if it is a different
+    goal, the gentle reduction. They do not depend on the visible
+    window, so they stay for every time range."""
+    if not rows or len(rows) < 2:
+        return []
+    today, backlog = rows[-1][0], rows[-1][3]
+    rates = robust_rates(compute_rates(rows))
+    targets = [0]
+    soft = round(backlog * reduction_factor)
+    if soft != 0:
+        targets.append(soft)
+    date_str = target_date.strftime(date_format)
+    return [pace_line(required_pace(backlog, rates, today, target_date,
+                                    target),
+                      _, date_str, decimal_sep)
+            for target in targets]
+
+
 class ChartWidget(QWidget):
     """Draws the burn-up chart; holds only the orchestration."""
 
@@ -816,22 +836,8 @@ class ChartWidget(QWidget):
         )
 
     def _pace_lines(self, decimal_sep):
-        """Required-pace sentences for TBR = 0 and, if it is a different
-        goal, the gentle reduction. They do not depend on the visible
-        window, so they stay for every time range."""
-        if not self.rows or len(self.rows) < 2:
-            return []
-        today, backlog = self.rows[-1][0], self.rows[-1][3]
-        rates = robust_rates(compute_rates(self.rows))
-        targets = [0]
-        soft = round(backlog * self.reduction_factor)
-        if soft != 0:
-            targets.append(soft)
-        date_str = self.target_date.strftime(self.date_format)
-        return [pace_line(required_pace(backlog, rates, today,
-                                        self.target_date, target),
-                          _, date_str, decimal_sep)
-                for target in targets]
+        return pace_lines(self.rows, self.target_date, self.reduction_factor,
+                          self.date_format, decimal_sep)
 
     def _fit_x_range(self):
         """(x_min, x_max) of the unzoomed view for the time range."""

@@ -54,6 +54,10 @@ Done, not yet released:
   horizontal bars, with the share of the TBR they make up; a click shows
   a series' unread books in calibre. Helps decide what to read down –
   or what no longer to read at all.
+- **TBR in the status bar:** "TBR: 1652 ▲172" permanently on the right
+  of the status bar, with read/total, the value 12 months ago and the
+  required pace in the tooltip; a click opens the burn-up chart. Keeps
+  the goal in view without opening a chart.
 
 ## Done
 
@@ -137,10 +141,6 @@ Broader ideas, none of them committed.
 - Page-count based analysis
 - Author analysis
 - Activity heatmap (GitHub-contributions style)
-
-### UX improvements
-
-- Status bar widget showing current backlog permanently
 
 ## Not planned
 

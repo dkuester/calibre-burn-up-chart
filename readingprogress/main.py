@@ -20,7 +20,7 @@ from calibre_plugins.readingprogress.config_helpers import (
     migrate_legacy_keys,
 )
 from calibre_plugins.readingprogress.localization import _
-from qt.core import QIcon, QMenu, QPixmap, QTimer, QToolButton
+from qt.core import QIcon, QMenu, QPixmap, QTimer, QToolButton, pyqtSignal
 
 
 def _setup_config():
@@ -38,6 +38,7 @@ def _setup_config():
     config.defaults['last_read_column'] = '#last_read'
     config.defaults['show_forecast'] = True
     config.defaults['time_range'] = 'all'
+    config.defaults['show_status_tbr'] = True
     for color_key in DEFAULT_COLORS:
         config.defaults[f'color_{color_key}'] = ''   # '' = follow theme
     config.defaults['_migrated_keys'] = False
@@ -118,6 +119,11 @@ def _chart_png_base64(widget, width=1200, height=700):
         os.remove(path)
 
 
+# Milliseconds to wait after the last library change before the TBR in
+# the status bar is recounted, so bulk edits trigger one count
+STATUS_REFRESH_DELAY = 1000
+
+
 def _date_format():
     """Locale date format for the current Calibre UI language."""
     return date_format(get_lang().split('_')[0])
@@ -134,6 +140,10 @@ class ReadingProgressAction(InterfaceAction):
     action_spec = (_('Burn-up Chart'), None,
                    _('Reading statistics for your library'), None)
     action_type = 'current'
+
+    # Emitted from calibre's listener thread; the queued connection
+    # brings it to the GUI thread.
+    _library_edited = pyqtSignal()
 
     def genesis(self):
         # Set the icon (errors must not break anything)
@@ -171,6 +181,16 @@ class ReadingProgressAction(InterfaceAction):
         # small arrow on the right = menu
         QTimer.singleShot(0, self._activate_popup_mode)
 
+        self._status_button = None
+        self._listening_db = None
+        self._status_timer = QTimer(self)
+        self._status_timer.setSingleShot(True)
+        self._status_timer.setInterval(STATUS_REFRESH_DELAY)
+        self._status_timer.timeout.connect(self.refresh_status_tbr)
+        self._library_edited.connect(self._status_timer.start)
+        # calibre keeps only a weak reference to its listeners
+        self._db_listener = self._on_db_event
+
     def _activate_popup_mode(self):
         """Sets the QToolButton to MenuButtonPopup."""
         try:
@@ -181,6 +201,105 @@ class ReadingProgressAction(InterfaceAction):
                     return
         except Exception as e:
             print(f'ReadingProgress: PopupMode error: {e}')
+
+    # ------------------------------------------------------------------
+    # TBR in the status bar
+    # ------------------------------------------------------------------
+    def initialization_complete(self):
+        try:
+            button = QToolButton(self.gui.status_bar)
+            button.setAutoRaise(True)
+            button.clicked.connect(self.show_chart)
+            self.gui.status_bar.addPermanentWidget(button)
+            self._status_button = button
+            self._listen_to(self.gui.current_db)
+            self.refresh_status_tbr()
+        except Exception as e:
+            print(f'ReadingProgress: status bar error: {e}')
+
+    def library_about_to_change(self, olddb, db):
+        self._listen_to(None)
+
+    def library_changed(self, db):
+        self._listen_to(db)
+        self.refresh_status_tbr()
+
+    def shutting_down(self):
+        self._listen_to(None)
+        return True
+
+    def _listen_to(self, db):
+        """Moves the change listener to ``db`` (``None``: no library)."""
+        if self._listening_db is not None:
+            try:
+                self._listening_db.new_api.remove_listener(self._db_listener)
+            except Exception:
+                pass
+        self._listening_db = db
+        if db is not None:
+            db.new_api.add_listener(self._db_listener)
+
+    def _on_db_event(self, event_type, library_id, event_data):
+        """Runs in calibre's listener thread: only flags relevant
+        changes, the count runs bundled in the GUI thread."""
+        from calibre.db.listeners import EventType
+        if event_type == EventType.metadata_changed:
+            if event_data[0] not in (config['read_column'],
+                                     config['last_read_column'],
+                                     'timestamp'):
+                return
+        elif event_type not in (EventType.book_created,
+                                EventType.books_removed):
+            return
+        self._library_edited.emit()
+
+    def refresh_status_tbr(self):
+        """Recounts the TBR in the status bar (or hides it)."""
+        button = self._status_button
+        if button is None:
+            return
+        visible = bool(config['show_status_tbr'])
+        button.setVisible(visible)
+        if not visible:
+            return
+        text, tooltip = self._status_summary()
+        button.setText(text)
+        button.setToolTip(tooltip)
+
+    def _status_summary(self):
+        """``(text, tooltip)`` for the status bar; never shows a dialog."""
+        from calibre_plugins.readingprogress.chart_dialog import pace_lines
+        from calibre_plugins.readingprogress.export_reading_status import (
+            NoDataError,
+            export_snapshots,
+        )
+        from calibre_plugins.readingprogress.status_summary import (
+            empty_summary,
+            error_summary,
+            problem_summary,
+            status_summary,
+        )
+
+        try:
+            db_api = self.gui.current_db.new_api
+            read_column = config['read_column']
+            last_read_column = config['last_read_column']
+            problems = column_problems(custom_column_types(db_api),
+                                       read_column, last_read_column)
+            if problems:
+                return problem_summary(
+                    describe_column_problems(problems, _), _)
+            rows = export_snapshots(db_api, read_column,
+                                    last_read_column)['rows']
+            target_date, reduction_factor = _target_settings()
+            return status_summary(rows, _, pace_lines(
+                rows, target_date, reduction_factor, _date_format(),
+                _decimal_separator()))
+        except NoDataError:
+            return empty_summary(_)
+        except Exception:
+            traceback.print_exc()
+            return error_summary(_)
 
     # ------------------------------------------------------------------
     # Shared helpers

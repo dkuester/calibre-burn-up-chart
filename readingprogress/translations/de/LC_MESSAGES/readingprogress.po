@@ -37,6 +37,19 @@ msgstr "Zeit zwischen Kauf und Lesen"
 msgid "Reading status: {read}/{total} read, backlog {backlog}"
 msgstr "Lesestatus: {read}/{total} gelesen, Backlog {backlog}"
 
+# TBR widget in the status bar (status_summary.py)
+msgid "TBR: {backlog}"
+msgstr "SuB: {backlog}"
+
+msgid "{total} books, {read} of them read ({percent} %)"
+msgstr "{total} Bücher, davon {read} gelesen ({percent} %)"
+
+msgid "{months} months ago: {backlog} ({change})"
+msgstr "Vor {months} Monaten: {backlog} ({change})"
+
+msgid "Whole library · click to open the burn-up chart"
+msgstr "Ganze Bibliothek · Klick öffnet das Burn-up-Chart"
+
 msgid "No data available for this analysis."
 msgstr "Keine Daten für diese Auswertung verfügbar."
 
@@ -49,6 +62,9 @@ msgstr "Sanfter Abbau (Faktor):"
 
 msgid "Show forecast line"
 msgstr "Prognoselinie anzeigen"
+
+msgid "Show the TBR in the status bar"
+msgstr "SuB in der Statusleiste anzeigen"
 
 msgid "Total library color:"
 msgstr "Farbe Gesamtbestand:"
