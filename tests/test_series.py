@@ -1,5 +1,7 @@
 """Tests for series.py: series data and the series checks."""
 
+from datetime import date, datetime
+
 import pytest
 import series as srs
 
@@ -37,7 +39,7 @@ def test_collect_series(make_db):
     assert [b["book_id"] for b in series["Classics"]] == [5, 4, 6]
     assert series["Dune"][0] == {"book_id": 7, "title": "Dune 1.0",
                                  "authors": ("A",), "index": 1.0,
-                                 "read": True}
+                                 "read": True, "last_read": None}
     assert series["Dune"][1]["read"] is False
 
 
@@ -46,7 +48,7 @@ def test_collect_series_defaults(make_db):
              2: {"series": "S", "series_index": 3, "#read": "yes"}}
     books_s = srs.collect_series(make_db(books), "#read")["S"]
     assert books_s[0] == {"book_id": 1, "title": "", "authors": (),
-                          "index": 1.0, "read": True}
+                          "index": 1.0, "read": True, "last_read": None}
     assert books_s[1]["index"] == 3.0
     assert books_s[1]["read"] is False   # only True counts as read
 
@@ -151,4 +153,72 @@ def test_series_csv_rows(make_db):
         ["names", "Expanse | The Expanse | The Expanse-Serie", "3 books", 3,
          "1 2 3"],
         ["dup", "Classics", "2 books", 2, "5 4"],
+    ]
+
+
+def test_collect_series_last_read(make_db):
+    books = {1: {"series": "S", "#gelesen": True,
+                 "#last_read": datetime(2024, 5, 6, 23, 0)},
+             2: {"series": "S", "#gelesen": True,
+                 "#last_read": date(2023, 1, 2)},
+             3: {"series": "S", "#gelesen": True, "#last_read": "junk"}}
+    books_s = srs.collect_series(make_db(books), "#gelesen", "#last_read")["S"]
+    assert [b["last_read"] for b in books_s] == [
+        date(2024, 5, 6), date(2023, 1, 2), None]
+
+
+def _vol(book_id, index, read=False, last_read=None, title=None):
+    return {"book_id": book_id, "title": title or "T{}".format(index),
+            "authors": (), "index": index, "read": read,
+            "last_read": last_read}
+
+
+def test_started_series():
+    series = {
+        # gap: 2 unread below the highest read (4); 5 is the next after it
+        "Gap": [_vol(1, 1.0, True, date(2020, 1, 1)), _vol(2, 2.0),
+                _vol(3, 4.0, True, date(2022, 3, 1)), _vol(4, 4.0),
+                _vol(5, 5.0)],
+        # gap without anything after the highest read volume
+        "Gap end": [_vol(6, 1.0), _vol(7, 2.0, True, date(2021, 1, 1))],
+        # no gap: next is above the highest read volume
+        "Plain": [_vol(8, 1.0, True, date(2025, 1, 1)), _vol(9, 2.0)],
+        # no read dates at all
+        "Undated": [_vol(10, 1.0, True), _vol(11, 2.0)],
+        "Single": [_vol(12, 1.0)],
+        "All read": [_vol(13, 1.0, True), _vol(14, 2.0, True)],
+        "Unread": [_vol(15, 1.0), _vol(16, 2.0)],
+    }
+    started = srs.started_series(series)
+    assert [s["series"] for s in started] == [
+        "Undated", "Gap end", "Gap", "Plain"]
+    undated, gap_end, gap, plain = started
+    assert undated["last_read"] is None
+    assert gap["read"] == 2 and gap["total"] == 5
+    assert gap["next_book"]["book_id"] == 2
+    assert gap["after_book"]["book_id"] == 5
+    assert gap["last_read"] == date(2022, 3, 1)
+    assert gap["book_ids"] == [1, 2, 3, 4, 5]
+    assert gap_end["next_book"]["book_id"] == 6
+    assert gap_end["after_book"] is None
+    assert plain["next_book"]["book_id"] == 9
+    assert plain["after_book"] is None
+
+
+def test_started_series_ties_by_name():
+    series = {name: [_vol(1, 1.0, True, date(2024, 1, 1)), _vol(2, 2.0)]
+              for name in ("b", "A")}
+    assert [s["series"] for s in srs.started_series(series)] == ["A", "b"]
+
+
+def test_started_csv_rows():
+    series = {
+        "Gap": [_vol(1, 1.5, title="Half"), _vol(2, 3.0, True,
+                date(2024, 2, 1)), _vol(3, 4.0, title="Four")],
+        "Undated": [_vol(4, 1.0, True), _vol(5, 2.0, title="Two")],
+    }
+    rows = srs.started_csv_rows(srs.started_series(series), "%d.%m.%Y")
+    assert rows == [
+        ["Undated", 1, 2, "2", "Two", "", "", ""],
+        ["Gap", 1, 3, "1.5", "Half", "4", "Four", "01.02.2024"],
     ]

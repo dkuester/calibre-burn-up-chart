@@ -158,6 +158,7 @@ class ReadingProgressAction(InterfaceAction):
         menu.addAction(_('Purchase rate vs. reading rate'),
                        self.show_rates)
         menu.addAction(_('Age of the TBR'), self.show_age)
+        menu.addAction(_('Started series'), self.show_started)
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
         menu.addAction(_('Save report…'), self.save_report)
@@ -426,6 +427,30 @@ class ReadingProgressAction(InterfaceAction):
         AgeChartDialog(age_buckets(ages), MAX_AGE_YEARS, summary,
                        _decimal_separator(), self.gui, colors=self._colors(),
                        on_show=self._show_in_library).exec()
+
+    def show_started(self):
+        from calibre_plugins.readingprogress.series import (
+            collect_series,
+            started_series,
+        )
+        from calibre_plugins.readingprogress.started_dialog import (
+            StartedSeriesDialog,
+        )
+
+        started = self._read_library(
+            lambda db_api, read_column, last_read_column: started_series(
+                collect_series(db_api, read_column, last_read_column)))
+        if started is None:
+            return
+        if not started:
+            info_dialog(
+                self.gui, _('Started series'),
+                _('No started series: every series with at least two books '
+                  'is either unread or read completely.'), show=True)
+            return
+
+        StartedSeriesDialog(started, _date_format(), self.gui,
+                            on_show=self._show_in_library).exec()
 
     def save_report(self):
         from datetime import date

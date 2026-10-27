@@ -5,12 +5,14 @@ dialog.
 Groups the books by calibre's ``series`` field and finds three kinds of
 problems: the same series under several names, volume numbers used
 twice within a series, and gaps (an earlier volume unread although a
-later one is read). Uses only the standard library, so it is testable
-without calibre; nothing here changes book data.
+later one is read). Also lists the started series with their next
+volume. Uses only the standard library, so it is testable without
+calibre; nothing here changes book data.
 """
 
 import re
 import unicodedata
+from datetime import date, datetime
 
 # Problem kinds reported by find_series_problems()
 NAME_VARIANTS = "name_variants"
@@ -30,13 +32,15 @@ _SERIES_WORDS = frozenset((
 ))
 
 
-def collect_series(db_api, read_column):
+def collect_series(db_api, read_column, last_read_column=None):
     """Books per series.
 
     :return: dict mapping each series name to a list of dicts with
         ``book_id``, ``title``, ``authors`` (tuple), ``index`` (float,
-        1.0 when calibre has none) and ``read`` (bool); sorted by index,
-        then title. Books without a series are left out.
+        1.0 when calibre has none), ``read`` (bool) and ``last_read``
+        (date from ``last_read_column``, ``None`` if missing or without
+        that column); sorted by index, then title. Books without a
+        series are left out.
     """
     all_ids = db_api.all_book_ids()
     series_map  = db_api.all_field_for("series", all_ids)
@@ -44,6 +48,8 @@ def collect_series(db_api, read_column):
     read_map    = db_api.all_field_for(read_column, all_ids)
     title_map   = db_api.all_field_for("title", all_ids)
     authors_map = db_api.all_field_for("authors", all_ids)
+    last_read_map = (db_api.all_field_for(last_read_column, all_ids)
+                     if last_read_column else {})
 
     series = {}
     for book_id in all_ids:
@@ -57,6 +63,7 @@ def collect_series(db_api, read_column):
             "authors": tuple(authors_map.get(book_id) or ()),
             "index": 1.0 if index is None else float(index),
             "read": read_map.get(book_id) is True,
+            "last_read": _to_date(last_read_map.get(book_id)),
         })
     for books in series.values():
         books.sort(key=lambda b: (b["index"], b["title"].lower()))
@@ -184,6 +191,81 @@ def series_csv_rows(problems, labels, describe):
     return [[labels[p["kind"]], " | ".join(p["series"]), describe(p),
              len(p["book_ids"]), " ".join(str(i) for i in p["book_ids"])]
             for p in problems]
+
+
+def started_series(series):
+    """Series begun but not finished, with the next volume to read.
+
+    A series counts as started when it has at least two books, at least
+    one of them read and at least one unread.
+
+    :return: list of dicts with ``series`` (name), ``read`` and ``total``
+        (number of books), ``next_book`` (the lowest unread volume),
+        ``after_book`` (the first unread volume above the highest read
+        one if ``next_book`` lies below it – a gap –, else ``None``),
+        ``last_read`` (latest read date in the series, ``None`` if no
+        read book has one) and ``book_ids`` (all books of the series).
+        Books are dicts from :func:`collect_series`. Sorted by
+        ``last_read``, oldest first and series without a read date
+        before all others, so stalled series come first; ties by name.
+    """
+    result = []
+    for name, books in series.items():
+        read = [b for b in books if b["read"]]
+        unread = [b for b in books if not b["read"]]
+        if len(books) < 2 or not read or not unread:
+            continue
+        max_read = max(b["index"] for b in read)
+        next_book = unread[0]
+        after_book = None
+        if next_book["index"] < max_read:
+            after_book = next(
+                (b for b in unread if b["index"] > max_read), None)
+        dates = [b["last_read"] for b in read if b["last_read"]]
+        result.append({
+            "series": name,
+            "read": len(read),
+            "total": len(books),
+            "next_book": next_book,
+            "after_book": after_book,
+            "last_read": max(dates) if dates else None,
+            "book_ids": [b["book_id"] for b in books],
+        })
+    result.sort(key=lambda s: (
+        s["last_read"] is not None,
+        s["last_read"].toordinal() if s["last_read"] else 0,
+        s["series"].lower()))
+    return result
+
+
+def started_csv_rows(started, date_format):
+    """Rows for a CSV export of :func:`started_series`.
+
+    Columns: series, read, total, next volume number and title, number
+    and title of the first volume after the highest read one (empty
+    without a gap), last read (empty if unknown).
+    """
+    rows = []
+    for s in started:
+        after = s["after_book"]
+        rows.append([
+            s["series"], s["read"], s["total"],
+            format_index(s["next_book"]["index"]), s["next_book"]["title"],
+            format_index(after["index"]) if after else "",
+            after["title"] if after else "",
+            s["last_read"].strftime(date_format) if s["last_read"] else "",
+        ])
+    return rows
+
+
+def _to_date(value):
+    # Same as export_reading_status.to_date(); the Qt-free modules do not
+    # import each other (their import path differs inside calibre).
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return None
 
 
 def _problem(kind, names, book_ids, indices=(), max_read=None):

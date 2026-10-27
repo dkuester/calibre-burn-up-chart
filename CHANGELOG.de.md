@@ -49,6 +49,15 @@
   zeigt die Bücher des Tages in calibre, der Tab lässt sich als CSV
   speichern. Der Tab zum Lesedatum sagt, wie viele seiner Fälle an
   einem solchen Tag aufgenommen wurden. Es wird nichts geändert.
+- **Angefangene Reihen:** Ein neuer Menüeintrag listet die angefangenen,
+  aber nicht beendeten Reihen (mindestens zwei Bücher, teils gelesen,
+  teils ungelesen): Fortschritt („60/76“), den nächsten ungelesenen Band
+  mit Nummer und Titel und wann zuletzt etwas aus der Reihe gelesen
+  wurde. Die am längsten liegengebliebenen Reihen stehen oben. Bei einer
+  Lücke zeigt eine zweite Spalte den ersten Band nach dem höchsten
+  gelesenen. Ein Doppelklick zeigt den nächsten Band in calibre; Knöpfe
+  zeigen den nächsten Band oder die ganze Reihe, und die Liste lässt
+  sich als CSV speichern.
 
 ## [1.7.0] – 2026-10-26
 
