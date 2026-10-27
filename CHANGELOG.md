@@ -68,6 +68,18 @@
   after books are added, deleted or marked as read, and when switching
   libraries. If the columns are unusable it shows "TBR: –" with the
   reason in the tooltip. Can be turned off in the settings.
+- **Merge series names:** Reading a series partly in German and partly
+  in English leaves it under two names. The setting "Merge series"
+  joins such names, one series per line, e.g.
+  `Die Nebelgeborenen = Mistborn`; the first name is displayed.
+  "Started series", "TBR by series", the series checks and the report
+  count them as one series. A volume read in one language counts as read
+  in the other too: it is neither the "next volume" nor a gap, and the
+  same number under two names is no duplicate volume number. In the TBR
+  the unread book still counts, as in the TBR chart. In the "Series" tab
+  of the data quality dialog the button "Merge names" adds selected
+  groups from "Several names" to the list. The series names in calibre
+  stay unchanged.
 
 ### Changed
 

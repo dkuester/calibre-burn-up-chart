@@ -58,6 +58,15 @@ Done, not yet released:
   of the status bar, with read/total, the value 12 months ago and the
   required pace in the tooltip; a click opens the burn-up chart. Keeps
   the goal in view without opening a chart.
+- **Merge series names:** reading a series partly in German and partly
+  in English leaves it under two names ("Die Nebelgeborenen" and
+  "Mistborn"). A list in the settings merges such names, e.g.
+  `Die Nebelgeborenen = Mistborn`; the series names in calibre stay
+  unchanged. "Started series", "TBR by series" and the series checks
+  count them as one series, and a volume read in one language counts as
+  read. Groups from "Several names" can be taken over with one click.
+  Automatic detection (same author, other language) was tried on real
+  data and dropped: 42 pairs, only about 5 of them real.
 
 ## Done
 
@@ -111,19 +120,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### Merge series names
-
-Reading a series partly in German and partly in English leaves it under
-two names ("Die Nebelgeborenen" and "Mistborn", "Das Lied von Eis und
-Feuer" and "A Song of Ice and Fire"). A list in the settings merges such
-names, e.g. `Die Nebelgeborenen = Mistborn`. The series names in calibre
-stay unchanged; "Started series", "TBR by series" and the series checks
-count the names as one series. Groups from "Several names" in the data
-quality dialog can be taken over with one click. Automatic detection
-(same author, other language) was tried on real data and dropped: 42
-pairs, only about 5 of them real, because an author with several series
-pairs with all of them.
 
 ### Series progress chart
 

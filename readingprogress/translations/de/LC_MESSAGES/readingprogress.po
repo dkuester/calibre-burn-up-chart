@@ -96,8 +96,8 @@ msgstr "Benutzerdefinierte Spalte \"gelesen\":"
 msgid "Custom column \"last read\":"
 msgstr "Benutzerdefinierte Spalte \"zuletzt gelesen\":"
 
-msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date.<br><br><b>Days in TBR:</b> A column calibre computes itself: for read books the days between adding and reading, for unread books the days since adding. Sort by it to find the books you have owned longest without reading them."
-msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen.<br><br><b>Tage im SuB:</b> Eine Spalte, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben."
+msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date.<br><br><b>Days in TBR:</b> A column calibre computes itself: for read books the days between adding and reading, for unread books the days since adding. Sort by it to find the books you have owned longest without reading them.<br><br><b>Merge series:</b> One series per line, its names in calibre separated by \"=\", for example a series you read partly in German and partly in English. The first name is displayed. \"Started series\", \"TBR by series\" and the data quality check count them as one series; a volume read in one language counts as read. The series names in calibre stay unchanged."
+msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen.<br><br><b>Tage im SuB:</b> Eine Spalte, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben.<br><br><b>Reihen zusammenfassen:</b> Eine Reihe pro Zeile, ihre Namen in calibre mit „=“ getrennt, z. B. eine Reihe, die du mal auf Deutsch, mal auf Englisch liest. Angezeigt wird der erste Name. „Angefangene Reihen“, „SuB nach Reihen“ und die Datenqualität zählen sie als eine Reihe; ein in einer Sprache gelesener Band gilt als gelesen. Die Seriennamen in calibre bleiben unverändert."
 
 # Chart dialog
 msgid "Reading progress"
@@ -395,8 +395,8 @@ msgstr "Lücke"
 msgid "<b>{count} series problems:</b> {names} series under several names, {duplicates} with duplicate volume numbers, {gaps} with gaps."
 msgstr "<b>{count} Auffälligkeiten bei Reihen:</b> {names} Reihen unter mehreren Namen, {duplicates} mit doppelten Bandnummern, {gaps} mit Lücken."
 
-msgid "Several names: the names differ only in case, punctuation, a leading article or a word like \"Series\". A volume number used twice is often 1, which calibre sets when a book has no number. Gap: an earlier volume is unread although a later one is read."
-msgstr "Mehrere Namen: Die Namen unterscheiden sich nur in Groß-/Kleinschreibung, Satzzeichen, einem Artikel am Anfang oder einem Wort wie „Serie“. Eine doppelte Bandnummer ist oft die 1, die calibre setzt, wenn ein Buch keine Nummer hat. Lücke: Ein früherer Band ist ungelesen, obwohl ein späterer gelesen ist."
+msgid "Several names: the names differ only in case, punctuation, a leading article or a word like \"Series\". A volume number used twice is often 1, which calibre sets when a book has no number. Gap: an earlier volume is unread although a later one is read. Series under several names – also in different languages – can be counted as one series: select them and click \"Merge names\", or list them in the settings."
+msgstr "Mehrere Namen: Die Namen unterscheiden sich nur in Groß-/Kleinschreibung, Satzzeichen, einem Artikel am Anfang oder einem Wort wie „Serie“. Eine doppelte Bandnummer ist oft die 1, die calibre setzt, wenn ein Buch keine Nummer hat. Lücke: Ein früherer Band ist ungelesen, obwohl ein späterer gelesen ist. Reihen unter mehreren Namen – auch in verschiedenen Sprachen – lassen sich als eine Reihe zählen: markieren und „Namen zusammenfassen“ klicken oder in den Einstellungen eintragen."
 
 msgid "Details"
 msgstr "Details"
@@ -423,8 +423,8 @@ msgstr "Keine angefangenen Reihen: Jede Reihe mit mindestens zwei Büchern ist e
 msgid "<b>{count} started series:</b> at least two books, at least one of them read and one unread. The longest unread come first."
 msgstr "<b>{count} angefangene Reihen:</b> mindestens zwei Bücher, davon mindestens eines gelesen und eines ungelesen. Die am längsten liegengebliebenen stehen oben."
 
-msgid "\"After highest read\" appears when an earlier volume is still unread (a gap). A series under several names is listed once per name; \"Check data quality\" shows such names."
-msgstr "„Nach dem höchsten gelesenen“ erscheint, wenn ein früherer Band noch ungelesen ist (eine Lücke). Eine Reihe unter mehreren Namen steht einmal pro Name in der Liste; „Datenqualität prüfen“ zeigt solche Namen."
+msgid "\"After highest read\" appears when an earlier volume is still unread (a gap). A series under several names is listed once per name unless its names are merged in the settings; \"Check data quality\" shows such names."
+msgstr "„Nach dem höchsten gelesenen“ erscheint, wenn ein früherer Band noch ungelesen ist (eine Lücke). Eine Reihe unter mehreren Namen steht einmal pro Name in der Liste, außer ihre Namen sind in den Einstellungen zusammengefasst; „Datenqualität prüfen“ zeigt solche Namen."
 
 msgid "Show next volume in calibre"
 msgstr "Nächsten Band in calibre zeigen"
@@ -844,3 +844,28 @@ msgstr "Nov"
 
 msgid "Dec"
 msgstr "Dez"
+
+# Merge series names
+msgid "Merge series:"
+msgstr "Reihen zusammenfassen:"
+
+msgid "Merge series"
+msgstr "Reihen zusammenfassen"
+
+msgid "Lines with only one name are ignored: {names}"
+msgstr "Zeilen mit nur einem Namen werden ignoriert: {names}"
+
+msgid "Names in more than one line only count for the first: {names}"
+msgstr "Namen in mehreren Zeilen gelten nur für die erste: {names}"
+
+msgid "Merge names"
+msgstr "Namen zusammenfassen"
+
+msgid "Counts the selected series names as one series in \"Started series\", \"TBR by series\" and this check. The names in calibre stay unchanged; the list is in the settings."
+msgstr "Zählt die markierten Seriennamen in „Angefangene Reihen“, „SuB nach Reihen“ und dieser Prüfung als eine Reihe. Die Namen in calibre bleiben unverändert; die Liste steht in den Einstellungen."
+
+msgid "Merged as \"{name}\""
+msgstr "Zusammengefasst als „{name}“"
+
+msgid "Counted as one series the next time the check runs."
+msgstr "Zählt ab der nächsten Prüfung als eine Reihe."

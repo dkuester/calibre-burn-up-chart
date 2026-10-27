@@ -5,8 +5,9 @@ Three tabs: read books whose read date the charts cannot use as is (no
 read date, or read before being added), days that look like a bulk
 import (their date added is probably not the purchase date), and series
 problems (one series under several names, duplicate volume numbers,
-gaps). Shows the affected books in calibre's book list on request. It
-never changes book data.
+gaps). Shows the affected books in calibre's book list on request and
+adds series names to the merge list in the settings. It never changes
+book data.
 """
 
 import csv
@@ -56,6 +57,7 @@ class _SortItem(QTableWidgetItem):
         super().__init__(text)
         self.key = key
         self.book_ids = book_ids
+        self.problem = None
 
     def __lt__(self, other):
         return self.key < getattr(other, 'key', self.key)
@@ -95,13 +97,18 @@ class QualityDialog(QDialog):
     """Tables of books with questionable read dates and series problems.
 
     ``on_show(book_ids)`` displays those books in calibre's book list;
-    the dialog closes before it is called. A tab without problems is
-    left out.
+    the dialog closes before it is called. ``on_merge(names)`` adds
+    series names (the displayed one first) to the merge list. A tab
+    without problems is left out.
     """
 
     def __init__(self, problems, read_total, date_format, parent=None,
-                 on_show=None, series_problems=(), import_days=()):
+                 on_show=None, series_problems=(), import_days=(),
+                 on_merge=None):
         super().__init__(parent)
+        self.on_merge = on_merge
+        self.series_table = None
+        self.merged = []
         self.problems = problems
         self.series_problems = list(series_problems)
         self.import_days = list(import_days)
@@ -144,6 +151,13 @@ class QualityDialog(QDialog):
         csv_btn = QPushButton(_("Save as CSV…"))
         csv_btn.clicked.connect(lambda: self._page()[2]())
         row.addWidget(csv_btn)
+        self.merge_btn = QPushButton(_("Merge names"))
+        self.merge_btn.setToolTip(_(
+            "Counts the selected series names as one series in \"Started "
+            "series\", \"TBR by series\" and this check. The names in "
+            "calibre stay unchanged; the list is in the settings."))
+        self.merge_btn.clicked.connect(self._merge_selected)
+        row.addWidget(self.merge_btn)
         row.addStretch()
         close_btn = QPushButton(_("Close"))
         close_btn.clicked.connect(self.reject)
@@ -151,6 +165,7 @@ class QualityDialog(QDialog):
         layout.addLayout(row)
 
         self.tabs.currentChanged.connect(lambda _index: self._update_buttons())
+        self._update_buttons()
 
     # ------------------------------------------------------------------
     # Tabs
@@ -274,7 +289,9 @@ class QualityDialog(QDialog):
             "leading article or a word like \"Series\". A volume number "
             "used twice is often 1, which calibre sets when a book has no "
             "number. Gap: an earlier volume is unread although a later one "
-            "is read.")
+            "is read. Series under several names – also in different "
+            "languages – can be counted as one series: select them and "
+            "click \"Merge names\", or list them in the settings.")
 
         headers = [_("Problem"), _("Series"), _("Details"), _("Books")]
         order = list(self.series_labels)
@@ -289,9 +306,13 @@ class QualityDialog(QDialog):
                 (str(len(p['book_ids'])), len(p['book_ids'])),
             ], p['book_ids']))
         table = _new_table(self, headers, rows)
+        for r, p in enumerate(problems):
+            for c in range(table.columnCount()):
+                table.item(r, c).problem = p
         table.setSortingEnabled(True)
         table.sortItems(0, Qt.SortOrder.AscendingOrder)
         _size_columns(table, {1: 420, 2: 360})
+        self.series_table = table
         book_ids = []
         for p in problems:
             book_ids += [i for i in p['book_ids'] if i not in book_ids]
@@ -316,6 +337,36 @@ class QualityDialog(QDialog):
 
     def _update_buttons(self):
         self.show_selected_btn.setEnabled(bool(self._selected_ids()))
+        on_series = (self.series_table is not None
+                     and self._page()[0] is self.series_table)
+        self.merge_btn.setVisible(on_series and self.on_merge is not None)
+        self.merge_btn.setEnabled(on_series
+                                  and bool(self._selected_variants()))
+
+    def _selected_variants(self):
+        """Selected "Several names" problems not merged yet."""
+        found = []
+        for item in self.series_table.selectedItems():
+            p = item.problem
+            if (p['kind'] == NAME_VARIANTS and all(p is not q for q in found)
+                    and all(p is not q for q in self.merged)):
+                found.append(p)
+        return found
+
+    def _merge_selected(self):
+        table = self.series_table
+        for p in self._selected_variants():
+            self.on_merge([p['display']]
+                          + [n for n in p['series'] if n != p['display']])
+            self.merged.append(p)
+            for r in range(table.rowCount()):
+                if table.item(r, 0).problem is p:
+                    item = table.item(r, 2)
+                    item.setText(_("Merged as \"{name}\"").format(
+                        name=p['display']))
+                    item.setToolTip(_("Counted as one series the next time "
+                                      "the check runs."))
+        self._update_buttons()
 
     def _selected_ids(self):
         ids = []

@@ -20,6 +20,11 @@ from calibre_plugins.readingprogress.config_helpers import (
     describe_column_problems,
 )
 from calibre_plugins.readingprogress.localization import _
+from calibre_plugins.readingprogress.series import (
+    format_series_groups,
+    parse_series_groups,
+    series_group_problems,
+)
 from qt.core import (
     QCheckBox,
     QColor,
@@ -31,6 +36,7 @@ from qt.core import (
     QLabel,
     QLineEdit,
     QPalette,
+    QPlainTextEdit,
     QPushButton,
     QWidget,
 )
@@ -124,6 +130,20 @@ class ConfigWidget(QWidget):
         layout.addRow(self.tbr_column_status)
         self._refresh_tbr_column_state()
 
+        # --- Merged series names ---
+        self.series_merge_edit = QPlainTextEdit()
+        self.series_merge_edit.setPlainText(
+            format_series_groups(config['series_merge']))
+        self.series_merge_edit.setPlaceholderText(
+            'Die Nebelgeborenen = Mistborn')
+        # One group per line, so lines do not wrap
+        self.series_merge_edit.setLineWrapMode(
+            QPlainTextEdit.LineWrapMode.NoWrap)
+        self.series_merge_edit.setFixedHeight(
+            self.series_merge_edit.fontMetrics().lineSpacing() * 7)
+        layout.addRow(QLabel(_('Merge series:')))
+        layout.addRow(self.series_merge_edit)
+
         # --- Explanation ---
         hint = QLabel(_(
             '<b>Target date:</b> Date by which the backlog (TBR) should '
@@ -137,7 +157,14 @@ class ConfigWidget(QWidget):
             '<b>Days in TBR:</b> A column calibre computes itself: for '
             'read books the days between adding and reading, for unread '
             'books the days since adding. Sort by it to find the books '
-            'you have owned longest without reading them.'
+            'you have owned longest without reading them.<br><br>'
+            '<b>Merge series:</b> One series per line, its names in '
+            'calibre separated by "=", for example a series you read '
+            'partly in German and partly in English. The first name is '
+            'displayed. "Started series", "TBR by series" and the data '
+            'quality check count them as one series; a volume read in '
+            'one language counts as read. The series names in calibre '
+            'stay unchanged.'
         ))
         hint.setWordWrap(True)
         layout.addRow(hint)
@@ -160,8 +187,11 @@ class ConfigWidget(QWidget):
         config['last_read_column'] = (
             self.last_read_column_edit.text().strip() or '#last_read'
         )
+        groups = parse_series_groups(self.series_merge_edit.toPlainText())
+        config['series_merge'] = groups
         self._warn_about_columns()
         self._refresh_status_tbr()
+        self._warn_about_series_groups(groups)
 
     @staticmethod
     def _refresh_status_tbr():
@@ -171,6 +201,22 @@ class ConfigWidget(QWidget):
         action = gui.iactions.get('Reading Progress') if gui else None
         if action is not None:
             action.refresh_status_tbr()
+
+    def _warn_about_series_groups(self, groups):
+        """Warns (after saving) about merge lines without effect."""
+        problems = series_group_problems(groups)
+        lines = []
+        if problems['single']:
+            lines.append(_('Lines with only one name are ignored: '
+                           '{names}').format(
+                names=', '.join(problems['single'])))
+        if problems['repeated']:
+            lines.append(_('Names in more than one line only count for '
+                           'the first: {names}').format(
+                names=', '.join(problems['repeated'])))
+        if lines:
+            warning_dialog(self, _('Merge series'), '\n'.join(lines),
+                           show=True)
 
     def _warn_about_columns(self):
         """Warns (after saving) if the charts cannot use the columns."""

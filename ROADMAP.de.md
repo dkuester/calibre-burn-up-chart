@@ -63,6 +63,16 @@ Fertig, noch nicht veröffentlicht:
   Statusleiste, mit gelesen/gesamt, dem Stand vor 12 Monaten und dem
   nötigen Tempo im Tooltip; ein Klick öffnet das Burn-up-Chart. Hält
   das Ziel im Blick, ohne ein Chart zu öffnen.
+- **Reihen zusammenfassen:** Wer eine Reihe mal auf Deutsch, mal auf
+  Englisch liest, hat sie unter zwei Namen („Die Nebelgeborenen“ und
+  „Mistborn“). Eine Liste in den Einstellungen fasst solche Namen
+  zusammen, z. B. `Die Nebelgeborenen = Mistborn`; die Seriennamen in
+  calibre bleiben unverändert. „Angefangene Reihen“, „SuB nach Reihen“
+  und die Reihen-Prüfung zählen sie als eine Reihe, ein in einer Sprache
+  gelesener Band gilt als gelesen. Gruppen aus „Mehrere Namen“ lassen
+  sich mit einem Klick übernehmen. Eine automatische Erkennung (gleicher
+  Autor, andere Sprache) wurde an echten Daten probiert und verworfen:
+  42 Paare, davon nur etwa 5 echte.
 
 ## Erledigt
 
@@ -120,20 +130,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### Reihen zusammenfassen
-
-Wer eine Reihe mal auf Deutsch, mal auf Englisch liest, hat sie unter
-zwei Namen („Die Nebelgeborenen“ und „Mistborn“, „Das Lied von Eis und
-Feuer“ und „A Song of Ice and Fire“). Eine Liste in den Einstellungen
-fasst solche Namen zusammen, z. B. `Die Nebelgeborenen = Mistborn`. Die
-Seriennamen in calibre bleiben unverändert; „Angefangene Reihen“, „SuB
-nach Reihen“ und die Reihen-Prüfung zählen die Namen als eine Reihe.
-Gruppen aus „Mehrere Namen“ in der Datenqualität lassen sich mit einem
-Klick übernehmen. Eine automatische Erkennung (gleicher Autor, andere
-Sprache) wurde an den echten Daten probiert und verworfen: 42 Paare,
-davon nur etwa 5 echte, weil ein Autor mit mehreren Reihen sich mit
-allen paart.
 
 ### Reihen-Fortschritt als Chart
 
