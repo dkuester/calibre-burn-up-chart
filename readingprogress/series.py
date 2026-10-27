@@ -258,10 +258,12 @@ def started_csv_rows(started, date_format):
     return rows
 
 
-def _to_date(value):
+def _to_date(value, tz=None):
     # Same as export_reading_status.to_date(); the Qt-free modules do not
     # import each other (their import path differs inside calibre).
     if isinstance(value, datetime):
+        if value.tzinfo is not None:
+            value = value.astimezone(tz)
         return value.date()
     if isinstance(value, date):
         return value

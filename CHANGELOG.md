@@ -72,6 +72,15 @@
   is no forecast but a note; below 12 months it is marked as
   preliminary. "Show forecast line" switches line, band and note.
 
+### Fixed
+
+- **Days in local time:** Dates added and read dates now fall on the
+  same day as in the calibre book list. calibre stores them in UTC, so
+  a book added or read in the evening (German time) used to count on
+  the previous day, and at the end of a month in the previous month.
+  This affects all charts, the report, the data quality dialog (bulk
+  imports, read before added) and started series.
+
 ## [1.7.0] – 2026-10-26
 
 ### Added
