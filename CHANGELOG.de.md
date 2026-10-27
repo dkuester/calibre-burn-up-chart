@@ -78,6 +78,10 @@
   Prognose, sondern einen Hinweis; unter 12 Monaten ist sie als
   vorläufig gekennzeichnet. „Prognoselinie anzeigen“ schaltet Linie,
   Band und Hinweis.
+- **Legende des Burn-up-Charts aus dem Weg:** Die Legende steht jetzt
+  links oben, wo die kumulierten Linien meist niedrig beginnen, und
+  verdeckt so keine steigende Prognose mehr. Würde sie dort mehr
+  Linien verdecken als rechts oben, rückt sie nach rechts.
 
 ## [1.7.0] – 2026-10-26
 

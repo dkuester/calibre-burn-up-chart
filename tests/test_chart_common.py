@@ -280,3 +280,20 @@ def test_delay_unit():
     assert cc.delay_unit(91)[0] == 'months'
     assert cc.delay_unit(730) == ('months', pytest.approx(1 / 30.44))
     assert cc.delay_unit(731) == ('years', pytest.approx(1 / 365.25))
+
+
+def test_covered_points_samples_along_segments():
+    line = [(0, 50), (100, 50)]          # horizontal, 21 samples
+    assert cc.covered_points((0, 0, 100, 100), [line]) == 21
+    assert cc.covered_points((40, 40, 60, 60), [line]) == 5
+    assert cc.covered_points((0, 60, 100, 100), [line]) == 0
+    assert cc.covered_points((0, 0, 9, 9), [[(5, 5)]]) == 0
+
+
+def test_legend_on_left():
+    left, right = (0, 0, 50, 50), (150, 0, 200, 50)
+    rising = [(0, 100), (200, 0)]        # ends in the top right
+    falling = [(0, 0), (200, 100)]       # starts in the top left
+    assert cc.legend_on_left(left, right, [rising]) is True
+    assert cc.legend_on_left(left, right, [falling]) is False
+    assert cc.legend_on_left(left, right, []) is True

@@ -295,3 +295,28 @@ def delay_unit(max_days):
     if max_days <= 730:
         return 'months', 1.0 / 30.44
     return 'years', 1.0 / 365.25
+
+
+def covered_points(rect, polylines, step=5.0):
+    """How many points of ``polylines`` (lists of ``(x, y)`` pixels),
+    sampled every ``step`` pixels along each segment, lie in ``rect``
+    ``(left, top, right, bottom)``."""
+    left, top, right, bottom = rect
+    count = 0
+    for line in polylines:
+        for (x1, y1), (x2, y2) in zip(line, line[1:]):
+            steps = max(1, int(math.hypot(x2 - x1, y2 - y1) / step))
+            for i in range(steps + 1):
+                x = x1 + (x2 - x1) * i / steps
+                y = y1 + (y2 - y1) * i / steps
+                if left <= x <= right and top <= y <= bottom:
+                    count += 1
+    return count
+
+
+def legend_on_left(left_rect, right_rect, polylines):
+    """Whether a legend box goes to the top left corner (``left_rect``)
+    rather than the top right one: unless it hides more of
+    ``polylines`` there (see :func:`covered_points`)."""
+    return (covered_points(left_rect, polylines)
+            <= covered_points(right_rect, polylines))

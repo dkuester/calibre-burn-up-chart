@@ -22,6 +22,7 @@ from calibre_plugins.readingprogress.chart_common import (
     fit_x_range,
     format_number,
     is_dark_background,
+    legend_on_left,
     nice_step,
     pan_view,
     resolve_series_colors,
@@ -505,11 +506,12 @@ class LegendRenderer:
 
     def draw(self, painter, plot, target_date, date_format, target_soft,
              forecast_name=None, colors=None, chrome=None,
-             show_reference=True):
+             show_reference=True, avoid=None):
         """``forecast_name`` labels the forecast line and its band
         (``None``: no forecast). ``show_reference=False`` lists only the
         data series, for a view that ends today and so shows no
-        goal/forecast lines."""
+        goal/forecast lines. ``avoid``: drawn lines as pixel polylines
+        (see :meth:`draw_entries`)."""
         date_str = target_date.strftime(date_format)
         year_str = target_date.strftime('%Y')
         target_soft_i = round(target_soft)
@@ -536,11 +538,14 @@ class LegendRenderer:
             ]
         if show_reference:
             entries += reference_entries
-        self.draw_entries(painter, plot, entries, chrome)
+        self.draw_entries(painter, plot, entries, chrome, avoid=avoid)
 
-    def draw_entries(self, painter, plot, entries, chrome, left=False):
+    def draw_entries(self, painter, plot, entries, chrome, left=False,
+                     avoid=None):
         """Draws a legend box in the top right (``left``: top left)
-        corner of ``plot``.
+        corner of ``plot``. With ``avoid`` (pixel polylines of the drawn
+        lines) the box goes top left unless it hides more of them there
+        than top right; ``left`` is then ignored.
 
         ``entries`` are ``(text, color, pen_style)``; a ``pen_style`` of
         ``None`` draws a filled swatch instead of a line.
@@ -557,8 +562,15 @@ class LegendRenderer:
         box_width = padding * 2 + line_width + 8 + max_text_width
         box_height = padding * 2 + row_height * len(entries)
 
-        box_x = plot.left() + 10 if left else plot.right() - box_width - 10
         box_y = plot.top() + 10
+        left_x = plot.left() + 10
+        right_x = plot.right() - box_width - 10
+        if avoid is not None:
+            left = legend_on_left(
+                (left_x, box_y, left_x + box_width, box_y + box_height),
+                (right_x, box_y, right_x + box_width, box_y + box_height),
+                avoid)
+        box_x = left_x if left else right_x
 
         painter.setPen(QPen(chrome['border'], 1))
         painter.setBrush(QColor(*chrome['box_bg'], 230))
@@ -702,15 +714,38 @@ class ChartWidget(QWidget):
 
         painter.restore()
 
-        self._draw_forecast_note(painter, scale)
+        if x_max > today:
+            self._draw_forecast_note(painter, scale)
 
         self._annotation.draw_today(painter, scale, today, current_backlog,
                                     self.colors['backlog'], self.chrome)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
                            target_soft, self._forecast_name(), self.colors,
-                           self.chrome, show_reference=x_max > today)
+                           self.chrome, show_reference=x_max > today,
+                           avoid=self._drawn_lines(scale, target_soft))
 
         painter.end()
+
+    def _drawn_lines(self, scale, target_soft):
+        """Pixel polylines of everything drawn in the plot, for placing
+        the legend where it hides the least."""
+        def pixels(points):
+            return [(scale.date_to_x(d), scale.value_to_y(v))
+                    for d, v in points]
+
+        lines = [pixels([(r[0], r[i]) for r in self.rows])
+                 for i in (1, 2, 3)]
+        today, backlog = self.rows[-1][0], self.rows[-1][3]
+        for end in (0, target_soft, backlog):
+            lines.append(pixels([(today, backlog), (self.target_date, end)]))
+        if self._has_forecast():
+            fc = self.forecast
+            band = forecast_band(fc, self.target_date)
+            lines.append(pixels([(d, high) for d, _low, high in band]))
+            lines.append(pixels([(d, low) for d, low, _high in band]))
+            lines.append(pixels([(fc['anchor'], fc['start']),
+                                 forecast_line_end(fc, self.target_date)]))
+        return lines
 
     def _has_forecast(self):
         return bool(self.show_forecast and self.forecast
@@ -744,7 +779,8 @@ class ChartWidget(QWidget):
         """Draws the 'realistic' outcome of the forecast: at the end of
         the line where it reaches 0 by the target date, otherwise (it
         grows, there is not enough data, …) below and right of today –
-        each only if that point lies inside the visible window."""
+        each only if that point lies inside the visible window. Not
+        called for a view that ends today."""
         fc = self.forecast
         if not self.show_forecast or not fc:
             return

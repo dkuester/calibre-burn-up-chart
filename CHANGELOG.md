@@ -71,6 +71,10 @@
   holds the initial library, and the current month do not count) there
   is no forecast but a note; below 12 months it is marked as
   preliminary. "Show forecast line" switches line, band and note.
+- **Burn-up legend out of the way:** The legend now sits in the top
+  left corner, where the cumulative lines usually start low, so it no
+  longer hides a rising forecast. If it would hide more lines there
+  than in the top right corner, it moves there.
 
 ### Fixed
 
