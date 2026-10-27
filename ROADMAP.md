@@ -27,6 +27,16 @@ Done, not yet released:
   target as a chart and in the report, enriched with our figures (all
   books read, books added, TBR, reading delay). Shown only when Reading
   Goal has data for the current library.
+- **Series checks in the data quality dialog:** a "Series" tab lists
+  series under several names ("Expanse", "The Expanse-Serie", "The
+  Expanse"), duplicate volume numbers within a series (editions in two
+  languages, omnibus volumes, or no number kept) and gaps (an earlier
+  volume unread while a later one is read). Names count as the same
+  series when they differ only in case, punctuation, a leading article
+  or a word like "Series"; a similarity match was tried and dropped
+  because it mostly paired different volumes ("Black Panther
+  (2005-2008)" and "(2008-2010)"). Cleaner series data makes the series
+  analyses below more reliable.
 
 ## Done
 
@@ -96,20 +106,23 @@ highest read volume.
 Which series make up the largest part of the TBR, as bars. Helps decide
 what to read down – or what no longer to read at all.
 
+### Merge series names
+
+Reading a series partly in German and partly in English leaves it under
+two names ("Die Nebelgeborenen" and "Mistborn", "Das Lied von Eis und
+Feuer" and "A Song of Ice and Fire"). A list in the settings merges such
+names, e.g. `Die Nebelgeborenen = Mistborn`. The series names in calibre
+stay unchanged; "Started series", "TBR by series" and the series checks
+count the names as one series. Groups from "Several names" in the data
+quality dialog can be taken over with one click. Automatic detection
+(same author, other language) was tried on real data and dropped: 42
+pairs, only about 5 of them real, because an author with several series
+pairs with all of them.
+
 ### Series progress chart
 
 One stacked bar (read/unread) per started series, sorted by progress.
 Visually appealing, but close to "Started series" in content.
-
-### Series checks in the data quality dialog
-
-- The same series under several names ("Expanse", "The Expanse-Serie",
-  "The Expanse")
-- Duplicate volume numbers within a series (editions in two languages,
-  omnibus volumes)
-- Gaps: an earlier volume unread while a later one is read
-
-Cleaner series data also makes the series analyses above more reliable.
 
 ## Ideas
 

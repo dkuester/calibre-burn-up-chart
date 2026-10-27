@@ -286,8 +286,8 @@ msgstr "Datenqualität prüfen"
 msgid "Data quality"
 msgstr "Datenqualität"
 
-msgid "All read books have a usable read date."
-msgstr "Alle gelesenen Bücher haben ein brauchbares Lesedatum."
+msgid "All read books have a usable read date, and no series problems were found."
+msgstr "Alle gelesenen Bücher haben ein brauchbares Lesedatum, und bei den Reihen gibt es keine Auffälligkeiten."
 
 msgid "No read date"
 msgstr "Kein Lesedatum"
@@ -333,6 +333,42 @@ msgstr "Liste als CSV speichern"
 
 msgid "CSV files"
 msgstr "CSV-Dateien"
+
+msgid "Read dates"
+msgstr "Lesedatum"
+
+msgid "Series"
+msgstr "Reihen"
+
+msgid "Several names"
+msgstr "Mehrere Namen"
+
+msgid "Duplicate volume number"
+msgstr "Doppelte Bandnummer"
+
+msgid "Gap"
+msgstr "Lücke"
+
+msgid "<b>{count} series problems:</b> {names} series under several names, {duplicates} with duplicate volume numbers, {gaps} with gaps."
+msgstr "<b>{count} Auffälligkeiten bei Reihen:</b> {names} Reihen unter mehreren Namen, {duplicates} mit doppelten Bandnummern, {gaps} mit Lücken."
+
+msgid "Several names: the names differ only in case, punctuation, a leading article or a word like \"Series\". A volume number used twice is often 1, which calibre sets when a book has no number. Gap: an earlier volume is unread although a later one is read."
+msgstr "Mehrere Namen: Die Namen unterscheiden sich nur in Groß-/Kleinschreibung, Satzzeichen, einem Artikel am Anfang oder einem Wort wie „Serie“. Eine doppelte Bandnummer ist oft die 1, die calibre setzt, wenn ein Buch keine Nummer hat. Lücke: Ein früherer Band ist ungelesen, obwohl ein späterer gelesen ist."
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Book IDs"
+msgstr "Buch-IDs"
+
+msgid "{count} names"
+msgstr "{count} Namen"
+
+msgid "Volume {numbers} more than once"
+msgstr "Band {numbers} mehrfach"
+
+msgid "Volume {numbers} unread, read up to {last}"
+msgstr "Band {numbers} ungelesen, gelesen bis {last}"
 
 # Age of the TBR chart
 msgid "Age of the TBR"
@@ -454,8 +490,17 @@ msgstr "Gelesene Bücher ohne Lesedatum"
 msgid "Read before being added"
 msgstr "Gelesen vor der Aufnahme"
 
-msgid "The charts count these books as read on the day they were added."
-msgstr "Die Charts zählen diese Bücher als am Aufnahmetag gelesen."
+msgid "Series under several names"
+msgstr "Reihen unter mehreren Namen"
+
+msgid "Series with duplicate volume numbers"
+msgstr "Reihen mit doppelten Bandnummern"
+
+msgid "Series with gaps"
+msgstr "Reihen mit Lücken"
+
+msgid "The charts count books without a usable read date as read on the day they were added."
+msgstr "Die Charts zählen Bücher ohne brauchbares Lesedatum als am Aufnahmetag gelesen."
 
 msgid "already reached"
 msgstr "bereits erreicht"

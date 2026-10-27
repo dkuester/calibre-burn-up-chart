@@ -29,6 +29,17 @@ Fertig, noch nicht veröffentlicht:
   Zahlen (alle gelesenen Bücher, Zugänge, SuB, Leseverzögerung).
   Erscheint nur, wenn „Reading Goal“ Daten für die aktuelle Bibliothek
   hat.
+- **Reihen-Prüfung in der Datenqualität:** Ein Tab „Reihen“ listet
+  Reihen unter mehreren Namen („Expanse“, „The Expanse-Serie“, „The
+  Expanse“), doppelte Bandnummern innerhalb einer Reihe (Ausgaben in
+  zwei Sprachen, Sammelbände oder keine gepflegte Nummer) und Lücken
+  (ein früherer Band ungelesen, obwohl ein späterer gelesen ist). Namen
+  gelten als dieselbe Reihe, wenn sie sich nur in Groß-/Kleinschreibung,
+  Satzzeichen, einem Artikel am Anfang oder einem Wort wie „Serie“
+  unterscheiden; ein Ähnlichkeitsvergleich wurde probiert und verworfen,
+  weil er vor allem verschiedene Bände paarte („Black Panther
+  (2005-2008)“ und „(2008-2010)“). Sauberere Reihen-Daten machen die
+  Reihen-Auswertungen unten verlässlicher.
 
 ## Erledigt
 
@@ -104,22 +115,25 @@ Welche Reihen den größten Teil des SuB ausmachen, als Balken. Hilft bei
 der Entscheidung, was man abbaut – oder was man gar nicht mehr lesen
 will.
 
+### Reihen zusammenfassen
+
+Wer eine Reihe mal auf Deutsch, mal auf Englisch liest, hat sie unter
+zwei Namen („Die Nebelgeborenen“ und „Mistborn“, „Das Lied von Eis und
+Feuer“ und „A Song of Ice and Fire“). Eine Liste in den Einstellungen
+fasst solche Namen zusammen, z. B. `Die Nebelgeborenen = Mistborn`. Die
+Seriennamen in calibre bleiben unverändert; „Angefangene Reihen“, „SuB
+nach Reihen“ und die Reihen-Prüfung zählen die Namen als eine Reihe.
+Gruppen aus „Mehrere Namen“ in der Datenqualität lassen sich mit einem
+Klick übernehmen. Eine automatische Erkennung (gleicher Autor, andere
+Sprache) wurde an den echten Daten probiert und verworfen: 42 Paare,
+davon nur etwa 5 echte, weil ein Autor mit mehreren Reihen sich mit
+allen paart.
+
 ### Reihen-Fortschritt als Chart
 
 Ein gestapelter Balken (gelesen/ungelesen) pro angefangener Reihe,
 sortiert nach Fortschritt. Visuell schön, inhaltlich aber nah an
 „Angefangene Reihen“.
-
-### Reihen-Prüfung in der Datenqualität
-
-- Dieselbe Reihe unter mehreren Namen („Expanse“, „The Expanse-Serie“,
-  „The Expanse“)
-- Doppelte Bandnummern innerhalb einer Reihe (Ausgaben in zwei
-  Sprachen, Sammelbände)
-- Lücken: ein früherer Band ungelesen, obwohl ein späterer gelesen ist
-
-Sauberere Reihen-Daten machen auch die Reihen-Auswertungen oben
-verlässlicher.
 
 ## Ideen
 

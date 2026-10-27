@@ -26,6 +26,16 @@
   bekommt dieselben Zahlen, dazu die Monate, weitere Challenges, alle
   Zieljahre und wie viele Listenbücher aus dem SuB kamen. Die Dateien
   von „Reading Goal“ werden nur gelesen, nie geschrieben.
+- **Reihen-Prüfung in der Datenqualität:** „Datenqualität prüfen“
+  bekommt neben dem Lesedatum einen Tab „Reihen“. Er listet Reihen unter
+  mehreren Namen („Expanse“, „The Expanse“, „The Expanse-Serie“; Namen,
+  die sich nur in Groß-/Kleinschreibung, Satzzeichen, einem Artikel am
+  Anfang oder einem Wort wie „Serie“ unterscheiden), Bandnummern, die in
+  einer Reihe mehrfach vorkommen, und Lücken (ein früherer Band
+  ungelesen, obwohl ein späterer gelesen ist). Ein Doppelklick zeigt die
+  Bücher in calibre, der Tab lässt sich als CSV speichern. Der Bericht
+  zählt die drei Arten im Abschnitt „Datenqualität“. Es wird nichts
+  geändert.
 
 ## [1.7.0] – 2026-10-26
 

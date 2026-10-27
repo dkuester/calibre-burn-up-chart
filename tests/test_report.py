@@ -28,7 +28,8 @@ def _data(**overrides):
         'delay': {'count': 40, 'mean': 300.4, 'median': 120.0,
                   'min': 0, 'max': 2000},
         'age': {'median_years': 2.4, 'max_years': 10, 'counts': [60, 90]},
-        'quality': {'missing': 3, 'before_added': 4},
+        'quality': {'missing': 3, 'before_added': 4, 'series_names': 0,
+                    'series_duplicates': 0, 'series_gaps': 0},
     }
     data.update(overrides)
     return data
@@ -76,11 +77,37 @@ def test_optional_sections_left_out():
     sections = report.build_sections(
         _data(delay=None, age={'median_years': None, 'max_years': 10,
                               'counts': [0]},
-              quality={'missing': 0, 'before_added': 0}, total=0, read=0),
+              quality={'missing': 0, 'before_added': 0, 'series_names': 0,
+                       'series_duplicates': 0, 'series_gaps': 0},
+              total=0, read=0),
         _tr, '%Y-%m-%d')
     headings = [s['heading'] for s in sections]
     assert headings == ['Library', 'Last 12 months', 'Goal and forecast']
     assert ('Read', '0 (–)') in sections[0]['rows']
+
+
+def _quality_section(**quality):
+    counts = {'missing': 0, 'before_added': 0, 'series_names': 0,
+              'series_duplicates': 0, 'series_gaps': 0}
+    counts.update(quality)
+    sections = report.build_sections(_data(quality=counts), _tr, '%Y-%m-%d')
+    return next(s for s in sections if s['heading'] == 'Data quality')
+
+
+def test_quality_lists_only_nonzero_counts():
+    section = _quality_section(missing=3, series_names=6, series_gaps=5)
+    assert section['rows'] == [
+        ('Read books without a read date', '3'),
+        ('Series under several names', '6'),
+        ('Series with gaps', '5'),
+    ]
+    assert 'read on the day they were added' in section['note']
+
+
+def test_quality_series_only_has_no_read_date_note():
+    section = _quality_section(series_duplicates=32)
+    assert section['rows'] == [('Series with duplicate volume numbers', '32')]
+    assert 'note' not in section
 
 
 def test_html_escapes_and_embeds_images():
