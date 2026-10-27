@@ -7,8 +7,9 @@
   zu erreichen, z. B. „Für SuB = 0 bis 04.09.2050: 26,4 Bücher/Monat
   lesen oder höchstens 0,3 Bücher/Monat kaufen.“ Eine Zeile gilt für
   SuB = 0, eine für den sanften Abbau. Die nötige Leserate setzt die
-  aktuelle Kaufrate voraus, die Kaufgrenze die aktuelle Leserate (beide
-  als Mittel der letzten 12 Monate). Reicht selbst ein Kaufstopp nicht,
+  typische Kaufrate voraus, die Kaufgrenze die typische Leserate
+  (dieselben robusten Raten wie die Prognose, siehe unten). Reicht
+  selbst ein Kaufstopp nicht,
   nennt die Zeile, wie viel man dann lesen muss. Die Zeilen bleiben
   auch in der 5- und 2-Jahres-Ansicht stehen. Der Bericht zeigt
   dieselben Zahlen unter „Ziel und Prognose“.
@@ -58,6 +59,29 @@
   gelesenen. Ein Doppelklick zeigt den nächsten Band in calibre; Knöpfe
   zeigen den nächsten Band oder die ganze Reihe, und die Liste lässt
   sich als CSV speichern.
+
+### Geändert
+
+- **Robuste Prognose mit Unsicherheitsband:** Die Prognose fittet keine
+  Regression über die letzten 12 Monate mehr, die Sammel-Importe und
+  große Käufe stark kippten. Sie schreibt jetzt den heutigen SuB mit dem
+  *typischen* Monat fort: Kauf- und Leserate als Mittel der letzten
+  24 vollen Monate ohne die 20 % höchsten und niedrigsten Monate. Im
+  Rückwärtstest mit einer echten Bibliothek sagt das den SuB etwa
+  zehnmal genauer voraus. Ein schattiertes Band zeigt, wo der SuB in
+  80 % der Fälle liegen wird; es wird mit der Zeit und bei kurzer
+  Historie breiter. Statt eines exakten Tages nennen Chart und Bericht
+  eine Monatsspanne („Realistisch: SuB = 0 zwischen 03.2031 und
+  11.2034“), „frühestens …“ oder wie schnell der SuB wächst. Mit
+  weniger als 3 vollen Monaten (der erste Monat mit dem
+  Anfangsbestand und der laufende Monat zählen nicht) gibt es keine
+  Prognose, sondern einen Hinweis; unter 12 Monaten ist sie als
+  vorläufig gekennzeichnet. „Prognoselinie anzeigen“ schaltet Linie,
+  Band und Hinweis.
+- **Legende des Burn-up-Charts aus dem Weg:** Die Legende steht jetzt
+  links oben, wo die kumulierten Linien meist niedrig beginnen, und
+  verdeckt so keine steigende Prognose mehr. Würde sie dort mehr
+  Linien verdecken als rechts oben, rückt sie nach rechts.
 
 ## [1.7.0] – 2026-10-26
 

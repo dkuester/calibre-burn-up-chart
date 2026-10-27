@@ -30,8 +30,8 @@ Python-Installation ist nicht nötig.
 | **Burn-up-Chart** | Gesamtbestand, kumuliert gelesene Bücher und SuB im Zeitverlauf, als monatliche Stände. |
 | **Zieldatum** | Eine Ziellinie „SuB = 0 am …“ mit frei wählbarem Datum. |
 | **Sanfter Abbau** | Eine zweite, realistischere Referenzlinie, z. B. SuB bis zum Zieldatum halbiert (Faktor einstellbar). |
-| **Nötiges Tempo** | Unter dem Titel: wie viele Bücher pro Monat man lesen oder höchstens kaufen darf, um das Ziel (SuB = 0 und sanfter Abbau) bis zum Zieldatum zu erreichen, gemessen an den letzten 12 Monaten. |
-| **Prognose** | Schreibt den SuB-Trend der letzten 12 Monate fort (lineare Regression), gestrichelt, und markiert das Datum, an dem der SuB tatsächlich 0 erreichen würde. |
+| **Nötiges Tempo** | Unter dem Titel: wie viele Bücher pro Monat man lesen oder höchstens kaufen darf, um das Ziel (SuB = 0 und sanfter Abbau) bis zum Zieldatum zu erreichen, gemessen an denselben typischen Kauf- und Leseraten wie die Prognose. |
+| **Prognose** | Schreibt den heutigen SuB mit dem typischen Monat fort (Mittel der letzten 24 vollen Monate ohne die 20 % höchsten und niedrigsten, damit Sammel-Importe kaum zählen), gestrichelt, mit einem schattierten Band für 80 % der Fälle und der realistischen Monatsspanne für SuB = 0 – oder wie schnell er wächst. Braucht 3 volle Monate; unter 12 als vorläufig gekennzeichnet. |
 | **Jahresziel** | Mit dem separat installierten Plugin [„Reading Goal“](https://www.mobileread.com/forums/showthread.php?t=355769): gelesene Listenbücher gegen das Soll über das Jahr, Hochrechnung, nötiges Tempo, Seiten, Monatswerte, Vorjahresvergleich und alle gelesenen Bücher aus den eigenen Daten. Die Daten von „Reading Goal“ werden nur gelesen. |
 | **Kaufrate vs. Leserate** | Zugänge und gelesene Bücher pro Monat als Mittel über 12 Monate; die Fläche dazwischen zeigt, ob der SuB schrumpft oder wächst. |
 | **Spalte „Tage im SuB“** | Ein Klick in den Einstellungen legt eine calibre-Spalte mit den Tagen jedes Buchs im SuB an, immer aktuell und sortierbar. |
@@ -90,7 +90,7 @@ Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „
 |---|---|
 | Zieldatum | Der Tag, an dem der SuB 0 erreichen soll. |
 | Sanfter Abbau (Faktor) | Anteil des SuB, der am Zieldatum übrig ist. `0.50` heißt: bis dahin halbiert. |
-| Prognoselinie anzeigen | Zeichnet die Prognoselinie (standardmäßig an). |
+| Prognoselinie anzeigen | Zeichnet die Prognoselinie mit Unsicherheitsband und Hinweis (standardmäßig an). |
 | Farben | Farbe jeder Datenreihe und Referenzlinie. Leer heißt „dem Theme folgen“; *Farben auf Theme-Standard zurücksetzen* entfernt alle eigenen Farben. |
 | Benutzerdefinierte Spalte „gelesen“ / „zuletzt gelesen“ | Suchnamen der beiden Spalten, falls deine anders heißen. |
 | Spalte „Tage im SuB“ anlegen | Legt eine Spalte `#days_in_tbr` an, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben. Danach calibre neu starten. |

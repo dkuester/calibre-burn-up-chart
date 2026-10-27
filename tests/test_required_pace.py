@@ -14,10 +14,10 @@ def _tr(text):
     return text
 
 
-def _rates(added_avg, read_avg):
-    """compute_rates()-style list; only the last trailing means count."""
-    return [(date(2026, 9, 30), 99, 99, 0.0, 0.0),
-            (TODAY, 20, 6, added_avg, read_avg)]
+def _rates(added, read):
+    """robust_rates()-style dict."""
+    return {'status': ers.FORECAST_OK, 'months': 24, 'added': added,
+            'read': read, 'spread': 0.0}
 
 
 def _months(target=TARGET):
@@ -82,16 +82,22 @@ def test_one_month_left_is_enough():
     assert pace['status'] == ers.PACE_OK
 
 
-def test_no_rates():
-    pace = ers.required_pace(10, [], TODAY, TARGET)
-    assert (pace['added_rate'], pace['read_rate']) == (0.0, 0.0)
-    assert pace['max_added'] < 0
+def test_without_enough_data_only_the_reduction_is_known():
+    rates = ers.robust_rates([])
+    pace = ers.required_pace(100, rates, TODAY,
+                             TODAY + timedelta(days=3653))
+    assert pace['added_rate'] is None
+    assert pace['read_needed'] is None
+    assert pace['reduction'] == pytest.approx(100 / 120, rel=1e-3)
+    assert report.pace_text(pace, _tr) == \
+        'reduce the TBR by 0.8 books/month'
 
 
-def test_rates_from_compute_rates():
-    rows = [(date(2026, 9, 30), 4, 1, 3), (TODAY, 6, 2, 4)]
-    pace = ers.required_pace(4, ers.compute_rates(rows), TODAY, TARGET)
-    assert (pace['added_rate'], pace['read_rate']) == (3.0, 1.0)
+def test_rates_from_robust_rates():
+    rates = [(ers.month_end(2025, m), 4 + (m == 6) * 100, 1, 0.0, 0.0)
+             for m in range(1, 13)] + [(TODAY, 0, 0, 0.0, 0.0)]
+    pace = ers.required_pace(4, ers.robust_rates(rates), TODAY, TARGET)
+    assert (pace['added_rate'], pace['read_rate']) == (4.0, 1.0)
 
 
 @pytest.mark.parametrize('value, expected', [

@@ -180,11 +180,11 @@ msgstr "Bestand stabil (Kaufrate = Leserate)"
 msgid "Gentle reduction to TBR = {tbr} by {year}"
 msgstr "Sanfter Abbau auf SuB = {tbr} bis {year}"
 
-msgid "Forecast (last 12 months)"
-msgstr "Prognose (letzte 12 Monate)"
+msgid "Uncertainty (80 % of cases)"
+msgstr "Unsicherheit (80 % der Fälle)"
 
-msgid "Realistic: TBR = 0 on {date}"
-msgstr "Realistisch: SuB = 0 am {date}"
+msgid "Realistic: {forecast}"
+msgstr "Realistisch: {forecast}"
 
 msgid "{date}\nTotal: {total}\nRead: {read}\nBacklog: {backlog}"
 msgstr "{date}\nGesamt: {total}\nGelesen: {read}\nSuB: {backlog}"
@@ -512,8 +512,32 @@ msgstr "Sanfter Abbau"
 msgid "TBR = {tbr} on {date}"
 msgstr "SuB = {tbr} am {date}"
 
-msgid "Not enough data for a forecast."
-msgstr "Zu wenige Daten für eine Prognose."
+msgid "Forecast"
+msgstr "Prognose"
+
+msgid "Forecast (preliminary, {months} months)"
+msgstr "Prognose (vorläufig, {months} Monate)"
+
+msgid "Forecast (typical month of the last {months} months)"
+msgstr "Prognose (typischer Monat der letzten {months} Monate)"
+
+msgid "Not enough data for a forecast ({months} of {needed} full months)."
+msgstr "Zu wenig Daten für eine Prognose ({months} von {needed} vollen Monaten)."
+
+msgid "The TBR is already empty."
+msgstr "Der SuB ist schon leer."
+
+msgid "TBR grows by about {books} books/month"
+msgstr "SuB wächst um etwa {books} Bücher/Monat"
+
+msgid "TBR = 0 at the earliest in {early}"
+msgstr "SuB = 0 frühestens {early}"
+
+msgid "TBR = 0 between {early} and {late}"
+msgstr "SuB = 0 zwischen {early} und {late}"
+
+msgid "reduce the TBR by {reduction} books/month"
+msgstr "SuB um {reduction} Bücher/Monat senken"
 
 msgid "The TBR is not shrinking at the current rate."
 msgstr "Bei der aktuellen Leserate schrumpft der SuB nicht."
@@ -572,8 +596,8 @@ msgstr "Für SuB = {tbr} bis {date}: {pace}."
 msgid "Required pace (TBR = {tbr})"
 msgstr "Nötiges Tempo (SuB = {tbr})"
 
-msgid "Required pace at the current purchase rate ({added}) and reading rate ({read}) per month, mean of the last 12 months."
-msgstr "Nötiges Tempo bei der aktuellen Kaufrate ({added}) und Leserate ({read}) pro Monat, Mittel der letzten 12 Monate."
+msgid "Required pace at the typical purchase rate ({added}) and reading rate ({read}) per month: mean of the last {months} full months without the 20 % highest and lowest months, so bulk imports barely count. The forecast uses the same rates."
+msgstr "Nötiges Tempo bei der typischen Kaufrate ({added}) und Leserate ({read}) pro Monat: Mittel der letzten {months} vollen Monate ohne die 20 % höchsten und niedrigsten Monate, damit Sammel-Importe kaum zählen. Die Prognose nutzt dieselben Raten."
 
 # Yearly reading goal (data of the Reading Goal plugin)
 msgid "Reading goal"

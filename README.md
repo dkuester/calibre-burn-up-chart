@@ -29,8 +29,8 @@ Python installation is needed.
 | **Burn-up chart** | Total library, cumulative books read and backlog over time, as monthly snapshots. |
 | **Target date** | A goal line "TBR = 0 on …" with a date you choose. |
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
-| **Required pace** | Below the title: how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date, based on the last 12 months. |
-| **Forecast** | Extrapolates the backlog trend of the last 12 months (linear regression) as a dashed line and marks the date the TBR would really reach 0. |
+| **Required pace** | Below the title: how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date, based on the same typical purchase and reading rates as the forecast. |
+| **Forecast** | Continues today's TBR with the typical month (mean of the last 24 full months without the 20 % highest and lowest, so bulk imports barely count) as a dashed line, with a shaded band for 80 % of cases and the realistic month range for TBR = 0 – or how fast it grows. Needs 3 full months; marked as preliminary below 12. |
 | **Yearly reading goal** | With the separately installed [Reading Goal](https://www.mobileread.com/forums/showthread.php?t=355769) plugin: list books read against the target over the year, projection, required pace, pages, monthly figures, previous-year comparison and all books read according to your own data. Reading Goal's data is only read. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
@@ -88,7 +88,7 @@ The toolbar button opens a menu with four charts (five with Reading Goal), a dat
 |---|---|
 | Target date | The day the backlog (TBR) should reach 0. |
 | Gentle reduction (factor) | Share of the TBR left on the target date. `0.50` means the TBR is halved by then. |
-| Show forecast line | Draws the forecast line (on by default). |
+| Show forecast line | Draws the forecast line with its uncertainty band and note (on by default). |
 | Colors | Color of each series and reference line. Empty means "follow the theme"; *Reset colors to theme defaults* clears all custom colors. |
 | Custom column "read" / "last read" | Lookup names of the two columns, if yours are named differently. |
 | Create column "Days in TBR" | Adds a column `#days_in_tbr` that calibre computes itself: days between adding and reading for read books, days since adding for unread ones. Sort by it to find the books you have owned longest without reading. Restart calibre afterwards. |

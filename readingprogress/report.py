@@ -7,6 +7,7 @@ Tests import it flat (see ``tests/conftest.py``).
 """
 
 import html
+import re
 from datetime import date
 
 MARKDOWN = 'md'
@@ -40,6 +41,9 @@ def pace_text(pace, tr, decimal_sep='.'):
     if pace['status'] == 'too_close':
         return tr("target date too close – choose a later date in the "
                   "settings")
+    if pace['read_needed'] is None:
+        return tr("reduce the TBR by {reduction} books/month").format(
+            reduction=pace_number(pace['reduction'], decimal_sep))
     read = pace_number(pace['read_needed'], decimal_sep)
     if pace['max_added'] > 0:
         return tr("read {read} books/month or buy at most {added} "
@@ -55,6 +59,47 @@ def pace_line(pace, tr, date_str, decimal_sep='.'):
     return tr("For TBR = {tbr} by {date}: {pace}.").format(
         tbr=pace['target_backlog'], date=date_str,
         pace=pace_text(pace, tr, decimal_sep))
+
+
+def month_format(date_format):
+    """``date_format`` without the day: '%d.%m.%Y' -> '%m.%Y',
+    '%Y-%m-%d' -> '%Y-%m'."""
+    return re.sub(r'%d[-./ ]|[-./ ]?%d', '', date_format, count=1)
+
+
+def forecast_label(fc, tr):
+    """Name of the forecast ``fc`` (from ``forecast_backlog()``) for the
+    legend and the report."""
+    if fc['status'] == 'none':
+        return tr("Forecast")
+    if fc['status'] == 'preliminary':
+        return tr("Forecast (preliminary, {months} months)").format(
+            months=fc['months'])
+    return tr("Forecast (typical month of the last {months} months)").format(
+        months=fc['months'])
+
+
+def forecast_text(fc, tr, date_format, decimal_sep='.'):
+    """Outcome of the forecast ``fc`` as a month range rather than an
+    exact day, e.g. 'TBR = 0 between 03.2031 and 11.2034' or 'TBR grows
+    by about 5.8 books/month'."""
+    if fc['status'] == 'none':
+        return tr("Not enough data for a forecast ({months} of {needed} "
+                  "full months).").format(months=fc['months'], needed=3)
+    if fc['start'] <= 0:
+        return tr("The TBR is already empty.")
+    if fc['slope'] > 0:
+        return tr("TBR grows by about {books} books/month").format(
+            books=pace_number(fc['slope'], decimal_sep))
+    if fc['zero_date'] is None:
+        return tr("The TBR is not shrinking at the current rate.")
+    fmt = month_format(date_format)
+    if fc['zero_late'] is None:
+        return tr("TBR = 0 at the earliest in {early}").format(
+            early=fc['zero_early'].strftime(fmt))
+    return tr("TBR = 0 between {early} and {late}").format(
+        early=fc['zero_early'].strftime(fmt),
+        late=fc['zero_late'].strftime(fmt))
 
 
 def _capitalize(text):
@@ -317,13 +362,18 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
     })
 
     fc = data['forecast']
-    if not fc.get('ok'):
-        forecast = tr("Not enough data for a forecast.")
-    elif fc.get('zero_date') is not None:
-        forecast = tr("TBR = 0 on {date}").format(
-            date=fc['zero_date'].strftime(date_format))
+    pace = data['pace']
+    if pace['added_rate'] is None:
+        note = None
     else:
-        forecast = tr("The TBR is not shrinking at the current rate.")
+        note = tr("Required pace at the typical purchase rate ({added}) "
+                  "and reading rate ({read}) per month: mean of the last "
+                  "{months} full months without the 20 % highest and "
+                  "lowest months, so bulk imports barely count. The "
+                  "forecast uses the same rates.").format(
+            added=pace_number(pace['added_rate'], decimal_sep),
+            read=pace_number(pace['read_rate'], decimal_sep),
+            months=fc['months'])
     sections.append({
         'heading': tr("Goal and forecast"),
         'rows': [
@@ -332,13 +382,10 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
             (tr("Gentle reduction"), tr("TBR = {tbr} on {date}").format(
                 tbr=data['target_tbr'],
                 date=data['target_date'].strftime(date_format))),
-            (tr("Forecast (last 12 months)"), forecast),
+            (forecast_label(fc, tr),
+             forecast_text(fc, tr, date_format, decimal_sep)),
         ] + pace_rows(data, tr, decimal_sep),
-        'note': tr("Required pace at the current purchase rate ({added}) "
-                   "and reading rate ({read}) per month, mean of the last "
-                   "12 months.").format(
-            added=pace_number(data['pace']['added_rate'], decimal_sep),
-            read=pace_number(data['pace']['read_rate'], decimal_sep)),
+        'note': note,
     })
 
     if data.get('goal'):
