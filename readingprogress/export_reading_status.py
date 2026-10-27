@@ -35,10 +35,19 @@ class NoDataError(RuntimeError):
     chart."""
 
 
-def to_date(value):
+def to_date(value, tz=None):
+    """Local date of a calibre field value, or ``None``.
+
+    calibre returns datetimes (also of date-only columns) as UTC; like
+    the calibre book list, the day is taken in local time (``tz``
+    defaults to the system time zone). Naive datetimes and dates are
+    taken as they are.
+    """
     if value is None:
         return None
     if isinstance(value, datetime):
+        if value.tzinfo is not None:
+            value = value.astimezone(tz)
         return value.date()
     if isinstance(value, date):
         return value

@@ -21,10 +21,12 @@ MIN_BOOKS = 20
 MIN_GROUPS = 15
 
 
-def _to_date(value):
+def _to_date(value, tz=None):
     # same as export_reading_status.to_date (kept here so this module
     # stays free of plugin imports)
     if isinstance(value, datetime):
+        if value.tzinfo is not None:
+            value = value.astimezone(tz)
         return value.date()
     if isinstance(value, date):
         return value
