@@ -4,7 +4,7 @@ testpaths = ["tests"]
 # else cannot be imported outside Calibre). New Qt-free modules must be
 # added here to stay measured. fail-under=100 keeps every line of the
 # testable surface covered.
-addopts = "--cov=chart_common --cov=config_helpers --cov=export_reading_status --cov=reading_goal --cov=report --cov=series --cov-report=term-missing --cov-fail-under=100"
+addopts = "--cov=chart_common --cov=config_helpers --cov=export_reading_status --cov=import_days --cov=reading_goal --cov=report --cov=series --cov-report=term-missing --cov-fail-under=100"
 
 [tool.ruff]
 target-version = "py39"

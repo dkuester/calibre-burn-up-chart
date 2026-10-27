@@ -40,6 +40,14 @@ Fertig, noch nicht veröffentlicht:
   weil er vor allem verschiedene Bände paarte („Black Panther
   (2005-2008)“ und „(2008-2010)“). Sauberere Reihen-Daten machen die
   Reihen-Auswertungen unten verlässlicher.
+- **Sammel-Import-Tage in der Datenqualität:** Ein Tab „Sammel-Importe“
+  listet Tage mit mindestens 20 Büchern aus mindestens 15 Reihen oder
+  von 15 Autoren. Ihr Aufnahmedatum ist das Importdatum, nicht das
+  Kaufdatum; das verfälscht Burn-up, Kaufrate, Alter des SuB und
+  „gelesen vor Aufnahme“. Die Schwellen stammen aus einer echten
+  Bibliothek: Ihre Bundles (Vampire Hunter D 28, Wheel of Time 17,
+  Murderbot 14, Tchaikovsky 14 Bücher) umfassen 1 bis 7 Reihen oder
+  Autoren, ihre Importe 28 bis 106.
 - **Angefangene Reihen mit dem nächsten Band:** eine Liste der
   angefangenen, aber nicht beendeten Reihen – Fortschritt („60/76“), der
   nächste ungelesene Band und wann zuletzt etwas aus der Reihe gelesen
