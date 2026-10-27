@@ -222,3 +222,29 @@ def test_started_csv_rows():
         ["Undated", 1, 2, "2", "Two", "", "", ""],
         ["Gap", 1, 3, "1.5", "Half", "4", "Four", "01.02.2024"],
     ]
+
+
+def test_backlog_by_series():
+    series = {
+        "Big": [_vol(1, 1.0), _vol(2, 2.0), _vol(3, 3.0, True)],
+        "b tie": [_vol(4, 1.0)],
+        "A tie": [_vol(5, 1.0), _vol(6, 2.0, True)],
+        "Read": [_vol(7, 1.0, True)],
+    }
+    result = srs.backlog_by_series(series, limit=2)
+    assert result["top"] == [
+        {"series": "Big", "unread": 2, "read": 1, "total": 3,
+         "book_ids": [1, 2]},
+        {"series": "A tie", "unread": 1, "read": 1, "total": 2,
+         "book_ids": [5]},
+    ]
+    assert result["series_count"] == 3
+    assert result["books"] == 4
+    assert result["rest_series"] == 1
+    assert result["rest_books"] == 1
+
+
+def test_backlog_by_series_empty():
+    assert srs.backlog_by_series({}) == {
+        "top": [], "series_count": 0, "books": 0,
+        "rest_series": 0, "rest_books": 0}

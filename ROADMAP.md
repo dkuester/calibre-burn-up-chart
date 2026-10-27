@@ -50,6 +50,10 @@ Done, not yet released:
   longest ago first so stalled ones stand out. With a gap it also shows
   the first volume after the highest read one. A click shows the next
   volume in calibre. Series with a single book are left out.
+- **TBR by series:** the 20 series with the most unread books as
+  horizontal bars, with the share of the TBR they make up; a click shows
+  a series' unread books in calibre. Helps decide what to read down –
+  or what no longer to read at all.
 
 ## Done
 
@@ -103,11 +107,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### TBR by series
-
-Which series make up the largest part of the TBR, as bars. Helps decide
-what to read down – or what no longer to read at all.
 
 ### Merge series names
 
