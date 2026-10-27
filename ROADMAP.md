@@ -37,6 +37,12 @@ Done, not yet released:
   because it mostly paired different volumes ("Black Panther
   (2005-2008)" and "(2008-2010)"). Cleaner series data makes the series
   analyses below more reliable.
+- **Started series with their next volume:** a list of the series
+  begun but not finished – progress ("60/76"), the next unread volume
+  and when something of the series was last read, the series read
+  longest ago first so stalled ones stand out. With a gap it also shows
+  the first volume after the highest read one. A click shows the next
+  volume in calibre. Series with a single book are left out.
 
 ## Done
 
@@ -90,16 +96,6 @@ Details in the [changelog](CHANGELOG.md).
 ## Planned
 
 Features we intend to build, but without a fixed target version.
-
-### Started series with their next volume
-
-A list of series that are started but not finished: series, progress
-("60/76"), the next unread volume (number and title) and when something
-from the series was last read, so stalled series stand out. Clicking
-shows the next volume in calibre, as in the data quality check and the
-age chart. Series with a single book in the library are left out. With
-gaps, show both the lowest unread volume and the first one after the
-highest read volume.
 
 ### TBR by series
 

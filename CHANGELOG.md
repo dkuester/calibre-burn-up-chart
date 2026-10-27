@@ -33,6 +33,14 @@
   Double-clicking a row shows its books in calibre; the tab can be saved
   as CSV. The report's "Data quality" section counts the three kinds.
   Nothing is changed.
+- **Started series:** A new menu entry lists the series begun but not
+  finished (at least two books, some read, some unread): progress
+  ("60/76"), the next unread volume with number and title and when
+  something of the series was last read. The series read longest ago
+  come first, so stalled ones stand out. With a gap, a second column
+  shows the first volume after the highest read one. Double-clicking a
+  row shows the next volume in calibre; buttons show the next volume or
+  the whole series, and the list can be saved as CSV.
 
 ## [1.7.0] – 2026-10-26
 

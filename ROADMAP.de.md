@@ -40,6 +40,13 @@ Fertig, noch nicht veröffentlicht:
   weil er vor allem verschiedene Bände paarte („Black Panther
   (2005-2008)“ und „(2008-2010)“). Sauberere Reihen-Daten machen die
   Reihen-Auswertungen unten verlässlicher.
+- **Angefangene Reihen mit dem nächsten Band:** eine Liste der
+  angefangenen, aber nicht beendeten Reihen – Fortschritt („60/76“), der
+  nächste ungelesene Band und wann zuletzt etwas aus der Reihe gelesen
+  wurde, die am längsten liegengebliebenen zuerst. Bei einer Lücke
+  steht auch der erste Band nach dem höchsten gelesenen da. Ein Klick
+  zeigt den nächsten Band in calibre. Reihen mit nur einem Band bleiben
+  außen vor.
 
 ## Erledigt
 
@@ -97,17 +104,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### Angefangene Reihen mit dem nächsten Band
-
-Eine Liste der angefangenen, aber nicht beendeten Reihen: Reihe,
-Fortschritt („60/76“), der nächste ungelesene Band (Nummer und Titel)
-und wann zuletzt etwas aus der Reihe gelesen wurde, damit
-liegengebliebene Reihen auffallen. Ein Klick zeigt den nächsten Band in
-calibre, wie bei Datenqualität und Altersverteilung. Reihen mit nur
-einem Band in der Bibliothek bleiben außen vor. Bei Lücken werden der
-niedrigste ungelesene Band und der erste nach dem höchsten gelesenen
-gezeigt.
 
 ### SuB nach Reihen
 

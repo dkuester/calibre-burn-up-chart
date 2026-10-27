@@ -370,6 +370,31 @@ msgstr "Band {numbers} mehrfach"
 msgid "Volume {numbers} unread, read up to {last}"
 msgstr "Band {numbers} ungelesen, gelesen bis {last}"
 
+# Started series dialog
+msgid "Started series"
+msgstr "Angefangene Reihen"
+
+msgid "No started series: every series with at least two books is either unread or read completely."
+msgstr "Keine angefangenen Reihen: Jede Reihe mit mindestens zwei Büchern ist entweder ungelesen oder ganz gelesen."
+
+msgid "<b>{count} started series:</b> at least two books, at least one of them read and one unread. The longest unread come first."
+msgstr "<b>{count} angefangene Reihen:</b> mindestens zwei Bücher, davon mindestens eines gelesen und eines ungelesen. Die am längsten liegengebliebenen stehen oben."
+
+msgid "\"After highest read\" appears when an earlier volume is still unread (a gap). A series under several names is listed once per name; \"Check data quality\" shows such names."
+msgstr "„Nach dem höchsten gelesenen“ erscheint, wenn ein früherer Band noch ungelesen ist (eine Lücke). Eine Reihe unter mehreren Namen steht einmal pro Name in der Liste; „Datenqualität prüfen“ zeigt solche Namen."
+
+msgid "Show next volume in calibre"
+msgstr "Nächsten Band in calibre zeigen"
+
+msgid "Show whole series in calibre"
+msgstr "Ganze Reihe in calibre zeigen"
+
+msgid "Next volume"
+msgstr "Nächster Band"
+
+msgid "After highest read"
+msgstr "Nach dem höchsten gelesenen"
+
 # Age of the TBR chart
 msgid "Age of the TBR"
 msgstr "Altersverteilung des SuB"
