@@ -66,6 +66,15 @@
   gelesen/gesamt und den Anteil am SuB; ein Klick auf einen Balken zeigt
   die ungelesenen Bücher der Reihe in calibre. PNG-/Zwischenablage-Export
   wie in den anderen Charts.
+- **SuB in der Statusleiste:** Rechts in der Statusleiste von calibre
+  steht dauerhaft der aktuelle SuB mit der Veränderung gegenüber vor
+  12 Monaten, z. B. „SuB: 1652 ▲172“. Der Tooltip nennt gelesen/gesamt,
+  den SuB vor 12 Monaten und das nötige Tempo; ein Klick öffnet das
+  Burn-up-Chart. Die Zahl folgt der ganzen Bibliothek (wie die Charts)
+  und aktualisiert sich etwa eine Sekunde nach neuen, gelöschten oder
+  als gelesen markierten Büchern sowie beim Bibliothekswechsel. Sind die
+  Spalten nicht nutzbar, steht dort „SuB: –“ mit dem Grund im Tooltip.
+  Abschaltbar in den Einstellungen.
 
 ### Geändert
 

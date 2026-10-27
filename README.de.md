@@ -38,6 +38,7 @@ Python-Installation ist nicht nötig.
 | **Altersverteilung des SuB** | Ungelesene Bücher nach ganzen Jahren seit der Aufnahme; ein Klick auf einen Balken zeigt diese Bücher in calibre. |
 | **Angefangene Reihen** | Angefangene, aber nicht beendete Reihen mit Fortschritt, dem nächsten ungelesenen Band und wann zuletzt aus der Reihe gelesen wurde, liegengebliebene zuerst; zeigt den nächsten Band in calibre. |
 | **SuB nach Reihen** | Die 20 Reihen mit den meisten ungelesenen Büchern als Balken, mit ihrem Anteil am SuB; ein Klick auf einen Balken zeigt die ungelesenen Bücher der Reihe in calibre. |
+| **SuB in der Statusleiste** | Dauerhaft „SuB: 1652 ▲172“ mit der Veränderung gegenüber vor 12 Monaten; Tooltip mit gelesen/gesamt und nötigem Tempo, Klick öffnet das Burn-up-Chart. Abschaltbar. |
 | **Bericht** | Speichert die Kennzahlen als Markdown oder als einzelne HTML-Seite mit Burn-up- und Raten-Chart, mit „Reading Goal“ auch mit Jahresziel. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme sowie Auffälligkeiten bei Reihen: eine Reihe unter mehreren Namen, doppelte Bandnummern und Lücken (ein früherer Band ungelesen, obwohl ein späterer gelesen ist), dazu Tage, die nach einem Sammel-Import aussehen (viele Bücher aus vielen Reihen und von vielen Autoren) und deren Aufnahmedatum vermutlich falsch ist. Zeigt die Bücher zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
@@ -84,6 +85,10 @@ Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „
 - **Datenqualität prüfen**: gelesene Bücher ohne brauchbares Lesedatum und Auffälligkeiten bei Reihen (mehrere Namen, doppelte Bandnummern, Lücken) sowie Sammel-Import-Tage, um sie in calibre zu korrigieren.
 - **Bericht speichern…**: die Kennzahlen als Markdown oder als HTML-Seite mit Charts.
 
+Rechts in der Statusleiste steht dauerhaft der SuB, z. B. „SuB: 1652 ▲172“
+(Pfeil: Veränderung gegenüber vor 12 Monaten). Der Tooltip nennt
+gelesen/gesamt und das nötige Tempo, ein Klick öffnet das Burn-up-Chart.
+
 ## Einstellungen
 
 *Einstellungen → Erweitert → Erweiterungen → Reading Progress → Erweiterung anpassen*:
@@ -93,6 +98,7 @@ Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „
 | Zieldatum | Der Tag, an dem der SuB 0 erreichen soll. |
 | Sanfter Abbau (Faktor) | Anteil des SuB, der am Zieldatum übrig ist. `0.50` heißt: bis dahin halbiert. |
 | Prognoselinie anzeigen | Zeichnet die Prognoselinie mit Unsicherheitsband und Hinweis (standardmäßig an). |
+| SuB in der Statusleiste anzeigen | Zeigt den SuB der ganzen Bibliothek rechts in der Statusleiste von calibre (standardmäßig an). |
 | Farben | Farbe jeder Datenreihe und Referenzlinie. Leer heißt „dem Theme folgen“; *Farben auf Theme-Standard zurücksetzen* entfernt alle eigenen Farben. |
 | Benutzerdefinierte Spalte „gelesen“ / „zuletzt gelesen“ | Suchnamen der beiden Spalten, falls deine anders heißen. |
 | Spalte „Tage im SuB“ anlegen | Legt eine Spalte `#days_in_tbr` an, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben. Danach calibre neu starten. |
@@ -134,6 +140,7 @@ readingprogress/
 ├── report.py                # Qt-freier Markdown-/HTML-Bericht
 ├── series.py                # Qt-frei, Reihen-Daten, Reihen-Prüfung, angefangene Reihen, SuB nach Reihen
 ├── series_backlog_dialog.py # Dialog für SuB nach Reihen
+├── status_summary.py        # Qt-frei, Text und Tooltip des SuB in der Statusleiste
 ├── started_dialog.py        # Dialog für die angefangenen Reihen
 ├── delay_dialog.py          # Dialog für die Leseverzögerung
 ├── export_reading_status.py # liest die laufende calibre-Datenbank

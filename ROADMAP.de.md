@@ -59,6 +59,10 @@ Fertig, noch nicht veröffentlicht:
   Büchern als liegende Balken, mit ihrem Anteil am SuB; ein Klick zeigt
   die ungelesenen Bücher einer Reihe in calibre. Hilft bei der
   Entscheidung, was man abbaut – oder was man gar nicht mehr lesen will.
+- **SuB in der Statusleiste:** „SuB: 1652 ▲172“ dauerhaft rechts in der
+  Statusleiste, mit gelesen/gesamt, dem Stand vor 12 Monaten und dem
+  nötigen Tempo im Tooltip; ein Klick öffnet das Burn-up-Chart. Hält
+  das Ziel im Blick, ohne ein Chart zu öffnen.
 
 ## Erledigt
 
@@ -148,10 +152,6 @@ Breiteres Spektrum, nichts davon zugesagt.
 - Seitenzahl-basierte Analyse
 - Autoren-Analyse
 - Aktivitäts-Heatmap (GitHub-Contributions-Stil)
-
-### UX-Verbesserungen
-
-- Statusbar-Widget mit permanent sichtbarem Backlog
 
 ## Nicht geplant
 

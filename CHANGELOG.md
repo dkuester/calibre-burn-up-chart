@@ -60,6 +60,14 @@
   make up. The tooltip adds read/total and the share of the TBR;
   clicking a bar shows the series' unread books in calibre. PNG/clipboard
   export as in the other charts.
+- **TBR in the status bar:** calibre's status bar permanently shows the
+  current TBR on the right with its change against 12 months ago, e.g.
+  "TBR: 1652 ▲172". The tooltip gives read/total, the TBR 12 months ago
+  and the required pace; clicking opens the burn-up chart. The number
+  covers the whole library (like the charts) and updates about a second
+  after books are added, deleted or marked as read, and when switching
+  libraries. If the columns are unusable it shows "TBR: –" with the
+  reason in the tooltip. Can be turned off in the settings.
 
 ### Changed
 

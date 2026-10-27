@@ -72,6 +72,11 @@ class ConfigWidget(QWidget):
         self.forecast_check.setChecked(bool(config['show_forecast']))
         layout.addRow(self.forecast_check)
 
+        # --- TBR in the status bar ---
+        self.status_tbr_check = QCheckBox(_('Show the TBR in the status bar'))
+        self.status_tbr_check.setChecked(bool(config['show_status_tbr']))
+        layout.addRow(self.status_tbr_check)
+
         # --- Colors (keys come from chart_common.DEFAULT_COLORS) ---
         self._color_buttons = {}
         self._color_modified = {key: False for key in DEFAULT_COLORS}
@@ -144,6 +149,7 @@ class ConfigWidget(QWidget):
         )
         config['reduction_factor'] = float(self.factor_edit.value())
         config['show_forecast'] = bool(self.forecast_check.isChecked())
+        config['show_status_tbr'] = bool(self.status_tbr_check.isChecked())
         for key, btn in self._color_buttons.items():
             config[f'color_{key}'] = (
                 btn.text() if self._color_modified[key] else ''
@@ -155,6 +161,16 @@ class ConfigWidget(QWidget):
             self.last_read_column_edit.text().strip() or '#last_read'
         )
         self._warn_about_columns()
+        self._refresh_status_tbr()
+
+    @staticmethod
+    def _refresh_status_tbr():
+        """Applies the new settings to the TBR in the status bar."""
+        from calibre.gui2.ui import get_gui
+        gui = get_gui()
+        action = gui.iactions.get('Reading Progress') if gui else None
+        if action is not None:
+            action.refresh_status_tbr()
 
     def _warn_about_columns(self):
         """Warns (after saving) if the charts cannot use the columns."""

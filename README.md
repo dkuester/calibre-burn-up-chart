@@ -37,6 +37,7 @@ Python installation is needed.
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
 | **Started series** | Series begun but not finished, with progress, the next unread volume and when the series was last read, stalled ones first; shows the next volume in calibre. |
 | **TBR by series** | The 20 series with the most unread books as bars, with their share of the TBR; click a bar to show the series' unread books in calibre. |
+| **TBR in the status bar** | Permanently "TBR: 1652 ▲172" with the change against 12 months ago; tooltip with read/total and the required pace, click opens the burn-up chart. Can be turned off. |
 | **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts, plus the yearly goal with Reading Goal. |
 | **Data quality check** | Lists read books without a read date or read before being added, and series problems: one series under several names, duplicate volume numbers and gaps (an earlier volume unread although a later one is read), plus days that look like a bulk import (many books from many series and authors), whose date added is probably wrong. Shows the books in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
@@ -82,6 +83,10 @@ The toolbar button opens a menu with four charts (five with Reading Goal), a dat
 - **Check data quality**: read books without a usable read date and series problems (several names, duplicate volume numbers, gaps) and bulk-import days, to fix them in calibre.
 - **Save report…**: the key figures as Markdown, or as an HTML page with charts.
 
+The right of the status bar permanently shows the TBR, e.g. "TBR: 1652 ▲172"
+(arrow: change against 12 months ago). The tooltip gives read/total and the
+required pace; a click opens the burn-up chart.
+
 ## Configuration
 
 *Preferences → Advanced → Plugins → Reading Progress → Customize plugin*:
@@ -91,6 +96,7 @@ The toolbar button opens a menu with four charts (five with Reading Goal), a dat
 | Target date | The day the backlog (TBR) should reach 0. |
 | Gentle reduction (factor) | Share of the TBR left on the target date. `0.50` means the TBR is halved by then. |
 | Show forecast line | Draws the forecast line with its uncertainty band and note (on by default). |
+| Show the TBR in the status bar | Shows the whole library's TBR on the right of calibre's status bar (on by default). |
 | Colors | Color of each series and reference line. Empty means "follow the theme"; *Reset colors to theme defaults* clears all custom colors. |
 | Custom column "read" / "last read" | Lookup names of the two columns, if yours are named differently. |
 | Create column "Days in TBR" | Adds a column `#days_in_tbr` that calibre computes itself: days between adding and reading for read books, days since adding for unread ones. Sort by it to find the books you have owned longest without reading. Restart calibre afterwards. |
@@ -132,6 +138,7 @@ readingprogress/
 ├── report.py                # Qt-free Markdown/HTML report
 ├── series.py                # Qt-free series data, series checks, started series, TBR by series
 ├── series_backlog_dialog.py # TBR-by-series chart dialog
+├── status_summary.py        # Qt-free text and tooltip of the status-bar TBR
 ├── started_dialog.py        # started-series dialog
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database
