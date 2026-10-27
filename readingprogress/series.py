@@ -258,6 +258,38 @@ def started_csv_rows(started, date_format):
     return rows
 
 
+def backlog_by_series(series, limit=20):
+    """Series that make up the largest part of the TBR.
+
+    :return: dict with ``top`` (the ``limit`` series with the most
+        unread books, most first, ties by name; each a dict with
+        ``series``, ``unread``, ``read``, ``total`` and ``book_ids`` of
+        the unread books), ``series_count`` and ``books`` (all series
+        with unread books and their unread books) and ``rest_series``
+        and ``rest_books`` (the same for the series not in ``top``).
+    """
+    entries = []
+    for name, books in series.items():
+        unread = [b["book_id"] for b in books if not b["read"]]
+        if unread:
+            entries.append({
+                "series": name,
+                "unread": len(unread),
+                "read": len(books) - len(unread),
+                "total": len(books),
+                "book_ids": unread,
+            })
+    entries.sort(key=lambda e: (-e["unread"], e["series"].lower()))
+    top, rest = entries[:limit], entries[limit:]
+    return {
+        "top": top,
+        "series_count": len(entries),
+        "books": sum(e["unread"] for e in entries),
+        "rest_series": len(rest),
+        "rest_books": sum(e["unread"] for e in rest),
+    }
+
+
 def _to_date(value, tz=None):
     # Same as export_reading_status.to_date(); the Qt-free modules do not
     # import each other (their import path differs inside calibre).

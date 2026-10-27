@@ -422,6 +422,22 @@ msgstr "Nächster Band"
 msgid "After highest read"
 msgstr "Nach dem höchsten gelesenen"
 
+# TBR by series chart
+msgid "TBR by series"
+msgstr "SuB nach Reihen"
+
+msgid "{backlog} unread books · {books} of them in {series} series ({share} %) · the {top} largest: {top_share} %"
+msgstr "{backlog} Bücher im SuB · {books} davon in {series} Reihen ({share} %) · die {top} größten: {top_share} %"
+
+msgid "Unread books"
+msgstr "Ungelesene Bücher"
+
+msgid "{series}\n{unread} unread · {read} of {total} read\n{share} % of the TBR\nClick to show the unread books in calibre"
+msgstr "{series}\n{unread} ungelesen · {read} von {total} gelesen\n{share} % des SuB\nKlicken, um die ungelesenen Bücher in calibre zu zeigen"
+
+msgid "Click a bar to show the unread books of that series in calibre."
+msgstr "Klick auf einen Balken zeigt die ungelesenen Bücher der Reihe in calibre."
+
 # Age of the TBR chart
 msgid "Age of the TBR"
 msgstr "Altersverteilung des SuB"

@@ -59,6 +59,13 @@
   gelesenen. Ein Doppelklick zeigt den nächsten Band in calibre; Knöpfe
   zeigen den nächsten Band oder die ganze Reihe, und die Liste lässt
   sich als CSV speichern.
+- **SuB nach Reihen:** Ein neues Chart zeigt die 20 Reihen mit den
+  meisten ungelesenen Büchern als liegende Balken. Der Kopf sagt, wie
+  viele ungelesene Bücher überhaupt zu einer Reihe gehören und welchen
+  Anteil am SuB die 20 größten ausmachen. Der Tooltip ergänzt
+  gelesen/gesamt und den Anteil am SuB; ein Klick auf einen Balken zeigt
+  die ungelesenen Bücher der Reihe in calibre. PNG-/Zwischenablage-Export
+  wie in den anderen Charts.
 
 ### Geändert
 

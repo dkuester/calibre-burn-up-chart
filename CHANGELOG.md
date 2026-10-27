@@ -54,6 +54,12 @@
   shows the first volume after the highest read one. Double-clicking a
   row shows the next volume in calibre; buttons show the next volume or
   the whole series, and the list can be saved as CSV.
+- **TBR by series:** A new chart shows the 20 series with the most
+  unread books as horizontal bars. The header says how many unread books
+  belong to a series at all and which share of the TBR the 20 largest
+  make up. The tooltip adds read/total and the share of the TBR;
+  clicking a bar shows the series' unread books in calibre. PNG/clipboard
+  export as in the other charts.
 
 ### Changed
 

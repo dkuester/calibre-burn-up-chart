@@ -159,6 +159,7 @@ class ReadingProgressAction(InterfaceAction):
                        self.show_rates)
         menu.addAction(_('Age of the TBR'), self.show_age)
         menu.addAction(_('Started series'), self.show_started)
+        menu.addAction(_('TBR by series'), self.show_series_backlog)
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
         menu.addAction(_('Save report…'), self.save_report)
@@ -450,6 +451,36 @@ class ReadingProgressAction(InterfaceAction):
             return
 
         StartedSeriesDialog(started, _date_format(), self.gui,
+                            on_show=self._show_in_library).exec()
+
+    def show_series_backlog(self):
+        from calibre_plugins.readingprogress.export_reading_status import (
+            backlog_ages,
+        )
+        from calibre_plugins.readingprogress.series import (
+            backlog_by_series,
+            collect_series,
+        )
+        from calibre_plugins.readingprogress.series_backlog_dialog import (
+            SeriesBacklogDialog,
+        )
+
+        def fetch(db_api, read_column, _last_read):
+            # TBR as in the age chart, so the shares match the charts
+            return (backlog_by_series(collect_series(db_api, read_column)),
+                    len(backlog_ages(db_api, read_column)))
+
+        result = self._read_library(fetch)
+        if result is None:
+            return
+        data, backlog = result
+        if not data['top']:
+            self.gui.status_bar.show_message(
+                _('No data available for this analysis.'), 8000)
+            return
+
+        SeriesBacklogDialog(data, backlog, _decimal_separator(), self.gui,
+                            colors=self._colors(),
                             on_show=self._show_in_library).exec()
 
     def save_report(self):

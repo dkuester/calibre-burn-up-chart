@@ -55,6 +55,10 @@ Fertig, noch nicht veröffentlicht:
   steht auch der erste Band nach dem höchsten gelesenen da. Ein Klick
   zeigt den nächsten Band in calibre. Reihen mit nur einem Band bleiben
   außen vor.
+- **SuB nach Reihen:** die 20 Reihen mit den meisten ungelesenen
+  Büchern als liegende Balken, mit ihrem Anteil am SuB; ein Klick zeigt
+  die ungelesenen Bücher einer Reihe in calibre. Hilft bei der
+  Entscheidung, was man abbaut – oder was man gar nicht mehr lesen will.
 
 ## Erledigt
 
@@ -112,12 +116,6 @@ Details im [Changelog](CHANGELOG.de.md).
 ## Geplant
 
 Features, die wir bauen wollen, aber ohne feste Zielversion.
-
-### SuB nach Reihen
-
-Welche Reihen den größten Teil des SuB ausmachen, als Balken. Hilft bei
-der Entscheidung, was man abbaut – oder was man gar nicht mehr lesen
-will.
 
 ### Reihen zusammenfassen
 
