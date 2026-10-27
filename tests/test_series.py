@@ -89,7 +89,14 @@ def test_find_name_variants(make_db):
         "kind": srs.NAME_VARIANTS,
         "series": ["Expanse", "The Expanse", "The Expanse-Serie"],
         "indices": [], "max_read": None, "book_ids": [1, 2, 3],
+        "display": "Expanse",
     }]
+
+
+def test_find_name_variants_display_most_books():
+    series = {"Saga": [_vol(1, 1.0)], "The Saga": [_vol(2, 1.0),
+                                                   _vol(3, 2.0)]}
+    assert srs.find_name_variants(series)[0]["display"] == "The Saga"
 
 
 def test_find_duplicate_indices(make_db):
@@ -248,3 +255,154 @@ def test_backlog_by_series_empty():
     assert srs.backlog_by_series({}) == {
         "top": [], "series_count": 0, "books": 0,
         "rest_series": 0, "rest_books": 0}
+
+
+# ----------------------------------------------------------------------
+# Merged series
+# ----------------------------------------------------------------------
+def test_parse_series_groups():
+    text = ("Die Nebelgeborenen = Mistborn =The Mistborn Saga\n"
+            "\n"
+            "  = Solo =  \n"
+            "A = a = B = \n")
+    assert srs.parse_series_groups(text) == [
+        ["Die Nebelgeborenen", "Mistborn", "The Mistborn Saga"],
+        ["Solo"], ["A", "B"]]
+    assert srs.parse_series_groups("") == []
+
+
+def test_format_series_groups():
+    groups = [["Die Nebelgeborenen", "Mistborn"], ["A", "B", "C"]]
+    text = srs.format_series_groups(groups)
+    assert text == "Die Nebelgeborenen = Mistborn\nA = B = C"
+    assert srs.parse_series_groups(text) == groups
+
+
+def test_series_group_problems():
+    groups = [["A", "B"], ["Solo"], ["b", "C", "a"], ["A", "D"]]
+    assert srs.series_group_problems(groups) == {
+        "single": ["Solo"], "repeated": ["b", "a", "A"]}
+    assert srs.series_group_problems([["A", "B"]]) == {
+        "single": [], "repeated": []}
+
+
+def test_add_series_group():
+    groups = [["Die Nebelgeborenen", "Mistborn"]]
+    # new group
+    added = srs.add_series_group(groups, ["Expanse", "The Expanse"])
+    assert added == [["Die Nebelgeborenen", "Mistborn"],
+                     ["Expanse", "The Expanse"]]
+    # extends the group that has one of the names; input unchanged
+    added = srs.add_series_group(groups, ["mistborn", "The Mistborn Saga"])
+    assert added == [["Die Nebelgeborenen", "Mistborn", "The Mistborn Saga"]]
+    assert groups == [["Die Nebelgeborenen", "Mistborn"]]
+
+
+def _editions():
+    # Stormlight read up to 2 in German, 1 in English
+    return {
+        "Die Sturmlicht-Chroniken": [
+            _vol(1, 1.0, True, date(2020, 1, 1), title="DE1"),
+            _vol(2, 2.0, True, date(2021, 1, 1), title="DE2"),
+            _vol(3, 3.0, title="DE3"), _vol(4, 4.0, title="DE4")],
+        "The Stormlight Archive": [
+            _vol(5, 1.0, True, date(2019, 1, 1), title="EN1"),
+            _vol(6, 2.0, title="EN2")],
+        "Other": [_vol(7, 1.0)],
+    }
+
+
+def test_merge_series():
+    series = _editions()
+    groups = [["Die Sturmlicht-Chroniken", "the stormlight archive",
+               "Not in library"],
+              ["Other"],                       # single: ignored
+              ["Missing", "Other"]]
+    merged = srs.merge_series(series, groups)
+    # display name is the first of the group, even if not in the library
+    assert sorted(merged) == ["Die Sturmlicht-Chroniken", "Missing"]
+    books = merged["Die Sturmlicht-Chroniken"]
+    assert [b["title"] for b in books] == [
+        "DE1", "EN1", "DE2", "EN2", "DE3", "DE4"]
+    assert books[1]["source"] == "The Stormlight Archive"
+    assert merged["Missing"][0]["source"] == "Other"
+    # the input is not changed
+    assert "source" not in series["Other"][0]
+    assert len(series["Die Sturmlicht-Chroniken"]) == 4
+
+
+def test_merge_series_first_group_wins():
+    series = {"A": [_vol(1, 1.0)], "B": [_vol(2, 1.0)]}
+    merged = srs.merge_series(series, [["A", "B"], ["C", "B"]])
+    assert list(merged) == ["A"]
+    assert srs.merge_series(series, []) == {
+        "A": [dict(_vol(1, 1.0), source="A")],
+        "B": [dict(_vol(2, 1.0), source="B")]}
+
+
+def test_started_series_merged_editions():
+    groups = [["Die Sturmlicht-Chroniken", "The Stormlight Archive"]]
+    started = srs.started_series(srs.merge_series(_editions(), groups))
+    assert len(started) == 1
+    s = started[0]
+    # EN2 is left out: volume 2 is read in German
+    assert (s["read"], s["total"]) == (3, 5)
+    assert s["next_book"]["title"] == "DE3"
+    assert s["after_book"] is None
+    assert s["last_read"] == date(2021, 1, 1)
+    assert sorted(s["book_ids"]) == [1, 2, 3, 4, 5, 6]
+
+
+def test_started_series_same_name_duplicates_stay():
+    # two books numbered 1 under one name are not editions of each other
+    series = {"S": [_vol(1, 1.0, True), _vol(2, 1.0), _vol(3, 2.0)]}
+    s = srs.started_series(srs.merge_series(series, []))[0]
+    assert (s["read"], s["total"]) == (1, 3)
+    assert s["next_book"]["book_id"] == 2
+
+
+def test_started_series_merged_unnumbered():
+    # "1" twice under one name and read there: a volume of its own, even
+    # though 1 is read under the other name too
+    series = {"Killerbot": [_vol(1, 1.0, True)],
+              "Murderbot": [_vol(2, 1.0, True), _vol(3, 1.0, title="Home"),
+                            _vol(4, 2.0)]}
+    merged = srs.merge_series(series, [["Killerbot", "Murderbot"]])
+    s = srs.started_series(merged)[0]
+    assert (s["read"], s["total"]) == (2, 4)
+    assert s["next_book"]["title"] == "Home"
+
+
+def test_series_problems_merged(make_db):
+    lib = {
+        1: _book("Die Nebelgeborenen", 1.0, read=True),
+        2: _book("Die Nebelgeborenen", 3.0, read=True),
+        3: _book("Mistborn", 1.0),           # read in German: no gap
+        4: _book("Mistborn", 2.0),           # unread in both: gap
+        5: _book("The Mistborn Saga", 3.0, read=True),
+        6: _book("Expanse", 1.0),
+        7: _book("The Expanse", 1.0),
+        8: _book("The Expanse-Serie", 2.0),
+    }
+    series = srs.collect_series(make_db(lib), "#gelesen")
+    groups = [["Die Nebelgeborenen", "Mistborn", "The Mistborn Saga"],
+              ["Expanse", "The Expanse"]]
+    problems = srs.find_series_problems(series, groups)
+    assert [(p["kind"], p["series"], p["book_ids"]) for p in problems] == [
+        # the merged "Expanse" and the unlisted name are still variants
+        (srs.NAME_VARIANTS, ["Expanse", "The Expanse-Serie"], [6, 7, 8]),
+        (srs.GAP, ["Die Nebelgeborenen"], [4]),
+    ]
+    # without the list: two variant groups; Expanse 1 twice across names
+    # is no duplicate, and "Mistborn" alone has nothing read
+    kinds = [p["kind"] for p in srs.find_series_problems(series)]
+    assert kinds == [srs.NAME_VARIANTS, srs.NAME_VARIANTS]
+
+
+def test_backlog_by_series_merged():
+    groups = [["Die Sturmlicht-Chroniken", "The Stormlight Archive"]]
+    top = srs.backlog_by_series(srs.merge_series(_editions(), groups))["top"]
+    # books, as in the TBR chart: EN2 is still unread
+    assert top[0] == {"series": "Die Sturmlicht-Chroniken", "unread": 3,
+                      "read": 3, "total": 6, "book_ids": [6, 3, 4]}
+

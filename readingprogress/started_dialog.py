@@ -80,7 +80,8 @@ class StartedSeriesDialog(QDialog):
         hint = QLabel(_(
             "\"After highest read\" appears when an earlier volume is "
             "still unread (a gap). A series under several names is listed "
-            "once per name; \"Check data quality\" shows such names."))
+            "once per name unless its names are merged in the settings; "
+            "\"Check data quality\" shows such names."))
         hint.setWordWrap(True)
         layout.addWidget(hint)
 

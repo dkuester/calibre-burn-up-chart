@@ -38,6 +38,7 @@ Python installation is needed.
 | **Started series** | Series begun but not finished, with progress, the next unread volume and when the series was last read, stalled ones first; shows the next volume in calibre. |
 | **TBR by series** | The 20 series with the most unread books as bars, with their share of the TBR; click a bar to show the series' unread books in calibre. |
 | **TBR in the status bar** | Permanently "TBR: 1652 ▲172" with the change against 12 months ago; tooltip with read/total and the required pace, click opens the burn-up chart. Can be turned off. |
+| **Merge series names** | One series under several names, e.g. read partly in German and partly in English (`Die Nebelgeborenen = Mistborn`), counts as one in the series analyses; a volume read in one language counts as read. Groups from the data quality check can be taken over with one click. The series names in calibre stay unchanged. |
 | **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts, plus the yearly goal with Reading Goal. |
 | **Data quality check** | Lists read books without a read date or read before being added, and series problems: one series under several names, duplicate volume numbers and gaps (an earlier volume unread although a later one is read), plus days that look like a bulk import (many books from many series and authors), whose date added is probably wrong. Shows the books in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
@@ -80,7 +81,7 @@ The toolbar button opens a menu with four charts (five with Reading Goal), a dat
 - **Age of the TBR**: unread books by years since they were added.
 - **Started series**: series begun but not finished, with the next volume to read.
 - **TBR by series**: the series with the most unread books.
-- **Check data quality**: read books without a usable read date and series problems (several names, duplicate volume numbers, gaps) and bulk-import days, to fix them in calibre.
+- **Check data quality**: read books without a usable read date and series problems (several names, duplicate volume numbers, gaps) and bulk-import days, to fix them in calibre; series under several names can be merged from there.
 - **Save report…**: the key figures as Markdown, or as an HTML page with charts.
 
 The right of the status bar permanently shows the TBR, e.g. "TBR: 1652 ▲172"
@@ -100,6 +101,7 @@ required pace; a click opens the burn-up chart.
 | Colors | Color of each series and reference line. Empty means "follow the theme"; *Reset colors to theme defaults* clears all custom colors. |
 | Custom column "read" / "last read" | Lookup names of the two columns, if yours are named differently. |
 | Create column "Days in TBR" | Adds a column `#days_in_tbr` that calibre computes itself: days between adding and reading for read books, days since adding for unread ones. Sort by it to find the books you have owned longest without reading. Restart calibre afterwards. |
+| Merge series | One series per line, its names in calibre separated by `=`, e.g. `Die Nebelgeborenen = Mistborn`. The first name is displayed. "Started series", "TBR by series", the series checks and the report count them as one series. |
 
 The settings are stored in `plugins/readingprogress.json` in calibre's
 configuration folder and persist across restarts.
@@ -136,7 +138,7 @@ readingprogress/
 ├── rates_dialog.py          # purchase rate vs. reading rate dialog
 ├── reading_goal.py          # Qt-free, read-only Reading Goal data
 ├── report.py                # Qt-free Markdown/HTML report
-├── series.py                # Qt-free series data, series checks, started series, TBR by series
+├── series.py                # Qt-free series data, merging, series checks, started series, TBR by series
 ├── series_backlog_dialog.py # TBR-by-series chart dialog
 ├── status_summary.py        # Qt-free text and tooltip of the status-bar TBR
 ├── started_dialog.py        # started-series dialog

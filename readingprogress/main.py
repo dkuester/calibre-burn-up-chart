@@ -39,6 +39,8 @@ def _setup_config():
     config.defaults['show_forecast'] = True
     config.defaults['time_range'] = 'all'
     config.defaults['show_status_tbr'] = True
+    # Series names counted as one series: list of lists, first displayed
+    config.defaults['series_merge'] = []
     for color_key in DEFAULT_COLORS:
         config.defaults[f'color_{color_key}'] = ''   # '' = follow theme
     config.defaults['_migrated_keys'] = False
@@ -499,7 +501,7 @@ class ReadingProgressAction(InterfaceAction):
             read_flags = db_api.all_field_for(read_column,
                                               db_api.all_book_ids())
             series_problems = find_series_problems(
-                collect_series(db_api, read_column))
+                collect_series(db_api, read_column), config['series_merge'])
             return (problems,
                     sum(1 for v in read_flags.values() if v is True),
                     series_problems,
@@ -519,7 +521,15 @@ class ReadingProgressAction(InterfaceAction):
         QualityDialog(problems, read_total, _date_format(), self.gui,
                       on_show=self._show_in_library,
                       series_problems=series_problems,
-                      import_days=import_days).exec()
+                      import_days=import_days,
+                      on_merge=self._merge_series_names).exec()
+
+    @staticmethod
+    def _merge_series_names(names):
+        """Adds a group from "Several names" to the merge list."""
+        from calibre_plugins.readingprogress.series import add_series_group
+        config['series_merge'] = add_series_group(config['series_merge'],
+                                                  names)
 
     def show_age(self):
         from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
@@ -551,6 +561,7 @@ class ReadingProgressAction(InterfaceAction):
     def show_started(self):
         from calibre_plugins.readingprogress.series import (
             collect_series,
+            merge_series,
             started_series,
         )
         from calibre_plugins.readingprogress.started_dialog import (
@@ -559,7 +570,9 @@ class ReadingProgressAction(InterfaceAction):
 
         started = self._read_library(
             lambda db_api, read_column, last_read_column: started_series(
-                collect_series(db_api, read_column, last_read_column)))
+                merge_series(collect_series(db_api, read_column,
+                                            last_read_column),
+                             config['series_merge'])))
         if started is None:
             return
         if not started:
@@ -579,6 +592,7 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.series import (
             backlog_by_series,
             collect_series,
+            merge_series,
         )
         from calibre_plugins.readingprogress.series_backlog_dialog import (
             SeriesBacklogDialog,
@@ -586,7 +600,9 @@ class ReadingProgressAction(InterfaceAction):
 
         def fetch(db_api, read_column, _last_read):
             # TBR as in the age chart, so the shares match the charts
-            return (backlog_by_series(collect_series(db_api, read_column)),
+            return (backlog_by_series(merge_series(
+                        collect_series(db_api, read_column),
+                        config['series_merge'])),
                     len(backlog_ages(db_api, read_column)))
 
         result = self._read_library(fetch)
@@ -640,7 +656,8 @@ class ReadingProgressAction(InterfaceAction):
                                        last_read_column, target_date,
                                        reduction_factor)
             data['quality'].update(problem_counts(find_series_problems(
-                collect_series(db_api, read_column))))
+                collect_series(db_api, read_column),
+                config['series_merge'])))
             events = (library_events(db_api, read_column, last_read_column)
                       if years else None)
             data['goal'] = (report_data(years, events, today)

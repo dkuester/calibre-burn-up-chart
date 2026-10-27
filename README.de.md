@@ -39,6 +39,7 @@ Python-Installation ist nicht nötig.
 | **Angefangene Reihen** | Angefangene, aber nicht beendete Reihen mit Fortschritt, dem nächsten ungelesenen Band und wann zuletzt aus der Reihe gelesen wurde, liegengebliebene zuerst; zeigt den nächsten Band in calibre. |
 | **SuB nach Reihen** | Die 20 Reihen mit den meisten ungelesenen Büchern als Balken, mit ihrem Anteil am SuB; ein Klick auf einen Balken zeigt die ungelesenen Bücher der Reihe in calibre. |
 | **SuB in der Statusleiste** | Dauerhaft „SuB: 1652 ▲172“ mit der Veränderung gegenüber vor 12 Monaten; Tooltip mit gelesen/gesamt und nötigem Tempo, Klick öffnet das Burn-up-Chart. Abschaltbar. |
+| **Reihen zusammenfassen** | Eine Reihe unter mehreren Namen, z. B. mal auf Deutsch, mal auf Englisch gelesen (`Die Nebelgeborenen = Mistborn`), zählt in den Reihen-Auswertungen als eine; ein in einer Sprache gelesener Band gilt als gelesen. Gruppen aus der Datenqualität lassen sich mit einem Klick übernehmen. Die Seriennamen in calibre bleiben unverändert. |
 | **Bericht** | Speichert die Kennzahlen als Markdown oder als einzelne HTML-Seite mit Burn-up- und Raten-Chart, mit „Reading Goal“ auch mit Jahresziel. |
 | **Datenqualität** | Listet gelesene Bücher ohne Lesedatum oder mit Lesedatum vor der Aufnahme sowie Auffälligkeiten bei Reihen: eine Reihe unter mehreren Namen, doppelte Bandnummern und Lücken (ein früherer Band ungelesen, obwohl ein späterer gelesen ist), dazu Tage, die nach einem Sammel-Import aussehen (viele Bücher aus vielen Reihen und von vielen Autoren) und deren Aufnahmedatum vermutlich falsch ist. Zeigt die Bücher zum Korrigieren in der Bücherliste von calibre an. |
 | **Leseverzögerung** | Für jedes gelesene Buch die Zeit zwischen Aufnahme in calibre und Lesen, als Streudiagramm mit Median und Mittelwert; Tooltip nennt das Buch, Klick zeigt es in calibre. |
@@ -82,7 +83,7 @@ Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „
 - **Altersverteilung des SuB**: ungelesene Bücher nach Jahren seit der Aufnahme.
 - **Angefangene Reihen**: angefangene, aber nicht beendete Reihen mit dem nächsten Band.
 - **SuB nach Reihen**: die Reihen mit den meisten ungelesenen Büchern.
-- **Datenqualität prüfen**: gelesene Bücher ohne brauchbares Lesedatum und Auffälligkeiten bei Reihen (mehrere Namen, doppelte Bandnummern, Lücken) sowie Sammel-Import-Tage, um sie in calibre zu korrigieren.
+- **Datenqualität prüfen**: gelesene Bücher ohne brauchbares Lesedatum und Auffälligkeiten bei Reihen (mehrere Namen, doppelte Bandnummern, Lücken) sowie Sammel-Import-Tage, um sie in calibre zu korrigieren; Reihen unter mehreren Namen lassen sich dort zusammenfassen.
 - **Bericht speichern…**: die Kennzahlen als Markdown oder als HTML-Seite mit Charts.
 
 Rechts in der Statusleiste steht dauerhaft der SuB, z. B. „SuB: 1652 ▲172“
@@ -102,6 +103,7 @@ gelesen/gesamt und das nötige Tempo, ein Klick öffnet das Burn-up-Chart.
 | Farben | Farbe jeder Datenreihe und Referenzlinie. Leer heißt „dem Theme folgen“; *Farben auf Theme-Standard zurücksetzen* entfernt alle eigenen Farben. |
 | Benutzerdefinierte Spalte „gelesen“ / „zuletzt gelesen“ | Suchnamen der beiden Spalten, falls deine anders heißen. |
 | Spalte „Tage im SuB“ anlegen | Legt eine Spalte `#days_in_tbr` an, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben. Danach calibre neu starten. |
+| Reihen zusammenfassen | Eine Reihe pro Zeile, ihre Namen in calibre mit `=` getrennt, z. B. `Die Nebelgeborenen = Mistborn`. Angezeigt wird der erste Name. „Angefangene Reihen“, „SuB nach Reihen“, die Reihen-Prüfung und der Bericht zählen sie als eine Reihe. |
 
 Die Einstellungen liegen in `plugins/readingprogress.json` im
 Konfigurationsordner von calibre und bleiben über Neustarts erhalten.
@@ -138,7 +140,7 @@ readingprogress/
 ├── rates_dialog.py          # Dialog für Kaufrate vs. Leserate
 ├── reading_goal.py          # Qt-frei, liest die Daten von „Reading Goal“ (nur lesend)
 ├── report.py                # Qt-freier Markdown-/HTML-Bericht
-├── series.py                # Qt-frei, Reihen-Daten, Reihen-Prüfung, angefangene Reihen, SuB nach Reihen
+├── series.py                # Qt-frei, Reihen-Daten, Reihen zusammenfassen, Reihen-Prüfung, angefangene Reihen, SuB nach Reihen
 ├── series_backlog_dialog.py # Dialog für SuB nach Reihen
 ├── status_summary.py        # Qt-frei, Text und Tooltip des SuB in der Statusleiste
 ├── started_dialog.py        # Dialog für die angefangenen Reihen

@@ -75,6 +75,18 @@
   als gelesen markierten Büchern sowie beim Bibliothekswechsel. Sind die
   Spalten nicht nutzbar, steht dort „SuB: –“ mit dem Grund im Tooltip.
   Abschaltbar in den Einstellungen.
+- **Reihen zusammenfassen:** Wer eine Reihe mal auf Deutsch, mal auf
+  Englisch liest, hat sie unter zwei Namen. In den Einstellungen fasst
+  das Feld „Reihen zusammenfassen“ solche Namen zusammen, eine Reihe pro
+  Zeile, z. B. `Die Nebelgeborenen = Mistborn`; angezeigt wird der erste
+  Name. „Angefangene Reihen“, „SuB nach Reihen“, die Reihen-Prüfung und
+  der Bericht zählen sie als eine Reihe. Ist ein Band in einer Sprache
+  gelesen, gilt er auch in der anderen als gelesen: Er ist weder „nächster
+  Band“ noch eine Lücke, und dieselbe Nummer unter zwei Namen ist keine
+  doppelte Bandnummer. Im SuB zählt das ungelesene Buch weiter mit, wie
+  im SuB-Diagramm. Im Tab „Reihen“ der Datenqualität übernimmt der Knopf
+  „Namen zusammenfassen“ markierte Gruppen aus „Mehrere Namen“ in die
+  Liste. Die Seriennamen in calibre bleiben unverändert.
 
 ### Geändert
 
