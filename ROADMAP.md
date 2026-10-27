@@ -106,6 +106,19 @@ highest read volume.
 Which series make up the largest part of the TBR, as bars. Helps decide
 what to read down – or what no longer to read at all.
 
+### Merge series names
+
+Reading a series partly in German and partly in English leaves it under
+two names ("Die Nebelgeborenen" and "Mistborn", "Das Lied von Eis und
+Feuer" and "A Song of Ice and Fire"). A list in the settings merges such
+names, e.g. `Die Nebelgeborenen = Mistborn`. The series names in calibre
+stay unchanged; "Started series", "TBR by series" and the series checks
+count the names as one series. Groups from "Several names" in the data
+quality dialog can be taken over with one click. Automatic detection
+(same author, other language) was tried on real data and dropped: 42
+pairs, only about 5 of them real, because an author with several series
+pairs with all of them.
+
 ### Series progress chart
 
 One stacked bar (read/unread) per started series, sorted by progress.
