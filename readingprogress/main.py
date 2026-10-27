@@ -158,6 +158,7 @@ class ReadingProgressAction(InterfaceAction):
         menu.addAction(_('Purchase rate vs. reading rate'),
                        self.show_rates)
         menu.addAction(_('Age of the TBR'), self.show_age)
+        menu.addAction(_('Started series'), self.show_started)
         menu.addSeparator()
         menu.addAction(_('Check data quality'), self.show_quality)
         menu.addAction(_('Save report…'), self.save_report)
@@ -361,6 +362,9 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.export_reading_status import (
             find_date_problems,
         )
+        from calibre_plugins.readingprogress.import_days import (
+            find_import_days,
+        )
         from calibre_plugins.readingprogress.quality_dialog import (
             QualityDialog,
         )
@@ -378,22 +382,24 @@ class ReadingProgressAction(InterfaceAction):
                 collect_series(db_api, read_column))
             return (problems,
                     sum(1 for v in read_flags.values() if v is True),
-                    series_problems)
+                    series_problems,
+                    find_import_days(db_api, read_column, last_read_column))
 
         result = self._read_library(fetch)
         if result is None:
             return
-        problems, read_total, series_problems = result
-        if not problems and not series_problems:
+        problems, read_total, series_problems, import_days = result
+        if not problems and not series_problems and not import_days:
             info_dialog(
                 self.gui, _('Data quality'),
                 _('All read books have a usable read date, and no series '
-                  'problems were found.'), show=True)
+                  'problems or bulk imports were found.'), show=True)
             return
 
         QualityDialog(problems, read_total, _date_format(), self.gui,
                       on_show=self._show_in_library,
-                      series_problems=series_problems).exec()
+                      series_problems=series_problems,
+                      import_days=import_days).exec()
 
     def show_age(self):
         from calibre_plugins.readingprogress.age_dialog import AgeChartDialog
@@ -421,6 +427,30 @@ class ReadingProgressAction(InterfaceAction):
         AgeChartDialog(age_buckets(ages), MAX_AGE_YEARS, summary,
                        _decimal_separator(), self.gui, colors=self._colors(),
                        on_show=self._show_in_library).exec()
+
+    def show_started(self):
+        from calibre_plugins.readingprogress.series import (
+            collect_series,
+            started_series,
+        )
+        from calibre_plugins.readingprogress.started_dialog import (
+            StartedSeriesDialog,
+        )
+
+        started = self._read_library(
+            lambda db_api, read_column, last_read_column: started_series(
+                collect_series(db_api, read_column, last_read_column)))
+        if started is None:
+            return
+        if not started:
+            info_dialog(
+                self.gui, _('Started series'),
+                _('No started series: every series with at least two books '
+                  'is either unread or read completely.'), show=True)
+            return
+
+        StartedSeriesDialog(started, _date_format(), self.gui,
+                            on_show=self._show_in_library).exec()
 
     def save_report(self):
         from datetime import date

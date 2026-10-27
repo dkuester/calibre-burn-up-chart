@@ -286,8 +286,8 @@ msgstr "Datenqualität prüfen"
 msgid "Data quality"
 msgstr "Datenqualität"
 
-msgid "All read books have a usable read date, and no series problems were found."
-msgstr "Alle gelesenen Bücher haben ein brauchbares Lesedatum, und bei den Reihen gibt es keine Auffälligkeiten."
+msgid "All read books have a usable read date, and no series problems or bulk imports were found."
+msgstr "Alle gelesenen Bücher haben ein brauchbares Lesedatum, und es gibt weder Auffälligkeiten bei den Reihen noch Sammel-Importe."
 
 msgid "No read date"
 msgstr "Kein Lesedatum"
@@ -300,6 +300,33 @@ msgstr "<b>{count} von {read} gelesenen Büchern haben ein fragwürdiges Lesedat
 
 msgid "Tip: if many of them were added on the same day, the date added is probably wrong (a bulk import), not the read date. Sort by \"Added\" to spot such days."
 msgstr "Tipp: Wurden viele davon am selben Tag aufgenommen, ist vermutlich das Aufnahmedatum falsch (Sammel-Import), nicht das Lesedatum. Nach „Aufgenommen“ sortieren, um solche Tage zu finden."
+
+msgid "{count} of them were added on a day that looks like a bulk import (see the tab \"Bulk imports\"). For them the date added is probably wrong, not the read date."
+msgstr "{count} davon wurden an einem Tag aufgenommen, der nach einem Sammel-Import aussieht (siehe Reiter „Sammel-Importe“). Bei ihnen ist vermutlich das Aufnahmedatum falsch, nicht das Lesedatum."
+
+msgid "Bulk imports"
+msgstr "Sammel-Importe"
+
+msgid "<b>{count} days look like a bulk import</b> (moving or rebuilding the library): at least {books} books added on the same day, from at least {groups} different series or authors. Bundles (many books by one author or of one series) do not count."
+msgstr "<b>{count} Tage sehen nach einem Sammel-Import aus</b> (Umzug oder Neuaufbau der Bibliothek): mindestens {books} Bücher am selben Tag aufgenommen, aus mindestens {groups} verschiedenen Reihen oder von verschiedenen Autoren. Bundles (viele Bücher eines Autors oder einer Reihe) zählen nicht."
+
+msgid "The date added of these books is probably the import date, not the purchase date. This skews the burn-up chart, the buying rate, the backlog age and the cases \"read before added\". Double-click a day to show its books in calibre."
+msgstr "Das Aufnahmedatum dieser Bücher ist vermutlich das Importdatum, nicht das Kaufdatum. Das verfälscht das Burn-up-Chart, die Kaufrate, das Alter des SuB und die Fälle „gelesen vor Aufnahme“. Doppelklick auf einen Tag zeigt seine Bücher in calibre."
+
+msgid "Authors"
+msgstr "Autoren"
+
+msgid "Series/authors"
+msgstr "Reihen/Autoren"
+
+msgid "Largest group"
+msgstr "Größte Gruppe"
+
+msgid "Before added"
+msgstr "Vor Aufnahme"
+
+msgid "Without file"
+msgstr "Ohne Datei"
 
 msgid "Show selected in calibre"
 msgstr "Ausgewählte in calibre zeigen"
@@ -369,6 +396,31 @@ msgstr "Band {numbers} mehrfach"
 
 msgid "Volume {numbers} unread, read up to {last}"
 msgstr "Band {numbers} ungelesen, gelesen bis {last}"
+
+# Started series dialog
+msgid "Started series"
+msgstr "Angefangene Reihen"
+
+msgid "No started series: every series with at least two books is either unread or read completely."
+msgstr "Keine angefangenen Reihen: Jede Reihe mit mindestens zwei Büchern ist entweder ungelesen oder ganz gelesen."
+
+msgid "<b>{count} started series:</b> at least two books, at least one of them read and one unread. The longest unread come first."
+msgstr "<b>{count} angefangene Reihen:</b> mindestens zwei Bücher, davon mindestens eines gelesen und eines ungelesen. Die am längsten liegengebliebenen stehen oben."
+
+msgid "\"After highest read\" appears when an earlier volume is still unread (a gap). A series under several names is listed once per name; \"Check data quality\" shows such names."
+msgstr "„Nach dem höchsten gelesenen“ erscheint, wenn ein früherer Band noch ungelesen ist (eine Lücke). Eine Reihe unter mehreren Namen steht einmal pro Name in der Liste; „Datenqualität prüfen“ zeigt solche Namen."
+
+msgid "Show next volume in calibre"
+msgstr "Nächsten Band in calibre zeigen"
+
+msgid "Show whole series in calibre"
+msgstr "Ganze Reihe in calibre zeigen"
+
+msgid "Next volume"
+msgstr "Nächster Band"
+
+msgid "After highest read"
+msgstr "Nach dem höchsten gelesenen"
 
 # Age of the TBR chart
 msgid "Age of the TBR"

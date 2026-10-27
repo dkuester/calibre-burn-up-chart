@@ -37,6 +37,28 @@
   Bücher in calibre, der Tab lässt sich als CSV speichern. Der Bericht
   zählt die drei Arten im Abschnitt „Datenqualität“. Es wird nichts
   geändert.
+- **Sammel-Import-Tage in der Datenqualität:** Ein Tab „Sammel-Importe“
+  listet Tage, an denen mindestens 20 Bücher aus mindestens 15
+  verschiedenen Reihen oder von verschiedenen Autoren (Reihe, ohne
+  Reihe der erste Autor) aufgenommen wurden, typisch bei Umzug oder
+  Neuaufbau der Bibliothek. Ihr Aufnahmedatum ist vermutlich das
+  Importdatum, nicht das Kaufdatum. Bundles (viele Bücher eines Autors
+  oder einer Reihe) zählen nicht. Pro Tag stehen Bücher, Reihen/Autoren,
+  die größte Gruppe und wie viele gelesen, vor der Aufnahme gelesen,
+  ohne Lesedatum und ohne Datei sind (die CSV hat zusätzlich die Zahl
+  der Autoren und die Buch-IDs). Ein Doppelklick
+  zeigt die Bücher des Tages in calibre, der Tab lässt sich als CSV
+  speichern. Der Tab zum Lesedatum sagt, wie viele seiner Fälle an
+  einem solchen Tag aufgenommen wurden. Es wird nichts geändert.
+- **Angefangene Reihen:** Ein neuer Menüeintrag listet die angefangenen,
+  aber nicht beendeten Reihen (mindestens zwei Bücher, teils gelesen,
+  teils ungelesen): Fortschritt („60/76“), den nächsten ungelesenen Band
+  mit Nummer und Titel und wann zuletzt etwas aus der Reihe gelesen
+  wurde. Die am längsten liegengebliebenen Reihen stehen oben. Bei einer
+  Lücke zeigt eine zweite Spalte den ersten Band nach dem höchsten
+  gelesenen. Ein Doppelklick zeigt den nächsten Band in calibre; Knöpfe
+  zeigen den nächsten Band oder die ganze Reihe, und die Liste lässt
+  sich als CSV speichern.
 
 ### Geändert
 

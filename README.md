@@ -35,8 +35,9 @@ Python installation is needed.
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
+| **Started series** | Series begun but not finished, with progress, the next unread volume and when the series was last read, stalled ones first; shows the next volume in calibre. |
 | **Report** | Saves the key figures as Markdown or as a single HTML page with the burn-up and rate charts, plus the yearly goal with Reading Goal. |
-| **Data quality check** | Lists read books without a read date or read before being added, and series problems: one series under several names, duplicate volume numbers and gaps (an earlier volume unread although a later one is read). Shows the books in calibre's book list for fixing. |
+| **Data quality check** | Lists read books without a read date or read before being added, and series problems: one series under several names, duplicate volume numbers and gaps (an earlier volume unread although a later one is read), plus days that look like a bulk import (many books from many series and authors), whose date added is probably wrong. Shows the books in calibre's book list for fixing. |
 | **Reading delay** | For each book marked as read: the time between adding it to calibre and reading it, as a scatter plot with median and mean; hover names the book, click shows it in calibre. |
 | **Time range** | Show all time, or only the last 5 or 2 years up to today. |
 | **Interactive** | Tooltips in every chart. In the burn-up and reading-delay charts, zoom with the mouse wheel, pan by dragging, double-click to reset. |
@@ -75,7 +76,8 @@ The toolbar button opens a menu with four charts (five with Reading Goal), a dat
 - **Time between purchase and reading**: the reading delay per book.
 - **Purchase rate vs. reading rate**: books added and read per month.
 - **Age of the TBR**: unread books by years since they were added.
-- **Check data quality**: read books without a usable read date and series problems (several names, duplicate volume numbers, gaps), to fix them in calibre.
+- **Started series**: series begun but not finished, with the next volume to read.
+- **Check data quality**: read books without a usable read date and series problems (several names, duplicate volume numbers, gaps) and bulk-import days, to fix them in calibre.
 - **Save report…**: the key figures as Markdown, or as an HTML page with charts.
 
 ## Configuration
@@ -121,11 +123,13 @@ readingprogress/
 ├── age_dialog.py            # age-of-the-TBR dialog
 ├── chart_dialog.py          # burn-up chart dialog (QPainter)
 ├── goal_dialog.py           # yearly reading goal dialog
+├── import_days.py           # Qt-free bulk-import day detection
 ├── quality_dialog.py        # data quality dialog
 ├── rates_dialog.py          # purchase rate vs. reading rate dialog
 ├── reading_goal.py          # Qt-free, read-only Reading Goal data
 ├── report.py                # Qt-free Markdown/HTML report
-├── series.py                # Qt-free series data and series checks
+├── series.py                # Qt-free series data, series checks, started series
+├── started_dialog.py        # started-series dialog
 ├── delay_dialog.py          # reading-delay chart dialog
 ├── export_reading_status.py # reads the live calibre database
 ├── localization.py          # gettext setup

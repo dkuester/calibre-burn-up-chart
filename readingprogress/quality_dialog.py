@@ -1,10 +1,12 @@
 """
 Dialog for the data-quality check.
 
-Two tabs: read books whose read date the charts cannot use as is (no
-read date, or read before being added), and series problems (one series
-under several names, duplicate volume numbers, gaps). Shows the affected
-books in calibre's book list on request. It never changes book data.
+Three tabs: read books whose read date the charts cannot use as is (no
+read date, or read before being added), days that look like a bulk
+import (their date added is probably not the purchase date), and series
+problems (one series under several names, duplicate volume numbers,
+gaps). Shows the affected books in calibre's book list on request. It
+never changes book data.
 """
 
 import csv
@@ -14,6 +16,12 @@ from calibre_plugins.readingprogress.export_reading_status import (
     MISSING_LAST_READ,
     READ_BEFORE_ADDED,
     problem_csv_rows,
+)
+from calibre_plugins.readingprogress.import_days import (
+    MIN_BOOKS,
+    MIN_GROUPS,
+    import_day_csv_rows,
+    problems_on_import_days,
 )
 from calibre_plugins.readingprogress.localization import _
 from calibre_plugins.readingprogress.series import (
@@ -92,10 +100,11 @@ class QualityDialog(QDialog):
     """
 
     def __init__(self, problems, read_total, date_format, parent=None,
-                 on_show=None, series_problems=()):
+                 on_show=None, series_problems=(), import_days=()):
         super().__init__(parent)
         self.problems = problems
         self.series_problems = list(series_problems)
+        self.import_days = list(import_days)
         self.date_format = date_format
         self.on_show = on_show
         self.labels = {
@@ -116,6 +125,8 @@ class QualityDialog(QDialog):
         self.pages = []
         if problems:
             self._add_date_tab(read_total)
+        if self.import_days:
+            self._add_import_tab()
         if self.series_problems:
             self._add_series_tab()
         layout.addWidget(self.tabs, 1)
@@ -168,10 +179,18 @@ class QualityDialog(QDialog):
             "they were added.").format(
                 count=len(problems), read=read_total, missing=missing,
                 early=len(problems) - missing)
-        hint = _(
-            "Tip: if many of them were added on the same day, the date "
-            "added is probably wrong (a bulk import), not the read date. "
-            "Sort by \"Added\" to spot such days.")
+        on_import_days = problems_on_import_days(problems, self.import_days)
+        if on_import_days:
+            hint = _(
+                "{count} of them were added on a day that looks like a bulk "
+                "import (see the tab \"Bulk imports\"). For them the date "
+                "added is probably wrong, not the read date.").format(
+                    count=on_import_days)
+        else:
+            hint = _(
+                "Tip: if many of them were added on the same day, the date "
+                "added is probably wrong (a bulk import), not the read date. "
+                "Sort by \"Added\" to spot such days.")
 
         headers = [_("Problem"), _("Title"), _("Author(s)"), _("Added"),
                    _("Last read"), _("Days before")]
@@ -198,6 +217,47 @@ class QualityDialog(QDialog):
         _size_columns(table, {1: 360, 2: 220})
         self._add_page(_("Read dates"), [summary, hint], table,
                        [p['book_id'] for p in problems], self._save_date_csv)
+
+    def _add_import_tab(self):
+        days = self.import_days
+        summary = _(
+            "<b>{count} days look like a bulk import</b> (moving or "
+            "rebuilding the library): at least {books} books added on the "
+            "same day, from at least {groups} different series or authors. "
+            "Bundles (many books by one author or of one series) do not "
+            "count.").format(count=len(days), books=MIN_BOOKS,
+                             groups=MIN_GROUPS)
+        hint = _(
+            "The date added of these books is probably the import date, "
+            "not the purchase date. This skews the burn-up chart, the "
+            "buying rate, the backlog age and the cases \"read before "
+            "added\". Double-click a day to show its books in calibre.")
+
+        # The number of authors is only in the CSV, to keep the table
+        # narrow; the series/authors count is what tells imports apart.
+        headers = [_("Added"), _("Books"), _("Series/authors"),
+                   _("Largest group"), _("Read"), _("Before added"),
+                   _("No read date"), _("Without file")]
+        rows = []
+        for d in days:
+            largest = '{name} ({count})'.format(name=d['largest_group'],
+                                                count=d['largest_count'])
+            cells = [(d['added'].strftime(self.date_format),
+                      d['added'].toordinal()),
+                     (str(d['books']), d['books']),
+                     (str(d['groups']), d['groups']),
+                     (largest, d['largest_group'].lower())]
+            cells += [(str(d[key]), d[key])
+                      for key in ('read', 'read_before_added',
+                                  'missing_last_read', 'without_file')]
+            rows.append((cells, d['book_ids']))
+        table = _new_table(self, headers, rows)
+        table.setSortingEnabled(True)
+        table.sortItems(0, Qt.SortOrder.AscendingOrder)
+        _size_columns(table, {3: 240})
+        book_ids = [i for d in days for i in d['book_ids']]
+        self._add_page(_("Bulk imports"), [summary, hint], table, book_ids,
+                       self._save_import_csv)
 
     def _add_series_tab(self):
         problems = self.series_problems
@@ -276,6 +336,14 @@ class QualityDialog(QDialog):
         self._save_csv('reading-progress-data-quality.csv', header,
                        problem_csv_rows(self.problems, self.date_format,
                                         self.labels))
+
+    def _save_import_csv(self):
+        header = [_("Added"), _("Books"), _("Authors"), _("Series/authors"),
+                  _("Largest group"), _("Read"), _("Before added"),
+                  _("No read date"), _("Without file"), _("Book IDs")]
+        self._save_csv('reading-progress-bulk-imports.csv', header,
+                       import_day_csv_rows(self.import_days,
+                                           self.date_format))
 
     def _save_series_csv(self):
         header = [_("Problem"), _("Series"), _("Details"), _("Books"),
