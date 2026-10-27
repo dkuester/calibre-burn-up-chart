@@ -90,6 +90,9 @@
 
 ### Geändert
 
+- **Setzt calibre 9.3.1 oder neuer voraus**, die erste Version mit einer
+  fehlerbereinigten eingebauten Spalte „Pages“, die eine geplante
+  Seitenzahl-Auswertung nutzen wird.
 - **Robuste Prognose mit Unsicherheitsband:** Die Prognose fittet keine
   Regression über die letzten 12 Monate mehr, die Sammel-Importe und
   große Käufe stark kippten. Sie schreibt jetzt den heutigen SuB mit dem
@@ -110,6 +113,15 @@
   links oben, wo die kumulierten Linien meist niedrig beginnen, und
   verdeckt so keine steigende Prognose mehr. Würde sie dort mehr
   Linien verdecken als rechts oben, rückt sie nach rechts.
+
+### Behoben
+
+- **Tage in Ortszeit:** Aufnahme- und Lesedaten fallen jetzt auf
+  denselben Tag wie in der Bücherliste von calibre. calibre speichert
+  sie in UTC, daher zählte ein abends (deutscher Zeit) aufgenommenes
+  oder gelesenes Buch bisher zum Vortag, am Monatsende sogar zum
+  Vormonat. Das betrifft alle Charts, den Bericht, die Datenqualität
+  (Sammel-Importe, gelesen vor Aufnahme) und die angefangenen Reihen.
 
 ## [1.7.0] – 2026-10-26
 

@@ -6,7 +6,7 @@
 
 [![Release](https://img.shields.io/github/v/release/dkuester/calibre-burn-up-chart?label=release)](https://github.com/dkuester/calibre-burn-up-chart/releases/latest)
 [![CI](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml)
-[![calibre](https://img.shields.io/badge/calibre-8.0%2B-informational)](#voraussetzungen)
+[![calibre](https://img.shields.io/badge/calibre-9.3.1%2B-informational)](#voraussetzungen)
 [![Lizenz](https://img.shields.io/github/license/dkuester/calibre-burn-up-chart)](LICENSE)
 
 [Installation](#installation) · [Funktionen](#funktionen) · [Einstellungen](#einstellungen) · [Entwicklung](#entwicklung) · [Änderungen](CHANGELOG.de.md) · [Roadmap](ROADMAP.de.md) · [English](README.md)
@@ -51,7 +51,7 @@ Python-Installation ist nicht nötig.
 
 ## Voraussetzungen
 
-- calibre 8.0 oder neuer
+- calibre 9.3.1 oder neuer
 - Zwei benutzerdefinierte Spalten in der Bibliothek (Namen in den Einstellungen änderbar):
 
 | Spalte | Typ | Zweck |
@@ -74,7 +74,7 @@ Python-Installation ist nicht nötig.
 
 ## Benutzung
 
-Der Knopf in der Werkzeugleiste öffnet ein Menü mit vier Charts (fünf mit „Reading Goal“), einer Datenprüfung und einem Bericht:
+Der Knopf in der Werkzeugleiste öffnet ein Menü mit fünf Charts (sechs mit „Reading Goal“), den angefangenen Reihen, einer Datenprüfung und einem Bericht:
 
 - **Burn-up-Chart**: Bestand, gelesene Bücher und SuB im Zeitverlauf.
 - **Jahresziel**: Fortschritt der Jahresliste des Plugins „Reading Goal“ gegenüber dem Soll. Erscheint nur, wenn das Plugin Daten für die aktuelle Bibliothek hat.
@@ -150,6 +150,7 @@ readingprogress/
 ├── images/icon.png
 └── translations/de/LC_MESSAGES/readingprogress.{po,mo}
 tests/                       # pytest-Suite
+make_icon.py                 # zeichnet images/icon.png (braucht matplotlib, nur Entwicklung)
 ```
 
 `export_reading_status.py` läuft im calibre-Prozess und nutzt die laufende
@@ -166,7 +167,7 @@ Tupel `__version__` in `readingprogress/__init__.py`.
 1. `__version__` anheben und einen Eintrag in [CHANGELOG.md](CHANGELOG.md) und
    [CHANGELOG.de.md](CHANGELOG.de.md) ergänzen.
 2. Per Pull-Request nach `main` mergen.
-3. Den Merge-Commit taggen: `git tag -a v1.7.0 -m "…" && git push origin v1.7.0`.
+3. Den Merge-Commit taggen: `git tag -a v1.8.0 -m "…" && git push origin v1.8.0`.
 4. Die CI baut `ReadingProgress-<version>.zip` und veröffentlicht das Release.
 
 </details>
@@ -180,6 +181,15 @@ Tupel `__version__` in `readingprogress/__init__.py`.
 | Geplante Funktionen | [ROADMAP.de.md](ROADMAP.de.md) |
 | Frühere Historie | Pull-Requests bis v1.6.0 liegen im [archivierten Codeberg-Repo](https://codeberg.org/hortizept/calibre-burn-up-chart). |
 | Mitwirken | Pull-Requests gegen `main`; die CI muss grün sein. |
+
+## Danksagung
+
+| Projekt | Rolle | Lizenz |
+|---|---|---|
+| [calibre](https://calibre-ebook.com) von Kovid Goyal | Die Host-Anwendung: Bibliothek, Datenbank, Oberfläche und Plugin-API. | GPL v3 |
+| [Qt 6](https://www.qt.io) und [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) | In calibre enthalten; alle Dialoge und Charts (QPainter). | LGPL v3 (Qt), GPL v3 (PyQt) |
+| [Reading Goal](https://www.mobileread.com/forums/showthread.php?t=355769) von Thiago Oliveira | calibre-Plugin, dessen Jahresziel das Chart „Jahresziel“ liest (nur lesend). | GPL v3 |
+| [pytest](https://pytest.org), [pytest-cov](https://github.com/pytest-dev/pytest-cov), [ruff](https://github.com/astral-sh/ruff), [matplotlib](https://matplotlib.org) | Nur Entwicklung: Tests, Coverage, Lint und das Icon. | MIT, MIT, MIT, PSF-basiert |
 
 ## KI-Unterstützung
 
