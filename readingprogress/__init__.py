@@ -17,7 +17,7 @@ class ReadingProgressPlugin(InterfaceActionBase):
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Daniel'
     version = __version__
-    minimum_calibre_version = (8, 0, 0)
+    minimum_calibre_version = (9, 3, 1)
 
     actual_plugin = 'calibre_plugins.readingprogress.main:ReadingProgressAction'
 

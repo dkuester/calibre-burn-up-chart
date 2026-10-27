@@ -83,6 +83,8 @@
 
 ### Changed
 
+- **Requires calibre 9.3.1 or newer**, the first version with a fixed
+  built-in "Pages" column, which a planned page-count analysis will use.
 - **Robust forecast with an uncertainty band:** The forecast no longer
   fits a regression over the last 12 months, which bulk imports and big
   purchases tilted badly. It now continues today's TBR with the

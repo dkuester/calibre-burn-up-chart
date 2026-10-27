@@ -6,7 +6,7 @@
 
 [![Release](https://img.shields.io/github/v/release/dkuester/calibre-burn-up-chart?label=release)](https://github.com/dkuester/calibre-burn-up-chart/releases/latest)
 [![CI](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dkuester/calibre-burn-up-chart/actions/workflows/ci.yml)
-[![calibre](https://img.shields.io/badge/calibre-8.0%2B-informational)](#requirements)
+[![calibre](https://img.shields.io/badge/calibre-9.3.1%2B-informational)](#requirements)
 [![License](https://img.shields.io/github/license/dkuester/calibre-burn-up-chart)](LICENSE)
 
 [Installation](#installation) · [Features](#features) · [Configuration](#configuration) · [Development](#development) · [Changelog](CHANGELOG.md) · [Roadmap](ROADMAP.md) · [Deutsch](README.de.md)
@@ -50,7 +50,7 @@ Python installation is needed.
 
 ## Requirements
 
-- calibre 8.0 or newer
+- calibre 9.3.1 or newer
 - Two custom columns in your library (names can be changed in the settings):
 
 | Column | Type | Purpose |
@@ -72,7 +72,7 @@ Python installation is needed.
 
 ## Usage
 
-The toolbar button opens a menu with four charts (five with Reading Goal), a data check and a report:
+The toolbar button opens a menu with five charts (six with Reading Goal), the started series, a data check and a report:
 
 - **Burn-up chart**: library size, books read and backlog over time.
 - **Reading goal**: progress of the Reading Goal plugin's yearly list against the target. Shown only when the plugin has data for the current library.
@@ -148,6 +148,7 @@ readingprogress/
 ├── images/icon.png
 └── translations/de/LC_MESSAGES/readingprogress.{po,mo}
 tests/                       # pytest suite
+make_icon.py                 # draws images/icon.png (needs matplotlib, development only)
 ```
 
 `export_reading_status.py` runs inside the calibre process and uses the live
@@ -164,7 +165,7 @@ The plugin follows [Semantic Versioning](https://semver.org/). The version is th
 1. Update `__version__` and add an entry to [CHANGELOG.md](CHANGELOG.md) and
    [CHANGELOG.de.md](CHANGELOG.de.md).
 2. Merge to `main` via pull request.
-3. Tag the merge commit: `git tag -a v1.7.0 -m "…" && git push origin v1.7.0`.
+3. Tag the merge commit: `git tag -a v1.8.0 -m "…" && git push origin v1.8.0`.
 4. CI builds `ReadingProgress-<version>.zip` and publishes the release.
 
 </details>
@@ -178,6 +179,15 @@ The plugin follows [Semantic Versioning](https://semver.org/). The version is th
 | Planned features | [ROADMAP.md](ROADMAP.md) |
 | Earlier history | Pull requests up to v1.6.0 are in the [archived Codeberg repository](https://codeberg.org/hortizept/calibre-burn-up-chart). |
 | Contributing | Pull requests against `main`; CI must pass. |
+
+## Credits
+
+| Project | Role | License |
+|---|---|---|
+| [calibre](https://calibre-ebook.com) by Kovid Goyal | The host application: library, database, interface and plugin API. | GPL v3 |
+| [Qt 6](https://www.qt.io) and [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) | Bundled with calibre; all dialogs and charts (QPainter). | LGPL v3 (Qt), GPL v3 (PyQt) |
+| [Reading Goal](https://www.mobileread.com/forums/showthread.php?t=355769) by Thiago Oliveira | calibre plugin whose yearly goal the "Reading goal" chart reads (read-only). | GPL v3 |
+| [pytest](https://pytest.org), [pytest-cov](https://github.com/pytest-dev/pytest-cov), [ruff](https://github.com/astral-sh/ruff), [matplotlib](https://matplotlib.org) | Development only: tests, coverage, lint and the icon. | MIT, MIT, MIT, PSF-based |
 
 ## AI assistance
 
