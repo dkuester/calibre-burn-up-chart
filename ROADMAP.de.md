@@ -30,8 +30,16 @@ Datenexport. Aufwand: mittel.
 
 ## Niedrige Priorität (optional)
 
-### Seitenzahl-Auswertung *(optional)*
+### Seiten im SuB *(optional)*
 
-Gelesene Seiten pro Monat oder Jahr und Seiten im SuB, auf Basis der
-calibre-Spalte „Pages“ (das Plugin setzt calibre 9.3.1 voraus, das sie
-mitbringt). Aufwand: mittel.
+Seiten im SuB, auf Basis einer einstellbaren Seitenzahl-Spalte (die
+gelesenen Seiten pro Monat stehen bereits im Bericht unter
+„Lesegeschwindigkeit“). calibre 9.3.1 bringt die Spalte „Pages“ mit;
+stattdessen lässt sich eine benutzerdefinierte Spalte konfigurieren
+(z. B. aus dem Plugin „Count Pages“). Aufwand: klein.
+
+### Lesegeschwindigkeit im Chart *(optional)*
+
+Die Lesegeschwindigkeit (Seiten pro Monat und pro Tag) im Burn-up-Chart
+oder im Dialog „Kaufrate vs. Leserate“ zeigen, nicht nur im Bericht. Die
+Zahlen gibt es schon (Bericht, „Lesegeschwindigkeit“). Aufwand: klein.

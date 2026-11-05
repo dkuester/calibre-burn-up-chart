@@ -72,6 +72,11 @@ COLUMN_DATATYPES = {
     "last_read": ("datetime", "Date"),
 }
 
+# Calibre's built-in page-count field; a custom column may override it.
+DEFAULT_PAGES_COLUMN = "pages"
+# Custom-column datatypes that can hold a page count
+PAGES_DATATYPES = ("int", "float")
+
 
 def custom_column_types(db_api):
     """``{lookup name: datatype}`` of the library's custom columns."""
@@ -96,10 +101,26 @@ def column_problems(datatypes, read_column, last_read_column):
     return problems
 
 
+def pages_column_problem(datatypes, pages_column):
+    """The configured page-count column the report cannot use, or ``None``.
+
+    ``datatypes`` is from :func:`custom_column_types`. ``pages`` is
+    Calibre's own field and always usable; any other name must be an
+    existing custom column of type int or float.
+    """
+    if pages_column == DEFAULT_PAGES_COLUMN:
+        return None
+    actual = datatypes.get(pages_column)
+    if actual in PAGES_DATATYPES:
+        return None
+    return (pages_column, "Number", actual)
+
+
 def describe_column_problems(problems, tr):
     """One translated line per problem from :func:`column_problems`."""
     # Literal tr() calls, so the type names are found for translation
-    type_names = {"Yes/No": tr("Yes/No"), "Date": tr("Date")}
+    type_names = {"Yes/No": tr("Yes/No"), "Date": tr("Date"),
+                  "Number": tr("Number")}
     lines = []
     for column, type_name, actual in problems:
         if actual is None:

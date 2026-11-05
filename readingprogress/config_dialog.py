@@ -14,10 +14,12 @@ from calibre_plugins.readingprogress.chart_common import (
 )
 from calibre_plugins.readingprogress.config_helpers import (
     DAYS_IN_TBR_LABEL,
+    DEFAULT_PAGES_COLUMN,
     column_problems,
     custom_column_types,
     days_in_tbr_template,
     describe_column_problems,
+    pages_column_problem,
 )
 from calibre_plugins.readingprogress.localization import _
 from calibre_plugins.readingprogress.series import (
@@ -121,6 +123,29 @@ class ConfigWidget(QWidget):
         layout.addRow(_('Custom column "last read":'),
                       self.last_read_column_edit)
 
+        self.pages_column_edit = QLineEdit()
+        self.pages_column_edit.setText(config['pages_column'])
+        self.pages_column_edit.setPlaceholderText(DEFAULT_PAGES_COLUMN)
+        layout.addRow(_('Page count column:'), self.pages_column_edit)
+
+        # --- Target purchase rate ---
+        target = config['target_buy_rate']
+        self.target_buy_check = QCheckBox(
+            _('Track a target purchase rate'))
+        self.target_buy_check.setChecked(target is not None)
+        layout.addRow(self.target_buy_check)
+
+        self.target_buy_spin = QDoubleSpinBox()
+        self.target_buy_spin.setRange(0.0, 100.0)
+        self.target_buy_spin.setSingleStep(0.5)
+        self.target_buy_spin.setDecimals(1)
+        self.target_buy_spin.setValue(float(target) if target is not None
+                                      else 0.0)
+        self.target_buy_spin.setSuffix(_(' books/month'))
+        self.target_buy_spin.setEnabled(self.target_buy_check.isChecked())
+        self.target_buy_check.toggled.connect(self.target_buy_spin.setEnabled)
+        layout.addRow(_('Target purchase rate:'), self.target_buy_spin)
+
         # --- "Days in TBR" composite column ---
         self.tbr_column_btn = QPushButton(_('Create column "Days in TBR"'))
         self.tbr_column_btn.clicked.connect(self._create_days_in_tbr_column)
@@ -154,6 +179,16 @@ class ConfigWidget(QWidget):
             '<b>Custom columns:</b> Names of your Calibre columns (with '
             'leading #) used to mark books as read and to store the last '
             'read date.<br><br>'
+            '<b>Page count column:</b> "pages" is Calibre\'s own page '
+            'count; enter a custom column (with leading #), for example '
+            'from the "Count Pages" plugin, to use its page numbers '
+            'instead. A custom column can also hold counts you add by '
+            'hand, e.g. for paper books the plugins cannot calculate.'
+            '<br><br>'
+            '<b>Target purchase rate:</b> If set, the burn-up chart shows '
+            'the reading rate that target implies (instead of the two '
+            'computed ways), and the "Purchase rate vs. reading rate" '
+            'dialog shows whether you stay within it.<br><br>'
             '<b>Days in TBR:</b> A column calibre computes itself: for '
             'read books the days between adding and reading, for unread '
             'books the days since adding. Sort by it to find the books '
@@ -186,6 +221,13 @@ class ConfigWidget(QWidget):
         )
         config['last_read_column'] = (
             self.last_read_column_edit.text().strip() or '#last_read'
+        )
+        config['pages_column'] = (
+            self.pages_column_edit.text().strip() or DEFAULT_PAGES_COLUMN
+        )
+        config['target_buy_rate'] = (
+            float(self.target_buy_spin.value())
+            if self.target_buy_check.isChecked() else None
         )
         groups = parse_series_groups(self.series_merge_edit.toPlainText())
         config['series_merge'] = groups
@@ -224,11 +266,15 @@ class ConfigWidget(QWidget):
         if db is None:
             return
         try:
-            problems = column_problems(custom_column_types(db),
-                                       config['read_column'],
+            datatypes = custom_column_types(db)
+            problems = column_problems(datatypes, config['read_column'],
                                        config['last_read_column'])
+            pages_problem = pages_column_problem(datatypes,
+                                                 config['pages_column'])
         except Exception:
             return
+        if pages_problem:
+            problems.append(pages_problem)
         if problems:
             warning_dialog(
                 self, _('Column not usable'),

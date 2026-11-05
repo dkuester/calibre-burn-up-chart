@@ -17,6 +17,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     MARGIN_BOTTOM,
     MARGIN_LEFT,
     MARGIN_RIGHT,
+    PEN_DASH,
     PEN_NOPEN,
     PEN_SOLID,
     RENDER_ANTIALIASING,
@@ -35,6 +36,7 @@ from calibre_plugins.readingprogress.chart_dialog import (
     show_paint_error,
 )
 from calibre_plugins.readingprogress.localization import _
+from calibre_plugins.readingprogress.report import adherence_text
 from qt.core import (
     QColor,
     QDialog,
@@ -79,17 +81,20 @@ class RatesChartWidget(QWidget):
     """
 
     def __init__(self, rates, decimal_sep='.', parent=None, colors=None,
-                 time_range='all'):
+                 time_range='all', target=None, adherence=None):
         super().__init__(parent)
         self.rates = rates
         self.decimal_sep = decimal_sep
         self.time_range = time_range
+        self.target = target
+        self.adherence = adherence
         self.chrome = chrome_for(self)
         bg = self.chrome['background']
         series = build_series_colors(
             is_dark_background((bg.red(), bg.green(), bg.blue())), colors)
         self.color_added = series['backlog']
         self.color_read = series['read']
+        self.color_target = series['goal']
         self._axes = AxesRenderer()
         self._series = SeriesRenderer()
         self._legend = LegendRenderer()
@@ -110,11 +115,12 @@ class RatesChartWidget(QWidget):
             show_paint_error(self, e)
 
     def _plot_rect(self):
+        top = MARGIN_TOP + (24 if self.adherence else 0)
         return QRectF(
             MARGIN_LEFT,
-            MARGIN_TOP,
+            top,
             max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
-            max(50, self.height() - MARGIN_TOP  - MARGIN_BOTTOM),
+            max(50, self.height() - top - MARGIN_BOTTOM),
         )
 
     def _x_range(self):
@@ -159,6 +165,8 @@ class RatesChartWidget(QWidget):
 
         painter.save()
         painter.setClipRect(plot)
+        if self.target is not None:
+            self._draw_target(painter, scale)
         self._draw_balance(painter, scale)
         self._series.draw_series(painter, scale, self.rates, index=3,
                                  color=self.color_added, width=2.5)
@@ -166,16 +174,30 @@ class RatesChartWidget(QWidget):
                                  color=self.color_read, width=2.5)
         painter.restore()
 
-        self._legend.draw_entries(painter, plot, [
+        entries = [
             (_("Added (12-month average)"), self.color_added, PEN_SOLID),
             (_("Read (12-month average)"), self.color_read, PEN_SOLID),
             (_("TBR shrinking (more read than added)"),
              _with_alpha(self.color_read, FILL_ALPHA), None),
             (_("TBR growing (more added than read)"),
              _with_alpha(self.color_added, FILL_ALPHA), None),
-        ], self.chrome)
+        ]
+        if self.target is not None:
+            entries.append((_("Target purchase rate (≤ {target})").format(
+                target=self._number(self.target)),
+                self.color_target, PEN_DASH))
+        self._legend.draw_entries(painter, plot, entries, self.chrome)
 
         painter.end()
+
+    def _draw_target(self, painter, scale):
+        """Dashed horizontal line at the target purchase rate."""
+        y = scale.value_to_y(self.target)
+        pen = QPen(self.color_target, 2)
+        pen.setStyle(PEN_DASH)
+        painter.setPen(pen)
+        plot = scale.plot
+        painter.drawLine(QPointF(plot.left(), y), QPointF(plot.right(), y))
 
     def _draw_header(self, painter, plot):
         years = dict(TIME_RANGES).get(self.time_range)
@@ -204,6 +226,13 @@ class RatesChartWidget(QWidget):
         painter.setPen(self.chrome['muted'])
         painter.drawText(QRectF(plot.left(), 50, plot.width(), 22),
                          ALIGN_CENTER, text)
+
+        if self.adherence is not None and self.adherence['status'] != 'none':
+            painter.setPen(self.chrome['text'])
+            painter.drawText(QRectF(plot.left(), 72, plot.width(), 22),
+                             ALIGN_CENTER,
+                             adherence_text(self.adherence, _,
+                                            self.decimal_sep))
 
     def _draw_balance(self, painter, scale):
         """Shades the area between the two averages: read color where
@@ -275,14 +304,16 @@ class RatesChartDialog(QDialog):
     """Dialog with the rates chart, time range, export buttons and Close."""
 
     def __init__(self, rates, decimal_sep='.', parent=None, colors=None,
-                 time_range='all', on_time_range_changed=None):
+                 time_range='all', on_time_range_changed=None, target=None,
+                 adherence=None):
         super().__init__(parent)
         self.setWindowTitle(_("Purchase rate vs. reading rate"))
         self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
         self.chart = RatesChartWidget(rates, decimal_sep, self,
-                                      colors=colors, time_range=time_range)
+                                      colors=colors, time_range=time_range,
+                                      target=target, adherence=adherence)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()

@@ -35,7 +35,10 @@ def pace_number(value, decimal_sep='.'):
 def pace_text(pace, tr, decimal_sep='.'):
     """What to do to reach the goal of ``pace``, a dict from
     ``export_reading_status.required_pace()`` – e.g. 'read 4.6 books/month
-    or buy at most 2.1 books/month'. ``tr`` translates the templates."""
+    (buying stays at 3.2) or buy at most 2.1 books/month (reading stays
+    at 2.1)'. Each half names the rate it holds constant, so the
+    assumption behind it is visible without guessing. ``tr`` translates
+    the templates."""
     if pace['status'] == 'reached':
         return tr("already reached")
     if pace['status'] == 'too_close':
@@ -45,20 +48,108 @@ def pace_text(pace, tr, decimal_sep='.'):
         return tr("reduce the TBR by {reduction} books/month").format(
             reduction=pace_number(pace['reduction'], decimal_sep))
     read = pace_number(pace['read_needed'], decimal_sep)
+    added = pace_number(pace['added_rate'], decimal_sep)
+    read_rate = pace_number(pace['read_rate'], decimal_sep)
     if pace['max_added'] > 0:
-        return tr("read {read} books/month or buy at most {added} "
-                  "books/month").format(
-            read=read, added=pace_number(pace['max_added'], decimal_sep))
-    return tr("read {read} books/month or buy nothing and still read "
-              "{reduction} books/month").format(
-        read=read, reduction=pace_number(pace['reduction'], decimal_sep))
+        return tr("read {read} books/month (buying stays at {added}) or "
+                  "buy at most {max} books/month (reading stays at "
+                  "{read_rate})").format(
+            read=read, added=added,
+            max=pace_number(pace['max_added'], decimal_sep),
+            read_rate=read_rate)
+    return tr("read {read} books/month (buying stays at {added}) or buy "
+              "nothing and still read {reduction} books/month").format(
+        read=read, added=added,
+        reduction=pace_number(pace['reduction'], decimal_sep))
 
 
-def pace_line(pace, tr, date_str, decimal_sep='.'):
-    """Full sentence for the burn-up chart: 'For TBR = 0 by <date>: …'."""
-    return tr("For TBR = {tbr} by {date}: {pace}.").format(
-        tbr=pace['target_backlog'], date=date_str,
-        pace=pace_text(pace, tr, decimal_sep))
+def target_pace_text(pace, tr, decimal_sep='.'):
+    """What to do at a fixed purchase target (``pace`` from
+    ``export_reading_status.pace_for_target()``): read the target plus
+    the required reduction."""
+    if pace['status'] == 'reached':
+        return tr("already reached")
+    if pace['status'] == 'too_close':
+        return tr("target date too close – choose a later date in the "
+                  "settings")
+    return tr("read {read} books/month at a purchase target of {buy}").format(
+        read=pace_number(pace['read_needed'], decimal_sep),
+        buy=pace_number(pace['added_rate'], decimal_sep))
+
+
+def adherence_text(adh, tr, decimal_sep='.'):
+    """The purchase target compared to the actual rate (``adh`` from
+    ``export_reading_status.purchase_adherence()``), for the report and
+    the rates chart's header."""
+    return tr("Target ≤ {target} books/month — {actual}/month over the "
+              "last {months} months, {over} over plan").format(
+        target=pace_number(adh['target'], decimal_sep),
+        actual=pace_number(adh['actual'], decimal_sep),
+        months=adh['months'],
+        over=_number(adh['over_plan'], 0, decimal_sep))
+
+
+def pace_table(tr, goals, target_buy_rate, decimal_sep='.'):
+    """Compact pace table for the burn-up chart: one row per goal, one
+    column per way, so the goal is named once instead of in every
+    sentence.
+
+    ``goals`` is a list of ``(target_backlog, pace)`` where ``pace`` is
+    from ``export_reading_status.required_pace()`` (its ``mix_*`` fields
+    fill the mixed column) or, with a ``target_buy_rate``, from
+    ``pace_for_target()`` (then there is a single column).
+
+    :return: ``(columns, rows)`` – the header labels and, per goal,
+        ``(label, [cell, …])``, all ready to draw as strings.
+    """
+    if target_buy_rate is not None:
+        columns = [tr("Read (purchase target {buy}/month)").format(
+            buy=pace_number(target_buy_rate, decimal_sep))]
+    else:
+        columns = [tr("Only read more"), tr("Only buy less"),
+                   tr("Mixed (buy → read)")]
+    rows = []
+    for target, pace in goals:
+        label = tr("TBR = {tbr}").format(tbr=target)
+        if pace['status'] == 'reached':
+            cells = [tr("already reached")] + [''] * (len(columns) - 1)
+        elif pace['status'] == 'too_close' or pace['read_needed'] is None:
+            cells = ['–'] + [''] * (len(columns) - 1)
+        elif target_buy_rate is not None:
+            cells = [pace_number(pace['read_needed'], decimal_sep)]
+        else:
+            cells = [
+                pace_number(pace['read_needed'], decimal_sep),
+                pace_number(pace['max_added'], decimal_sep),
+                tr("{buy} → {read}").format(
+                    buy=pace_number(pace['mix_added'], decimal_sep),
+                    read=pace_number(pace['mix_read_needed'], decimal_sep)),
+            ]
+        rows.append((label, cells))
+    return columns, rows
+
+
+def pace_help(rates, tr, decimal_sep='.'):
+    """Plain-text explanation of how the pace lines and the forecast are
+    calculated, for the burn-up chart's info button. ``rates`` is the
+    ``export_reading_status.robust_rates()`` dict."""
+    parts = [tr("The purchase and reading rates are a typical month: the "
+                "trimmed mean of the last {months} full months, without "
+                "the 20 % highest and lowest months, so bulk imports "
+                "barely count.").format(months=rates.get('months', 24))]
+    if rates.get('added') is not None and rates.get('read') is not None:
+        parts.append(tr("Currently that is {added} bought / {read} read "
+                        "per month.").format(
+            added=pace_number(rates['added'], decimal_sep),
+            read=pace_number(rates['read'], decimal_sep)))
+    parts.append(tr("Each recommendation has two halves with different "
+                    "assumptions: 'read N books/month' assumes you keep "
+                    "buying at the typical rate, 'buy at most M "
+                    "books/month' assumes you keep reading at the typical "
+                    "rate."))
+    parts.append(tr("The forecast line continues today's TBR from these "
+                    "rates, with a band that covers 80 % of cases."))
+    return '\n\n'.join(parts)
 
 
 def month_format(date_format):
@@ -107,8 +198,18 @@ def _capitalize(text):
 
 
 def pace_rows(data, tr, decimal_sep='.'):
-    """Report rows for ``data['pace']`` and, unless it has the same goal,
-    ``data['pace_soft']``."""
+    """Report rows for the required pace, one per goal. With a configured
+    purchase target the row names the reading rate at that target;
+    otherwise it names the two computed ways and the mixed way."""
+    if data.get('target_buy_rate') is not None:
+        paces = [data['pace_target']]
+        if (data['pace_target_soft']['target_backlog']
+                != data['pace_target']['target_backlog']):
+            paces.append(data['pace_target_soft'])
+        return [(tr("Required pace (TBR = {tbr})").format(
+                    tbr=p['target_backlog']),
+                 _capitalize(target_pace_text(p, tr, decimal_sep)))
+                for p in paces]
     paces = [data['pace']]
     if data['pace_soft']['target_backlog'] != data['pace']['target_backlog']:
         paces.append(data['pace_soft'])
@@ -116,6 +217,37 @@ def pace_rows(data, tr, decimal_sep='.'):
                 tbr=pace['target_backlog']),
              _capitalize(pace_text(pace, tr, decimal_sep)))
             for pace in paces]
+
+
+def adherence_rows(data, tr, decimal_sep='.'):
+    """Report row for the purchase target vs. the actual rate, or nothing
+    without a target or enough data."""
+    adh = data.get('adherence')
+    if not adh or adh['status'] == 'none':
+        return []
+    return [(tr("Purchase target"), adherence_text(adh, tr, decimal_sep))]
+
+
+def speed_rows(speed, tr, decimal_sep='.'):
+    """Report rows for the reading speed ``speed`` (from
+    ``export_reading_status.reading_speed()``)."""
+    return [
+        (tr("Read"), tr("{pages} pages/month ({per_day} per day)").format(
+            pages=_number(speed['pages_per_month'], 0, decimal_sep),
+            per_day=_number(speed['pages_per_day'], 0, decimal_sep))),
+        (tr("Based on"), tr(
+            "{known} of {read} read books with a page count ({percent})"
+        ).format(known=speed['known_books'], read=speed['read_books'],
+                 percent=_percent(speed['known_books'], speed['read_books'],
+                                  decimal_sep))),
+    ]
+
+
+def speed_note(speed, tr):
+    """Explanation of the reading-speed figures for the report."""
+    return tr("Pages read per month, from books with a known page count; "
+              "books without one are estimated with the median, and "
+              "months without reading count as 0.")
 
 
 def bucket_label(tr, index, bucket_count, max_years):
@@ -361,6 +493,14 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
         ],
     })
 
+    speed = data.get('speed')
+    if speed and speed['status'] != 'none':
+        sections.append({
+            'heading': tr("Reading speed"),
+            'rows': speed_rows(speed, tr, decimal_sep),
+            'note': speed_note(speed, tr),
+        })
+
     fc = data['forecast']
     pace = data['pace']
     if pace['added_rate'] is None:
@@ -384,7 +524,8 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
                 date=data['target_date'].strftime(date_format))),
             (forecast_label(fc, tr),
              forecast_text(fc, tr, date_format, decimal_sep)),
-        ] + pace_rows(data, tr, decimal_sep),
+        ] + pace_rows(data, tr, decimal_sep)
+            + adherence_rows(data, tr, decimal_sep),
         'note': note,
     })
 

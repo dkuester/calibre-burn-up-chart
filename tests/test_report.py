@@ -57,10 +57,12 @@ def test_markdown_contains_all_sections():
     assert ('| Forecast (typical month of the last 24 months) | TBR = 0 '
             'between 05.2031 and 11.2034 |') in text
     assert '| Gentle reduction | TBR = 75 on 04.09.2050 |' in text
-    assert ('| Required pace (TBR = 0) | Read 4,0 books/month or buy at '
-            'most 1,5 books/month |') in text
-    assert ('| Required pace (TBR = 75) | Read 3,2 books/month or buy at '
-            'most 2,3 books/month |') in text
+    assert ('| Required pace (TBR = 0) | Read 4,0 books/month (buying '
+            'stays at 2,5) or buy at most 1,5 books/month (reading stays '
+            'at 1,0) |') in text
+    assert ('| Required pace (TBR = 75) | Read 3,2 books/month (buying '
+            'stays at 2,5) or buy at most 2,3 books/month (reading stays '
+            'at 1,0) |') in text
     assert ('Required pace at the typical purchase rate (2,5) and reading '
             'rate (1,0) per month: mean of the last 24 full months') in text
     assert '| Median | 120 days |' in text
@@ -186,7 +188,8 @@ def test_pace_rows_skip_soft_goal_equal_to_zero_goal():
     data = _data(pace_soft=_pace(0, 4.0, 1.5, 2.5, 1.0))
     assert report.pace_rows(data, _tr) == [
         ('Required pace (TBR = 0)',
-         'Read 4.0 books/month or buy at most 1.5 books/month')]
+         'Read 4.0 books/month (buying stays at 2.5) or buy at most 1.5 '
+         'books/month (reading stays at 1.0)')]
 
 
 def test_pace_rows_reached():
@@ -194,3 +197,111 @@ def test_pace_rows_reached():
                  pace_soft=_pace(0, 1.0, 2.5, 2.5, 1.0, status='reached'))
     assert report.pace_rows(data, _tr) == [
         ('Required pace (TBR = 0)', 'Already reached')]
+
+
+def test_reading_speed_section():
+    data = _data(speed={'status': 'ok', 'months': 12,
+                        'pages_per_month': 1234.0, 'pages_per_day': 41.2,
+                        'read_books': 10, 'known_books': 8})
+    sections = report.build_sections(data, _tr, '%d.%m.%Y')
+    speed = next(s for s in sections if s['heading'] == 'Reading speed')
+    assert speed['rows'] == [
+        ('Read', '1234 pages/month (41 per day)'),
+        ('Based on', '8 of 10 read books with a page count (80 %)'),
+    ]
+    assert speed['note'].startswith('Pages read per month')
+
+
+def test_reading_speed_section_omitted_without_data():
+    data = _data(speed={'status': 'none', 'months': 1,
+                        'pages_per_month': None, 'pages_per_day': None,
+                        'read_books': 0, 'known_books': 0})
+    sections = report.build_sections(data, _tr, '%d.%m.%Y')
+    assert all(s['heading'] != 'Reading speed' for s in sections)
+
+
+def test_markdown_contains_reading_speed():
+    data = _data(speed={'status': 'ok', 'months': 12,
+                        'pages_per_month': 1234.0, 'pages_per_day': 41.2,
+                        'read_books': 10, 'known_books': 8})
+    text = report.build_report(data, report.MARKDOWN, _tr, '%d.%m.%Y', ',')
+    assert '## Reading speed' in text
+    assert '| Read | 1234 pages/month (41 per day) |' in text
+
+
+def _target_pace(target, read_needed, added_rate, status='ok'):
+    return {'status': status, 'target_backlog': target,
+            'read_needed': read_needed, 'added_rate': added_rate,
+            'reduction': (read_needed - added_rate
+                          if read_needed is not None else 0.0),
+            'months': 100.0}
+
+
+def _adherence(**overrides):
+    adh = {'status': 'ok', 'months': 12, 'target': 2.0, 'actual': 4.2,
+           'difference': 2.2, 'over_plan': 26.0, 'over_months': 9}
+    adh.update(overrides)
+    return adh
+
+
+def test_target_pace_text():
+    pace = _target_pace(0, 9.0, 3.0)
+    assert report.target_pace_text(pace, _tr) == \
+        'read 9.0 books/month at a purchase target of 3.0'
+
+
+def test_target_pace_text_reached_and_too_close():
+    assert report.target_pace_text(
+        _target_pace(0, 0.0, 3.0, 'reached'), _tr) == 'already reached'
+    assert report.target_pace_text(
+        _target_pace(0, None, 3.0, 'too_close'), _tr).startswith(
+            'target date too close')
+
+
+def test_adherence_text():
+    assert report.adherence_text(_adherence(), _tr, ',') == (
+        'Target ≤ 2,0 books/month — 4,2/month over the last 12 months, '
+        '26 over plan')
+
+
+def test_pace_rows_with_target():
+    data = _data(target_buy_rate=2.0,
+                 pace_target=_target_pace(0, 9.0, 2.0),
+                 pace_target_soft=_target_pace(75, 5.0, 2.0))
+    assert report.pace_rows(data, _tr) == [
+        ('Required pace (TBR = 0)',
+         'Read 9.0 books/month at a purchase target of 2.0'),
+        ('Required pace (TBR = 75)',
+         'Read 5.0 books/month at a purchase target of 2.0')]
+
+
+def test_pace_rows_with_target_single_goal():
+    data = _data(target_buy_rate=2.0,
+                 pace_target=_target_pace(0, 9.0, 2.0),
+                 pace_target_soft=_target_pace(0, 9.0, 2.0))
+    assert [row[0] for row in report.pace_rows(data, _tr)] == \
+        ['Required pace (TBR = 0)']
+
+
+def test_adherence_rows_present_and_absent():
+    assert report.adherence_rows(_data(adherence=_adherence()), _tr) == [
+        ('Purchase target',
+         'Target ≤ 2.0 books/month — 4.2/month over the last 12 months, '
+         '26 over plan')]
+    assert report.adherence_rows(_data(), _tr) == []
+    assert report.adherence_rows(
+        _data(adherence=_adherence(status='none')), _tr) == []
+
+
+def test_report_includes_purchase_target_row():
+    data = _data(target_buy_rate=2.0,
+                 pace_target=_target_pace(0, 9.0, 2.0),
+                 pace_target_soft=_target_pace(75, 5.0, 2.0),
+                 adherence=_adherence())
+    sections = report.build_sections(data, _tr, '%d.%m.%Y')
+    goal = next(s for s in sections if s['heading'] == 'Goal and forecast')
+    assert ('Purchase target',
+            'Target ≤ 2.0 books/month — 4.2/month over the last 12 months, '
+            '26 over plan') in goal['rows']
+    assert ('Required pace (TBR = 0)',
+            'Read 9.0 books/month at a purchase target of 2.0') in goal['rows']

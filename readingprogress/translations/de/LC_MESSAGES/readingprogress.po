@@ -96,8 +96,11 @@ msgstr "Benutzerdefinierte Spalte \"gelesen\":"
 msgid "Custom column \"last read\":"
 msgstr "Benutzerdefinierte Spalte \"zuletzt gelesen\":"
 
-msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date.<br><br><b>Days in TBR:</b> A column calibre computes itself: for read books the days between adding and reading, for unread books the days since adding. Sort by it to find the books you have owned longest without reading them.<br><br><b>Merge series:</b> One series per line, its names in calibre separated by \"=\", for example a series you read partly in German and partly in English. The first name is displayed. \"Started series\", \"TBR by series\" and the data quality check count them as one series; a volume read in one language counts as read. The series names in calibre stay unchanged."
-msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen.<br><br><b>Tage im SuB:</b> Eine Spalte, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben.<br><br><b>Reihen zusammenfassen:</b> Eine Reihe pro Zeile, ihre Namen in calibre mit „=“ getrennt, z. B. eine Reihe, die du mal auf Deutsch, mal auf Englisch liest. Angezeigt wird der erste Name. „Angefangene Reihen“, „SuB nach Reihen“ und die Datenqualität zählen sie als eine Reihe; ein in einer Sprache gelesener Band gilt als gelesen. Die Seriennamen in calibre bleiben unverändert."
+msgid "Page count column:"
+msgstr "Spalte Seitenzahl:"
+
+msgid "<b>Target date:</b> Date by which the backlog (TBR) should reach 0.<br><br><b>Gentle reduction:</b> Fraction of the TBR that remains at the target date. 0.50 means: TBR halved by the target date.<br><br><b>Custom columns:</b> Names of your Calibre columns (with leading #) used to mark books as read and to store the last read date.<br><br><b>Page count column:</b> \"pages\" is Calibre's own page count; enter a custom column (with leading #), for example from the \"Count Pages\" plugin, to use its page numbers instead. A custom column can also hold counts you add by hand, e.g. for paper books the plugins cannot calculate.<br><br><b>Target purchase rate:</b> If set, the burn-up chart shows the reading rate that target implies (instead of the two computed ways), and the Purchase rate vs. reading rate dialog shows whether you stay within it.<br><br><b>Days in TBR:</b> A column calibre computes itself: for read books the days between adding and reading, for unread books the days since adding. Sort by it to find the books you have owned longest without reading them.<br><br><b>Merge series:</b> One series per line, its names in calibre separated by \"=\", for example a series you read partly in German and partly in English. The first name is displayed. \"Started series\", \"TBR by series\" and the data quality check count them as one series; a volume read in one language counts as read. The series names in calibre stay unchanged."
+msgstr "<b>Zieldatum:</b> Datum, an dem der SuB (Backlog) auf 0 sein soll.<br><br><b>Sanfter Abbau:</b> Anteil des SuB, der am Zieldatum noch übrig bleibt. 0.50 bedeutet: SuB halbiert bis zum Zieldatum.<br><br><b>Benutzerdefinierte Spalten:</b> Namen deiner Calibre-Spalten (mit führendem #), die zum Markieren gelesener Bücher und zum Speichern des letzten Lesedatums dienen.<br><br><b>Spalte Seitenzahl:</b> „pages“ ist calibres eigene Seitenzahl; gib eine benutzerdefinierte Spalte (mit führendem #) an, z. B. aus dem Plugin „Count Pages“, um stattdessen deren Seitenzahlen zu nutzen. Eine eigene Spalte kann auch von Hand ergänzte Zahlen aufnehmen, etwa für Papierbücher, die die Plugins nicht berechnen können.<br><br><b>Ziel-Kaufrate:</b> Ist sie gesetzt, zeigt der Burn-up-Chart die Leserate, die diese Vorgabe impliziert (statt der zwei berechneten Wege), und der Dialog Kaufrate vs. Leserate zeigt, ob du sie einhältst.<br><br><b>Tage im SuB:</b> Eine Spalte, die calibre selbst berechnet: bei gelesenen Büchern die Tage zwischen Aufnahme und Lesen, bei ungelesenen die Tage seit der Aufnahme. Danach sortiert findest du die Bücher, die du am längsten besitzt, ohne sie gelesen zu haben.<br><br><b>Reihen zusammenfassen:</b> Eine Reihe pro Zeile, ihre Namen in calibre mit „=“ getrennt, z. B. eine Reihe, die du mal auf Deutsch, mal auf Englisch liest. Angezeigt wird der erste Name. „Angefangene Reihen“, „SuB nach Reihen“ und die Datenqualität zählen sie als eine Reihe; ein in einer Sprache gelesener Band gilt als gelesen. Die Seriennamen in calibre bleiben unverändert."
 
 # Chart dialog
 msgid "Reading progress"
@@ -267,6 +270,9 @@ msgstr "Die Spalte {column} hat nicht den Typ „{type}“."
 
 msgid "Yes/No"
 msgstr "Ja/Nein"
+
+msgid "Number"
+msgstr "Zahl"
 
 msgid "Date"
 msgstr "Datum"
@@ -517,6 +523,21 @@ msgstr "Bücher gesamt"
 msgid "Read"
 msgstr "Gelesen"
 
+msgid "Reading speed"
+msgstr "Lesegeschwindigkeit"
+
+msgid "{pages} pages/month ({per_day} per day)"
+msgstr "{pages} Seiten/Monat ({per_day} pro Tag)"
+
+msgid "Based on"
+msgstr "Basis"
+
+msgid "{known} of {read} read books with a page count ({percent})"
+msgstr "{known} von {read} gelesenen Büchern mit Seitenzahl ({percent})"
+
+msgid "Pages read per month, from books with a known page count; books without one are estimated with the median, and months without reading count as 0."
+msgstr "Gelesene Seiten pro Monat, aus Büchern mit bekannter Seitenzahl; Bücher ohne werden mit dem Median geschätzt, und Monate ohne Lesen zählen als 0."
+
 msgid "Unread (TBR)"
 msgstr "Ungelesen (SuB)"
 
@@ -616,14 +637,65 @@ msgstr "bereits erreicht"
 msgid "target date too close – choose a later date in the settings"
 msgstr "Zieldatum zu nah – in den Einstellungen ein späteres Datum wählen"
 
-msgid "read {read} books/month or buy at most {added} books/month"
-msgstr "{read} Bücher/Monat lesen oder höchstens {added} Bücher/Monat kaufen"
+msgid "read {read} books/month (buying stays at {added}) or buy at most {max} books/month (reading stays at {read_rate})"
+msgstr "{read} Bücher/Monat lesen (Kaufen bleibt bei {added}) oder höchstens {max} Bücher/Monat kaufen (Lesen bleibt bei {read_rate})"
 
-msgid "read {read} books/month or buy nothing and still read {reduction} books/month"
-msgstr "{read} Bücher/Monat lesen oder nichts mehr kaufen und trotzdem {reduction} Bücher/Monat lesen"
+msgid "read {read} books/month (buying stays at {added}) or buy nothing and still read {reduction} books/month"
+msgstr "{read} Bücher/Monat lesen (Kaufen bleibt bei {added}) oder nichts mehr kaufen und trotzdem {reduction} Bücher/Monat lesen"
 
-msgid "For TBR = {tbr} by {date}: {pace}."
-msgstr "Für SuB = {tbr} bis {date}: {pace}."
+msgid "The purchase and reading rates are a typical month: the trimmed mean of the last {months} full months, without the 20 % highest and lowest months, so bulk imports barely count."
+msgstr "Kauf- und Leserate sind ein typischer Monat: das getrimmte Mittel der letzten {months} vollen Monate, ohne die 20 % höchsten und niedrigsten Monate, damit Sammel-Importe kaum zählen."
+
+msgid "Currently that is {added} bought / {read} read per month."
+msgstr "Aktuell sind das {added} gekauft / {read} gelesen pro Monat."
+
+msgid "Each recommendation has two halves with different assumptions: 'read N books/month' assumes you keep buying at the typical rate, 'buy at most M books/month' assumes you keep reading at the typical rate."
+msgstr "Jede Empfehlung hat zwei Hälften mit unterschiedlichen Annahmen: „N Bücher/Monat lesen“ unterstellt, dass du weiterhin mit der typischen Rate kaufst, „höchstens M Bücher/Monat kaufen“ unterstellt, dass du weiterhin mit der typischen Rate liest."
+
+msgid "The forecast line continues today's TBR from these rates, with a band that covers 80 % of cases."
+msgstr "Die Prognoselinie setzt den heutigen SuB mit diesen Raten fort, mit einem Band, das 80 % der Fälle abdeckt."
+
+msgid "How is this calculated?"
+msgstr "Wie wird das berechnet?"
+
+msgid "TBR = {tbr}"
+msgstr "SuB = {tbr}"
+
+msgid "Only read more"
+msgstr "Nur mehr lesen"
+
+msgid "Only buy less"
+msgstr "Nur weniger kaufen"
+
+msgid "Read (purchase target {buy}/month)"
+msgstr "Lesen (Kaufziel {buy}/Monat)"
+
+msgid "Mixed (buy → read)"
+msgstr "Gemischt (Kauf → Lesen)"
+
+msgid "{buy} → {read}"
+msgstr "{buy} → {read}"
+
+msgid "read {read} books/month at a purchase target of {buy}"
+msgstr "{read} Bücher/Monat lesen bei einer Ziel-Kaufrate von {buy}"
+
+msgid "Target ≤ {target} books/month — {actual}/month over the last {months} months, {over} over plan"
+msgstr "Ziel ≤ {target} Bücher/Monat — {actual}/Monat in den letzten {months} Monaten, {over} über Plan"
+
+msgid "Purchase target"
+msgstr "Kaufziel"
+
+msgid "Target purchase rate (≤ {target})"
+msgstr "Ziel-Kaufrate (≤ {target})"
+
+msgid "Track a target purchase rate"
+msgstr "Ziel-Kaufrate verfolgen"
+
+msgid "Target purchase rate:"
+msgstr "Ziel-Kaufrate:"
+
+msgid " books/month"
+msgstr " Bücher/Monat"
 
 msgid "Required pace (TBR = {tbr})"
 msgstr "Nötiges Tempo (SuB = {tbr})"

@@ -29,10 +29,12 @@ Python installation is needed.
 | **Burn-up chart** | Total library, cumulative books read and backlog over time, as monthly snapshots. |
 | **Target date** | A goal line "TBR = 0 on …" with a date you choose. |
 | **Gentle reduction** | A second, more realistic reference line, e.g. TBR halved by the target date (adjustable factor). |
-| **Required pace** | Below the title: how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date, based on the same typical purchase and reading rates as the forecast. |
+| **Required pace** | Below the title, as a compact table (one row per goal, one column per way): how many books per month to read, or at most to buy, to reach the goal (TBR = 0 and gentle reduction) by the target date. The ways are "only read more", "only buy less" and a mixed one (halve the buying and read the rest); with a purchase target set, one column. The info button explains the calculation, including the typical purchase and reading rates it rests on. |
 | **Forecast** | Continues today's TBR with the typical month (mean of the last 24 full months without the 20 % highest and lowest, so bulk imports barely count) as a dashed line, with a shaded band for 80 % of cases and the realistic month range for TBR = 0 – or how fast it grows. Needs 3 full months; marked as preliminary below 12. |
 | **Yearly reading goal** | With the separately installed [Reading Goal](https://www.mobileread.com/forums/showthread.php?t=355769) plugin: list books read against the target over the year, projection, required pace, pages, monthly figures, previous-year comparison and all books read according to your own data. Reading Goal's data is only read. |
 | **Purchase rate vs. reading rate** | Books added and books read per month as 12-month averages; the area between them shows whether the backlog shrinks or grows. |
+| **Purchase target** | An optional cap on books bought per month. The burn-up chart then shows the reading rate that target implies (instead of the two computed ways), and the purchase-rate chart adds a dashed target line with the deviation from it (a trimmed average over a rolling 12 months, and how many books over plan). |
+| **Reading speed** | Pages read per month and per day in the report, from the books with a known page count (only full months, so one month with a few long books does not skew it). It says on how many read books a page count was available; books without one are estimated with the median page count. |
 | **Days in TBR column** | One click in the settings adds a calibre column with each book's days in the TBR, always up to date and sortable. |
 | **Age of the TBR** | Unread books by whole years since they were added; click a bar to show those books in calibre. |
 | **Started series** | Series begun but not finished, with progress, the next unread volume and when the series was last read, stalled ones first; shows the next volume in calibre. |
@@ -100,6 +102,8 @@ required pace; a click opens the burn-up chart.
 | Show the TBR in the status bar | Shows the whole library's TBR on the right of calibre's status bar (on by default). |
 | Colors | Color of each series and reference line. Empty means "follow the theme"; *Reset colors to theme defaults* clears all custom colors. |
 | Custom column "read" / "last read" | Lookup names of the two columns, if yours are named differently. |
+| Target purchase rate | Optional cap on books bought per month. If set, the burn-up chart shows the reading rate that target implies, and the "Purchase rate vs. reading rate" chart draws a target line and your deviation from it (rolling 12 months). |
+| Page count column | `pages` (calibre's own page count) by default. Set a custom column (e.g. from the Count Pages plugin) to use its page numbers for the reading speed instead; a custom column can also hold counts you add by hand, e.g. for paper books. |
 | Create column "Days in TBR" | Adds a column `#days_in_tbr` that calibre computes itself: days between adding and reading for read books, days since adding for unread ones. Sort by it to find the books you have owned longest without reading. Restart calibre afterwards. |
 | Merge series | One series per line, its names in calibre separated by `=`, e.g. `Die Nebelgeborenen = Mistborn`. The first name is displayed. "Started series", "TBR by series", the series checks and the report count them as one series. |
 

@@ -113,3 +113,25 @@ def test_describe_column_problems_translates():
         '>The column #read is not of type ">Yes/No".',
         '>The column #last_read does not exist in this library.',
     ]
+
+
+def test_pages_column_default_is_always_usable():
+    assert ch.pages_column_problem({}, ch.DEFAULT_PAGES_COLUMN) is None
+
+
+def test_pages_column_custom_int_or_float_is_usable():
+    types = {'#pagecount': 'int', '#words': 'float'}
+    assert ch.pages_column_problem(types, '#pagecount') is None
+    assert ch.pages_column_problem(types, '#words') is None
+
+
+def test_pages_column_wrong_type_or_missing():
+    assert ch.pages_column_problem({'#pagecount': 'text'}, '#pagecount') == \
+        ('#pagecount', 'Number', 'text')
+    assert ch.pages_column_problem({}, '#nope') == ('#nope', 'Number', None)
+
+
+def test_describe_column_problems_number_type():
+    lines = ch.describe_column_problems(
+        [('#pagecount', 'Number', 'text')], lambda text: '>' + text)
+    assert lines == ['>The column #pagecount is not of type ">Number".']
