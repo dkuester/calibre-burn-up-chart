@@ -25,6 +25,8 @@ warnings.filterwarnings(
 # --- Configuration ---
 READ_COLUMN      = "#gelesen"
 LAST_READ_COLUMN = "#last_read"
+# Calibre's built-in page-count field; a custom column may override it
+PAGES_COLUMN     = "pages"
 
 # Only for standalone use via calibre-debug -e
 STANDALONE_LIBRARY = os.path.expanduser("~/Calibre-Bibliothek")
@@ -187,6 +189,8 @@ FORECAST_FULL_MONTHS = 12
 FORECAST_MAX_MONTHS = 24
 # Share of the months dropped at each end of the trimmed mean
 TRIM_SHARE = 0.2
+# Months in the rolling purchase-adherence window (matches the rates chart)
+PURCHASE_WINDOW = 12
 # Months scanned for the zero dates of the band (100 years)
 FORECAST_HORIZON = 1200
 
@@ -418,6 +422,41 @@ PACE_REACHED = "reached"
 PACE_TOO_CLOSE = "too_close"
 
 
+def purchase_adherence(rates, target, window=PURCHASE_WINDOW, exclude=None):
+    """How the actual purchase rate compares to a target.
+
+    ``rates`` is the list from :func:`compute_rates`. The actual rate is
+    a trimmed mean (:func:`trimmed_mean`, like the forecast rates) of the
+    books added over the last ``window`` full months (the same full
+    months the forecast uses; ``exclude`` maps ``(year, month)`` to books
+    taken off that month, e.g. known bulk imports) – one-off bulk days do
+    not define the typical month, but they still count in full in
+    ``over_plan``.
+
+    :return: dict with ``status`` (:data:`FORECAST_NONE` without a full
+        month), ``months`` (full months in the window), ``target``,
+        ``actual`` (books added per month), ``difference`` (actual −
+        target), ``over_plan`` (books added above the target in the
+        window) and ``over_months`` (months above the target).
+    """
+    months = full_months(rates, exclude)[-window:]
+    result = {"status": FORECAST_NONE, "months": len(months), "target": target,
+              "actual": None, "difference": None, "over_plan": 0,
+              "over_months": 0}
+    if not months:
+        return result
+    added = [a for a, _read in months]
+    actual = trimmed_mean(added)
+    result.update({
+        "status": FORECAST_OK,
+        "actual": actual,
+        "difference": actual - target,
+        "over_plan": sum(max(0.0, a - target) for a in added),
+        "over_months": sum(1 for a in added if a > target),
+    })
+    return result
+
+
 def required_pace(backlog, rates, today, target_date, target_backlog=0):
     """Monthly pace needed to bring the backlog to ``target_backlog`` by
     ``target_date``.
@@ -425,19 +464,20 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
     ``rates`` is the dict from :func:`robust_rates` – the typical
     purchase and reading rates the forecast uses as well. Either reading
     must rise to ``read_needed`` (buying as before) or buying must drop
-    to ``max_added`` (reading as before); ``max_added <= 0`` means even
-    buying nothing is not enough at the current reading rate. Without
-    enough data for the rates, ``added_rate``, ``read_rate``,
-    ``read_needed`` and ``max_added`` are ``None`` and only
-    ``reduction`` is known.
+    to ``max_added`` (reading as before); a middle way is
+    ``mix_read_needed`` at ``mix_added`` (buying halved). ``max_added <=
+    0`` means even buying nothing is not enough at the current reading
+    rate. Without enough data for the rates, ``added_rate``,
+    ``read_rate``, ``read_needed``, ``max_added``, ``mix_added`` and
+    ``mix_read_needed`` are ``None`` and only ``reduction`` is known.
 
     :return: dict with ``status`` (:data:`PACE_OK`, :data:`PACE_REACHED`
         if the backlog is already at or below the goal,
         :data:`PACE_TOO_CLOSE` if less than one month is left),
         ``target_backlog``, ``months`` (left until ``target_date``),
         ``reduction`` (backlog decrease needed per month),
-        ``added_rate``, ``read_rate``, ``read_needed`` and ``max_added``
-        (books per month).
+        ``added_rate``, ``read_rate``, ``read_needed``, ``max_added``,
+        ``mix_added`` and ``mix_read_needed`` (books per month).
     """
     added_rate = rates["added"]
     read_rate = rates["read"]
@@ -451,6 +491,8 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
         "read_rate": read_rate,
         "read_needed": read_rate,
         "max_added": added_rate,
+        "mix_added": None,
+        "mix_read_needed": None,
     }
     if backlog <= target_backlog:
         pace["status"] = PACE_REACHED
@@ -463,7 +505,169 @@ def required_pace(backlog, rates, today, target_date, target_backlog=0):
     if added_rate is not None:
         pace["read_needed"] = added_rate + reduction
         pace["max_added"] = read_rate - reduction
+        half = added_rate / 2
+        pace["mix_added"] = half
+        pace["mix_read_needed"] = half + reduction
     return pace
+
+
+def pace_for_target(backlog, target_added, today, target_date,
+                    target_backlog=0):
+    """Monthly reading pace needed at a fixed target purchase rate.
+
+    If you buy ``target_added`` books per month, the net change is
+    read − ``target_added``, so to reach ``target_backlog`` you must read
+    ``target_added`` + the required reduction. This generalises the two
+    computed extremes of :func:`required_pace`: ``target_added`` = the
+    typical purchase rate gives 'only read more', = the maximum you may
+    buy gives 'only buy less'.
+
+    :return: dict with ``status`` (:data:`PACE_OK`, :data:`PACE_REACHED`,
+        :data:`PACE_TOO_CLOSE`), ``target_backlog``, ``months``,
+        ``reduction``, ``added_rate`` (= ``target_added``) and
+        ``read_needed`` (``None`` if the date is too close).
+    """
+    months = (target_date - today).days / DAYS_PER_MONTH
+    pace = {"status": PACE_OK, "target_backlog": target_backlog,
+            "months": months, "reduction": 0.0,
+            "added_rate": target_added, "read_needed": None}
+    if backlog <= target_backlog:
+        pace["status"] = PACE_REACHED
+        pace["read_needed"] = 0.0
+        return pace
+    if months < 1:
+        pace["status"] = PACE_TOO_CLOSE
+        return pace
+    reduction = (backlog - target_backlog) / months
+    pace["reduction"] = reduction
+    pace["read_needed"] = target_added + reduction
+    return pace
+
+
+def book_pages(db_api, pages_column=None):
+    """``{book_id: page count}`` for the books with a known page count.
+
+    ``pages_column`` defaults to Calibre's built-in ``pages`` field; a
+    custom column with the same meaning (e.g. from the Count Pages
+    plugin) can be configured instead. Calibre stores -1 there for
+    "unknown", so only values greater than 0 count.
+    """
+    if pages_column is None:
+        pages_column = PAGES_COLUMN
+    ids = db_api.all_book_ids()
+    raw = db_api.all_field_for(pages_column, ids)
+    pages = {}
+    for book_id, value in raw.items():
+        try:
+            count = int(round(float(value)))
+        except (TypeError, ValueError):
+            continue
+        if count > 0:
+            pages[book_id] = count
+    return pages
+
+
+def median_pages(pages):
+    """Median of the known page counts, or ``None`` without any.
+
+    ``pages`` is the ``{book_id: page count}`` from :func:`book_pages`;
+    used to estimate books without a page count.
+    """
+    values = sorted(pages.values())
+    if not values:
+        return None
+    mid = len(values) // 2
+    if len(values) % 2:
+        return float(values[mid])
+    return (values[mid - 1] + values[mid]) / 2
+
+
+def reading_speed(db_api, read_column=None, last_read_column=None,
+                  pages_column=None, today=None, months=FORECAST_MAX_MONTHS):
+    """Pages read per month and per day, from books with a known page count.
+
+    Uses the read dates of the books marked as read, with the same rules
+    as :func:`export_snapshots`: a read book without a usable read date
+    counts at its date added. A read book without a page count is
+    estimated with the median page count of the library (nothing is
+    written to the database). Only full months count (not the first, not
+    the current) and only the last ``months`` of them, as a trimmed mean,
+    so one month with a few long books does not dominate. Months with no
+    reading count as 0.
+
+    :return: dict with ``status`` (:data:`FORECAST_NONE` below
+        :data:`FORECAST_MIN_MONTHS` full months, else
+        :data:`FORECAST_OK`), ``months`` (full months used),
+        ``pages_per_month`` and ``pages_per_day`` (``None`` without
+        enough data), ``read_books`` and ``known_books`` (read books in
+        the window, with a known page count) and ``median_pages`` (the
+        estimate used for the others, ``None`` if there are none).
+    """
+    if read_column is None:
+        read_column = READ_COLUMN
+    if last_read_column is None:
+        last_read_column = LAST_READ_COLUMN
+
+    all_ids = db_api.all_book_ids()
+    added_map     = db_api.all_field_for("timestamp", all_ids)
+    read_map      = db_api.all_field_for(read_column, all_ids)
+    last_read_map = db_api.all_field_for(last_read_column, all_ids)
+    pages = book_pages(db_api, pages_column)
+    median = median_pages(pages)
+
+    per_month = defaultdict(lambda: [0, 0, 0])   # pages, known, read
+    for book_id in all_ids:
+        added = to_date(added_map.get(book_id))
+        if added is None or read_map.get(book_id) is not True:
+            continue
+        last_read = to_date(last_read_map.get(book_id))
+        when = added if (last_read is None or last_read < added) else last_read
+        entry = per_month[(when.year, when.month)]
+        entry[2] += 1
+        count = pages.get(book_id, 0)
+        if count > 0:
+            entry[0] += count
+            entry[1] += 1
+
+    if today is None:
+        today = date.today()
+
+    result = {"status": FORECAST_NONE, "months": 0, "pages_per_month": None,
+              "pages_per_day": None, "read_books": 0, "known_books": 0,
+              "median_pages": median}
+    if not per_month:
+        return result
+
+    # Every calendar month from the first to the last read month, then
+    # the full months only.
+    current = min(per_month)
+    last = max(per_month)
+    span = []
+    while current <= last:
+        span.append(current)
+        current = (current[0] + (current[1] == 12), current[1] % 12 + 1)
+
+    full = [per_month.get(key, [0, 0, 0]) for key in span[1:]
+            if month_end(*key) < month_end(today.year, today.month)]
+    window = full[-months:]
+    result["months"] = len(window)
+    result["read_books"] = sum(e[2] for e in window)
+    result["known_books"] = sum(e[1] for e in window)
+    if len(window) < FORECAST_MIN_MONTHS:
+        return result
+    if median is not None:
+        # Estimate the read books without a page count with the median.
+        monthly = [pages_m + (read_m - known_m) * median
+                   for pages_m, known_m, read_m in window]
+    else:
+        monthly = [pages_m for pages_m, _known, _read in window]
+    pages_per_month = trimmed_mean(monthly)
+    result.update({
+        "status": FORECAST_OK,
+        "pages_per_month": pages_per_month,
+        "pages_per_day": pages_per_month / DAYS_PER_MONTH,
+    })
+    return result
 
 
 # Problem kinds reported by find_date_problems()
@@ -680,14 +884,17 @@ def delay_statistics(points):
 
 
 def collect_report_data(db_api, read_column, last_read_column, target_date,
-                        reduction_factor, today=None):
+                        reduction_factor, today=None, pages_column=None,
+                        target_buy_rate=None):
     """All figures of the report (see ``report.build_sections``).
 
     ``forecast`` is :func:`forecast_backlog`; ``pace`` and ``pace_soft``
     are :func:`required_pace` with its rates for TBR = 0 and for the
-    gentle reduction. Also holds ``rows`` (from
-    :func:`export_snapshots`), ``rates`` (from :func:`compute_rates`) for
-    the charts embedded in the HTML report.
+    gentle reduction; ``speed`` is :func:`reading_speed`. With a
+    ``target_buy_rate``, ``pace_target``/``pace_target_soft`` and
+    ``adherence`` hold the figures at that purchase target. Also holds
+    ``rows`` (from :func:`export_snapshots`), ``rates`` (from
+    :func:`compute_rates`) for the charts embedded in the HTML report.
     Raises :class:`NoDataError` for a library without dates added.
     """
     info = export_snapshots(db_api, read_column, last_read_column,
@@ -713,6 +920,17 @@ def collect_report_data(db_api, read_column, last_read_column, target_date,
                               target_date),
         "pace_soft": required_pace(info["backlog"], forecast, today,
                                    target_date, target_tbr),
+        "target_buy_rate": target_buy_rate,
+        "pace_target": (pace_for_target(info["backlog"], target_buy_rate,
+                                        today, target_date)
+                        if target_buy_rate is not None else None),
+        "pace_target_soft": (pace_for_target(info["backlog"], target_buy_rate,
+                                             today, target_date, target_tbr)
+                             if target_buy_rate is not None else None),
+        "adherence": (purchase_adherence(rates, target_buy_rate)
+                      if target_buy_rate is not None else None),
+        "speed": reading_speed(db_api, read_column, last_read_column,
+                               pages_column, today=today),
         "delay": compute_reading_time(
             db_api, read_column, last_read_column)["statistics"],
         "age": {

@@ -29,8 +29,16 @@ TBR. Needs the tags in the data export first. Effort: medium.
 
 ## Low priority (optional)
 
-### Page-count analysis *(optional)*
+### Pages in the TBR *(optional)*
 
-Pages read per month or year and pages in the TBR, from calibre's
-"Pages" column (the plugin requires calibre 9.3.1, which has it).
-Effort: medium.
+Pages in the TBR, from a configurable page-count column (pages read per
+month are already in the report's "Reading speed"). Calibre 9.3.1 ships
+a "Pages" column; a custom column (e.g. from the Count Pages plugin) can
+be configured instead. Effort: small.
+
+### Reading speed on the chart *(optional)*
+
+Show the reading speed (pages per month and per day) in the burn-up
+chart or the "purchase rate vs. reading rate" dialog, not only in the
+report. The figures already exist (the report's "Reading speed").
+Effort: small.

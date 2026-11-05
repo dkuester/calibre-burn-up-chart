@@ -35,6 +35,7 @@ from calibre_plugins.readingprogress.export_reading_status import (
     compute_rates,
     forecast_band,
     forecast_line_end,
+    pace_for_target,
     required_pace,
     robust_rates,
 )
@@ -42,7 +43,8 @@ from calibre_plugins.readingprogress.localization import _
 from calibre_plugins.readingprogress.report import (
     forecast_label,
     forecast_text,
-    pace_line,
+    pace_help,
+    pace_table,
 )
 from qt.core import (
     QApplication,
@@ -53,6 +55,7 @@ from qt.core import (
     QFontMetrics,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPainter,
     QPalette,
     QPen,
@@ -88,8 +91,6 @@ JOIN_ROUND = Qt.PenJoinStyle.RoundJoin
 
 LEFT_BUTTON = Qt.MouseButton.LeftButton
 
-ELIDE_RIGHT = Qt.TextElideMode.ElideRight
-
 RENDER_ANTIALIASING      = QPainter.RenderHint.Antialiasing
 RENDER_TEXT_ANTIALIASING = QPainter.RenderHint.TextAntialiasing
 
@@ -103,7 +104,8 @@ MARGIN_BOTTOM  = 60
 # Required-pace lines below the burn-up title
 PACE_LINE_TOP    = 46
 PACE_LINE_HEIGHT = 20
-PACE_MARGIN_TOP  = 105   # MARGIN_TOP with pace lines
+# Horizontal gap between the pace table's columns
+TABLE_GAP        = 18
 
 # Opacity (0–255) of the forecast's uncertainty band
 BAND_ALPHA = 50
@@ -168,6 +170,20 @@ def _with_alpha(color, alpha):
     faded = QColor(color)
     faded.setAlpha(alpha)
     return faded
+
+
+def _column_widths(fm, columns, rows):
+    """Pixel width of each pace-table column: the widest header or cell."""
+    return [max([fm.horizontalAdvance(columns[j])]
+                + [fm.horizontalAdvance(row[1][j]) for row in rows])
+            for j in range(len(columns))]
+
+
+def _table_width(fm, columns, rows):
+    """Total pixel width of the pace table with font metrics ``fm``."""
+    label_w = max(fm.horizontalAdvance(row[0]) for row in rows)
+    col_w = _column_widths(fm, columns, rows)
+    return label_w + TABLE_GAP + sum(col_w) + TABLE_GAP * (len(columns) - 1)
 
 
 def build_series_colors(dark, overrides):
@@ -401,31 +417,44 @@ class AnnotationRenderer:
             ALIGN_CENTER, title,
         )
 
-    def draw_pace(self, painter, plot, widget_width, lines, chrome):
-        """Required-pace sentences, one per line, below the title.
-
-        Centered over ``plot`` like the title; too long for it, they use
-        the whole widget width, shrink down to 8 pt and are elided last."""
-        if not lines:
+    def draw_table(self, painter, plot, columns, rows, chrome):
+        """Compact pace table under the title: a header row of column
+        labels and one row per goal (label left-aligned, numbers
+        right-aligned). Shrinks down to 9 pt to fit the plot width."""
+        if not columns or not rows:
             return
         font = QFont()
-        for size in range(11, 7, -1):
+        fm = QFontMetrics(font)
+        for size in range(11, 8, -1):
             font.setPointSize(size)
             fm = QFontMetrics(font)
-            needed = max(fm.horizontalAdvance(t) for t in lines)
-            if needed <= widget_width - 20:
+            if _table_width(fm, columns, rows) <= plot.width():
                 break
-        if needed <= plot.width():
-            left, width = plot.left(), plot.width()
-        else:
-            left, width = 10, widget_width - 20
+        label_w = max(fm.horizontalAdvance(r[0]) for r in rows)
+        col_w = _column_widths(fm, columns, rows)
+        total = label_w + TABLE_GAP + sum(col_w) + TABLE_GAP * (len(columns) - 1)
+        x0 = plot.left() + max(0.0, (plot.width() - total) / 2)
         painter.setFont(font)
+
+        y = PACE_LINE_TOP
         painter.setPen(chrome['muted'])
-        for i, text in enumerate(lines):
-            painter.drawText(
-                QRectF(left, PACE_LINE_TOP + i * PACE_LINE_HEIGHT,
-                       width, PACE_LINE_HEIGHT),
-                ALIGN_CENTER, fm.elidedText(text, ELIDE_RIGHT, int(width)))
+        x = x0 + label_w + TABLE_GAP
+        for j, title in enumerate(columns):
+            painter.drawText(QRectF(x, y, col_w[j], PACE_LINE_HEIGHT),
+                             ALIGN_RIGHT | ALIGN_VCENTER, title)
+            x += col_w[j] + TABLE_GAP
+        y += PACE_LINE_HEIGHT
+
+        painter.setPen(chrome['text'])
+        for label, cells in rows:
+            painter.drawText(QRectF(x0, y, label_w, PACE_LINE_HEIGHT),
+                             ALIGN_LEFT | ALIGN_VCENTER, label)
+            x = x0 + label_w + TABLE_GAP
+            for j, cell in enumerate(cells):
+                painter.drawText(QRectF(x, y, col_w[j], PACE_LINE_HEIGHT),
+                                 ALIGN_RIGHT | ALIGN_VCENTER, cell)
+                x += col_w[j] + TABLE_GAP
+            y += PACE_LINE_HEIGHT
 
     def draw_today(self, painter, scale, today, current_backlog,
                    backlog_color, chrome):
@@ -601,24 +630,27 @@ class LegendRenderer:
             )
 
 
-def pace_lines(rows, target_date, reduction_factor, date_format,
-               decimal_sep):
-    """Required-pace sentences for TBR = 0 and, if it is a different
-    goal, the gentle reduction. They do not depend on the visible
-    window, so they stay for every time range."""
+def pace_table_data(rows, rates, target_date, reduction_factor,
+                    target_buy_rate, decimal_sep):
+    """``(columns, table_rows)`` for the burn-up header (see
+    ``report.pace_table``), or ``(None, None)`` without usable data. Each
+    goal is named once; the target date is only in the chart title."""
     if not rows or len(rows) < 2:
-        return []
+        return None, None
     today, backlog = rows[-1][0], rows[-1][3]
-    rates = robust_rates(compute_rates(rows))
     targets = [0]
     soft = round(backlog * reduction_factor)
     if soft != 0:
         targets.append(soft)
-    date_str = target_date.strftime(date_format)
-    return [pace_line(required_pace(backlog, rates, today, target_date,
-                                    target),
-                      _, date_str, decimal_sep)
-            for target in targets]
+    goals = []
+    for target in targets:
+        if target_buy_rate is not None:
+            pace = pace_for_target(backlog, target_buy_rate, today,
+                                   target_date, target)
+        else:
+            pace = required_pace(backlog, rates, today, target_date, target)
+        goals.append((target, pace))
+    return pace_table(_, goals, target_buy_rate, decimal_sep)
 
 
 class ChartWidget(QWidget):
@@ -626,7 +658,7 @@ class ChartWidget(QWidget):
 
     def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None, show_forecast=True, forecast=None, colors=None,
-                 time_range='all', decimal_sep='.'):
+                 time_range='all', decimal_sep='.', target_buy_rate=None):
         super().__init__(parent)
         self.rows = rows
         self.target_date = target_date
@@ -634,13 +666,18 @@ class ChartWidget(QWidget):
         self.date_format = date_format
         self.show_forecast = show_forecast
         self.forecast = forecast
+        self.target_buy_rate = target_buy_rate
         self.chrome = chrome_for(self)
         bg = self.chrome['background']
         self._dark = is_dark_background((bg.red(), bg.green(), bg.blue()))
         self.colors = self._build_colors(colors)
         self.time_range = time_range
         self.decimal_sep = decimal_sep
-        self.pace_lines = self._pace_lines(decimal_sep)
+        self.rates = (robust_rates(compute_rates(rows)) if len(rows) >= 2
+                      else robust_rates([]))
+        self.pace_columns, self.pace_rows = pace_table_data(
+            rows, self.rates, target_date, reduction_factor,
+            target_buy_rate, decimal_sep)
         self._view = None          # None = auto-fit; else a View namedtuple
         self._pan_start = None     # pixel position while panning
         self._pan_view = None      # view captured at drag start
@@ -696,8 +733,8 @@ class ChartWidget(QWidget):
                                     self.date_format, self.chrome,
                                     years=dict(TIME_RANGES).get(
                                         self.time_range))
-        self._annotation.draw_pace(painter, plot, self.width(),
-                                   self.pace_lines, self.chrome)
+        self._annotation.draw_table(painter, plot, self.pace_columns,
+                                    self.pace_rows, self.chrome)
 
         current_backlog = self.rows[-1][3]
         today = self.rows[-1][0]
@@ -827,17 +864,15 @@ class ChartWidget(QWidget):
         return build_series_colors(self._dark, overrides)
 
     def _plot_rect(self):
-        top = PACE_MARGIN_TOP if self.pace_lines else MARGIN_TOP
+        lines = (1 + len(self.pace_rows)) if self.pace_rows else 0
+        top = (PACE_LINE_TOP + lines * PACE_LINE_HEIGHT + 6 if lines
+               else MARGIN_TOP)
         return QRectF(
             MARGIN_LEFT,
             top,
             max(50, self.width()  - MARGIN_LEFT - MARGIN_RIGHT),
             max(50, self.height() - top - MARGIN_BOTTOM),
         )
-
-    def _pace_lines(self, decimal_sep):
-        return pace_lines(self.rows, self.target_date, self.reduction_factor,
-                          self.date_format, decimal_sep)
 
     def _fit_x_range(self):
         """(x_min, x_max) of the unzoomed view for the time range."""
@@ -963,7 +998,7 @@ class ChartDialog(QDialog):
     def __init__(self, rows, target_date, reduction_factor, date_format,
                  parent=None, show_forecast=True, forecast=None, colors=None,
                  time_range='all', on_time_range_changed=None,
-                 decimal_sep='.'):
+                 decimal_sep='.', target_buy_rate=None):
         super().__init__(parent)
         self.setWindowTitle(_("Reading progress"))
         self.resize(1200, 750)
@@ -974,15 +1009,25 @@ class ChartDialog(QDialog):
                                  show_forecast=show_forecast,
                                  forecast=forecast, colors=colors,
                                  time_range=time_range,
-                                 decimal_sep=decimal_sep)
+                                 decimal_sep=decimal_sep,
+                                 target_buy_rate=target_buy_rate)
         layout.addWidget(self.chart, 1)
 
         row = QHBoxLayout()
         add_time_range_box(self, row, self.chart, time_range,
                            on_time_range_changed)
+        info_btn = QPushButton(_("How is this calculated?"))
+        info_btn.clicked.connect(self._show_help)
+        row.addWidget(info_btn)
         add_export_buttons(row, self.chart, 'burn-up')
         row.addStretch()
         btn = QPushButton(_("Close"))
         btn.clicked.connect(self.reject)
         row.addWidget(btn)
         layout.addLayout(row)
+
+    def _show_help(self):
+        """Explains how the pace lines and the forecast are calculated."""
+        QMessageBox.information(
+            self, _("How is this calculated?"),
+            pace_help(self.chart.rates, _, self.chart.decimal_sep))

@@ -1,17 +1,35 @@
-## [Unreleased]
+## [1.8.0] – 2026-11-05
 
 ### Added
 
-- **Required pace to reach the goal:** Two lines below the burn-up
-  chart's title say what it takes to reach the goal by the target date,
-  e.g. "For TBR = 0 by 04.09.2050: read 26.4 books/month or buy at most
-  0.3 books/month." One line is for TBR = 0, one for the gentle
-  reduction. The reading rate needed assumes the typical purchase rate,
-  the purchase limit the typical reading rate (the same robust rates as
-  the forecast, see below). If even buying nothing is not enough, the
-  line says how
-  much to read then. The lines stay in the 5- and 2-year views. The
-  report shows the same figures in "Goal and forecast".
+- **Required pace to reach the goal:** Below the burn-up chart's title,
+  a compact table says what it takes to reach the goal by the target
+  date: one row per goal (TBR = 0 and the gentle reduction), one column
+  per way – "only read more" (buying as before), "only buy less" (reading
+  as before) and the mixed way (halve the buying and read the rest),
+  e.g. "TBR = 0   26.4   0.3   10.3 → 16.1". The reading rate needed
+  assumes the typical purchase rate, the purchase limit the typical
+  reading rate (the same robust rates as the forecast, see below). If
+  even buying nothing is not enough, the mixed cell says how much to read
+  then. With a purchase target set there is a single column (the reading
+  rate at that target). The info button explains the calculation; the
+  table stays in the 5- and 2-year views. The report shows the same
+  figures in "Goal and forecast".
+- **Reading speed:** The report gains a "Reading speed" section: pages
+  read per month and per day, from the books with a known page count
+  (only full months, as a trimmed mean, so one month with a few long
+  books does not skew it; months without reading count as 0). It says on
+  how many of the read books a page count was available; books without
+  one are estimated with the median page count. The page source
+  is configurable: calibre's own `pages` field by default, or a custom
+  column (e.g. from the Count Pages plugin), which can also hold counts
+  you add by hand for paper books.
+- **Purchase target:** An optional cap on books bought per month
+  (settings). If set, the burn-up chart replaces the two computed ways
+  with the reading rate that target implies, and the "Purchase rate vs.
+  reading rate" chart draws a dashed target line and shows the deviation
+  over a rolling 12 months (a trimmed average and the books over plan) in
+  its header and in the report.
 - **Yearly reading goal (with the Reading Goal plugin):** If the
   separately installed "Reading Goal" plugin has data for the current
   library, the menu gets "Reading goal". Its goal is a yearly list of

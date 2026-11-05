@@ -36,6 +36,8 @@ def _setup_config():
     config.defaults['reduction_factor'] = 0.5
     config.defaults['read_column'] = '#gelesen'
     config.defaults['last_read_column'] = '#last_read'
+    config.defaults['pages_column'] = 'pages'
+    config.defaults['target_buy_rate'] = None
     config.defaults['show_forecast'] = True
     config.defaults['time_range'] = 'all'
     config.defaults['show_status_tbr'] = True
@@ -273,7 +275,9 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.chart_dialog import pace_lines
         from calibre_plugins.readingprogress.export_reading_status import (
             NoDataError,
+            compute_rates,
             export_snapshots,
+            robust_rates,
         )
         from calibre_plugins.readingprogress.status_summary import (
             empty_summary,
@@ -294,8 +298,10 @@ class ReadingProgressAction(InterfaceAction):
             rows = export_snapshots(db_api, read_column,
                                     last_read_column)['rows']
             target_date, reduction_factor = _target_settings()
+            rates = (robust_rates(compute_rates(rows)) if len(rows) >= 2
+                     else robust_rates([]))
             return status_summary(rows, _, pace_lines(
-                rows, target_date, reduction_factor, _date_format(),
+                rows, rates, target_date, reduction_factor, _date_format(),
                 _decimal_separator()))
         except NoDataError:
             return empty_summary(_)
@@ -406,7 +412,8 @@ class ReadingProgressAction(InterfaceAction):
                     show_forecast=show_forecast, forecast=forecast,
                     colors=self._colors(), time_range=config['time_range'],
                     on_time_range_changed=self._save_time_range,
-                    decimal_sep=_decimal_separator()).exec()
+                    decimal_sep=_decimal_separator(),
+                    target_buy_rate=config['target_buy_rate']).exec()
 
     def show_goal(self):
         from datetime import date
@@ -467,6 +474,7 @@ class ReadingProgressAction(InterfaceAction):
         from calibre_plugins.readingprogress.export_reading_status import (
             compute_rates,
             export_snapshots,
+            purchase_adherence,
         )
         from calibre_plugins.readingprogress.rates_dialog import (
             RatesChartDialog,
@@ -475,10 +483,15 @@ class ReadingProgressAction(InterfaceAction):
         info = self._read_library(export_snapshots)
         if info is None:
             return
+        rates = compute_rates(info['rows'])
+        target = config['target_buy_rate']
+        adherence = (purchase_adherence(rates, target)
+                     if target is not None else None)
         RatesChartDialog(
-            compute_rates(info['rows']), _decimal_separator(), self.gui,
+            rates, _decimal_separator(), self.gui,
             colors=self._colors(), time_range=config['time_range'],
-            on_time_range_changed=self._save_time_range).exec()
+            on_time_range_changed=self._save_time_range,
+            target=target, adherence=adherence).exec()
 
     def show_quality(self):
         from calibre_plugins.readingprogress.export_reading_status import (
@@ -654,7 +667,9 @@ class ReadingProgressAction(InterfaceAction):
         def fetch(db_api, read_column, last_read_column):
             data = collect_report_data(db_api, read_column,
                                        last_read_column, target_date,
-                                       reduction_factor)
+                                       reduction_factor,
+                                       pages_column=config['pages_column'],
+                                       target_buy_rate=config['target_buy_rate'])
             data['quality'].update(problem_counts(find_series_problems(
                 collect_series(db_api, read_column),
                 config['series_merge'])))

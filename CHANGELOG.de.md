@@ -1,18 +1,36 @@
-## [Unveröffentlicht]
+## [1.8.0] – 2026-11-05
 
 ### Hinzugefügt
 
-- **Nötiges Tempo bis zum Ziel:** Zwei Zeilen unter dem Titel des
-  Burn-up-Charts sagen, was es braucht, um das Ziel bis zum Zieldatum
-  zu erreichen, z. B. „Für SuB = 0 bis 04.09.2050: 26,4 Bücher/Monat
-  lesen oder höchstens 0,3 Bücher/Monat kaufen.“ Eine Zeile gilt für
-  SuB = 0, eine für den sanften Abbau. Die nötige Leserate setzt die
-  typische Kaufrate voraus, die Kaufgrenze die typische Leserate
-  (dieselben robusten Raten wie die Prognose, siehe unten). Reicht
-  selbst ein Kaufstopp nicht,
-  nennt die Zeile, wie viel man dann lesen muss. Die Zeilen bleiben
-  auch in der 5- und 2-Jahres-Ansicht stehen. Der Bericht zeigt
-  dieselben Zahlen unter „Ziel und Prognose“.
+- **Nötiges Tempo bis zum Ziel:** Unter dem Titel des Burn-up-Charts
+  steht eine kompakte Tabelle: eine Zeile pro Ziel (SuB = 0 und sanfter
+  Abbau), eine Spalte pro Weg – „nur mehr lesen“ (Kaufen wie bisher),
+  „nur weniger kaufen“ (Lesen wie bisher) und der gemischte Weg (Kauf
+  halbieren und den Rest lesen), z. B. „SuB = 0   26,4   0,3   10,3 →
+  16,1“. Die nötige Leserate setzt die typische Kaufrate voraus, die
+  Kaufgrenze die typische Leserate (dieselben robusten Raten wie die
+  Prognose, siehe unten). Reicht selbst ein Kaufstopp nicht, nennt die
+  gemischte Zelle, wie viel man dann lesen muss. Mit gesetzter
+  Ziel-Kaufrate gibt es eine einzige Spalte (die Leserate bei diesem
+  Ziel). Der Info-Knopf erklärt die Berechnung; die Tabelle bleibt auch
+  in der 5- und 2-Jahres-Ansicht stehen. Der Bericht zeigt dieselben
+  Zahlen unter „Ziel und Prognose“.
+- **Lesegeschwindigkeit:** Der Bericht bekommt einen Abschnitt
+  „Lesegeschwindigkeit“: gelesene Seiten pro Monat und pro Tag, aus den
+  Büchern mit bekannter Seitenzahl (nur volle Monate, als getrimmtes
+  Mittel, damit ein Monat mit ein paar dicken Büchern nicht verzerrt;
+  Monate ohne Lesen zählen als 0). Er nennt, bei wie vielen der gelesenen
+  Bücher eine Seitenzahl vorlag; Bücher ohne werden mit der mittleren
+  Seitenzahl geschätzt. Die Quelle ist einstellbar:
+  standardmäßig calibres eigenes Feld `pages` oder eine benutzerdefinierte
+  Spalte (z. B. aus dem Plugin „Count Pages“), die auch von Hand ergänzte
+  Zahlen für Papierbücher aufnehmen kann.
+- **Kaufziel:** Optionale Obergrenze für gekaufte Bücher pro Monat
+  (Einstellungen). Ist sie gesetzt, ersetzt der Burn-up-Chart die zwei
+  berechneten Wege durch die Leserate, die diese Vorgabe impliziert, und
+  der Chart „Kaufrate vs. Leserate“ zeichnet eine gestrichelte Ziellinie
+  und nennt die Abweichung über rollierende 12 Monate (getrimmtes Mittel
+  und Bücher über Plan) im Kopf und im Bericht.
 - **Jahresziel (mit dem Plugin „Reading Goal“):** Hat das separat
   installierte Plugin „Reading Goal“ Daten für die aktuelle Bibliothek,
   bekommt das Menü den Eintrag „Jahresziel“. Das Ziel ist dort eine
