@@ -179,3 +179,38 @@ def test_pace_table_too_close():
                              TODAY + timedelta(days=10))
     _columns, rows = report.pace_table(_tr, [(0, pace)], None)
     assert rows[0][1] == ['–', '', '']
+
+
+def test_pace_goals_without_target():
+    rows = [(date(2026, 1, 31), 100, 40, 60), (date(2026, 10, 31), 150, 60, 90)]
+    goals = ers.pace_goals(rows, _rates(2.5, 1.0), TARGET, 0.5, None)
+    assert [t for t, _pace in goals] == [0, 45]
+    assert goals[0][1]['status'] == ers.PACE_OK
+    assert goals[0][1]['mix_added'] is not None
+
+
+def test_pace_goals_with_target():
+    rows = [(date(2026, 1, 31), 100, 40, 60), (date(2026, 10, 31), 150, 60, 90)]
+    goals = ers.pace_goals(rows, {}, TARGET, 0.5, 2.0)
+    assert [t for t, _pace in goals] == [0, 45]
+    assert goals[0][1]['added_rate'] == 2.0
+
+
+def test_pace_goals_without_usable_rows():
+    assert ers.pace_goals([], {}, TARGET, 0.5, None) == []
+    single = [(date(2026, 1, 31), 1, 0, 1)]
+    assert ers.pace_goals(single, {}, TARGET, 0.5, None) == []
+
+
+def test_pace_tooltip_lines_without_target():
+    lines = report.pace_tooltip_lines(_pace_table_goals(), None, _tr)
+    assert lines[0].startswith('TBR = 0: Read ')
+    assert '(buying stays at' in lines[0]
+    assert lines[1].startswith('TBR = 828: ')
+
+
+def test_pace_tooltip_lines_with_target():
+    goals = [(0, ers.pace_for_target(1655, 2.0, TODAY, TARGET))]
+    lines = report.pace_tooltip_lines(goals, 2.0, _tr)
+    assert lines[0].startswith('TBR = 0: Read ')
+    assert 'purchase target of 2.0' in lines[0]

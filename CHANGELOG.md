@@ -1,3 +1,14 @@
+## [1.8.1] – 2026-11-06
+
+### Fixed
+
+- **Status bar:** The TBR tooltip imported the old required-pace helper
+  and crashed on every status-bar refresh ("cannot import name
+  'pace_lines'") from 1.8.0 on. It now builds its pace lines from the
+  shared `pace_goals()`/`pace_tooltip_lines()`. A test parses the plugin
+  package and fails when a cross-module import names something that does
+  not exist.
+
 ## [1.8.0] – 2026-11-05
 
 ### Added

@@ -35,8 +35,7 @@ from calibre_plugins.readingprogress.export_reading_status import (
     compute_rates,
     forecast_band,
     forecast_line_end,
-    pace_for_target,
-    required_pace,
+    pace_goals,
     robust_rates,
 )
 from calibre_plugins.readingprogress.localization import _
@@ -635,21 +634,10 @@ def pace_table_data(rows, rates, target_date, reduction_factor,
     """``(columns, table_rows)`` for the burn-up header (see
     ``report.pace_table``), or ``(None, None)`` without usable data. Each
     goal is named once; the target date is only in the chart title."""
-    if not rows or len(rows) < 2:
+    goals = pace_goals(rows, rates, target_date, reduction_factor,
+                       target_buy_rate)
+    if not goals:
         return None, None
-    today, backlog = rows[-1][0], rows[-1][3]
-    targets = [0]
-    soft = round(backlog * reduction_factor)
-    if soft != 0:
-        targets.append(soft)
-    goals = []
-    for target in targets:
-        if target_buy_rate is not None:
-            pace = pace_for_target(backlog, target_buy_rate, today,
-                                   target_date, target)
-        else:
-            pace = required_pace(backlog, rates, today, target_date, target)
-        goals.append((target, pace))
     return pace_table(_, goals, target_buy_rate, decimal_sep)
 
 
