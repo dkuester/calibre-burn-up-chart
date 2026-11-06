@@ -1,3 +1,15 @@
+## [1.8.1] – 2026-11-06
+
+### Behoben
+
+- **Statusleiste:** Der SuB-Tooltip importierte den alten Helfer für das
+  nötige Tempo und stürzte bei jeder Aktualisierung der Statusleiste ab
+  („cannot import name 'pace_lines'") – ab 1.8.0. Er baut seine
+  Tempo-Zeilen jetzt aus dem gemeinsamen
+  `pace_goals()`/`pace_tooltip_lines()`. Ein Test parst das Plugin-Paket
+  und schlägt fehl, wenn ein modulübergreifender Import einen nicht
+  existierenden Namen nennt.
+
 ## [1.8.0] – 2026-11-05
 
 ### Hinzugefügt

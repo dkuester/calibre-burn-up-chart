@@ -544,6 +544,31 @@ def pace_for_target(backlog, target_added, today, target_date,
     return pace
 
 
+def pace_goals(rows, rates, target_date, reduction_factor, target_buy_rate):
+    """``[(target_backlog, pace), …]`` for the burn-up chart and the
+    status tooltip: TBR = 0 and, if it differs, the gentle reduction.
+
+    ``pace`` is from :func:`pace_for_target` when a ``target_buy_rate``
+    is set, else from :func:`required_pace`. Empty without usable rows.
+    """
+    if not rows or len(rows) < 2:
+        return []
+    today, backlog = rows[-1][0], rows[-1][3]
+    targets = [0]
+    soft = round(backlog * reduction_factor)
+    if soft != 0:
+        targets.append(soft)
+    goals = []
+    for target in targets:
+        if target_buy_rate is not None:
+            pace = pace_for_target(backlog, target_buy_rate, today,
+                                   target_date, target)
+        else:
+            pace = required_pace(backlog, rates, today, target_date, target)
+        goals.append((target, pace))
+    return goals
+
+
 def book_pages(db_api, pages_column=None):
     """``{book_id: page count}`` for the books with a known page count.
 

@@ -272,13 +272,14 @@ class ReadingProgressAction(InterfaceAction):
 
     def _status_summary(self):
         """``(text, tooltip)`` for the status bar; never shows a dialog."""
-        from calibre_plugins.readingprogress.chart_dialog import pace_lines
         from calibre_plugins.readingprogress.export_reading_status import (
             NoDataError,
             compute_rates,
             export_snapshots,
+            pace_goals,
             robust_rates,
         )
+        from calibre_plugins.readingprogress.report import pace_tooltip_lines
         from calibre_plugins.readingprogress.status_summary import (
             empty_summary,
             error_summary,
@@ -300,9 +301,10 @@ class ReadingProgressAction(InterfaceAction):
             target_date, reduction_factor = _target_settings()
             rates = (robust_rates(compute_rates(rows)) if len(rows) >= 2
                      else robust_rates([]))
-            return status_summary(rows, _, pace_lines(
-                rows, rates, target_date, reduction_factor, _date_format(),
-                _decimal_separator()))
+            goals = pace_goals(rows, rates, target_date, reduction_factor,
+                               config['target_buy_rate'])
+            return status_summary(rows, _, pace_tooltip_lines(
+                goals, config['target_buy_rate'], _, _decimal_separator()))
         except NoDataError:
             return empty_summary(_)
         except Exception:

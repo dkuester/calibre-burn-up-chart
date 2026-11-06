@@ -89,6 +89,21 @@ def adherence_text(adh, tr, decimal_sep='.'):
         over=_number(adh['over_plan'], 0, decimal_sep))
 
 
+def pace_tooltip_lines(goals, target_buy_rate, tr, decimal_sep='.'):
+    """One sentence per goal for the status-bar tooltip, from the
+    ``(target_backlog, pace)`` pairs of ``pace_goals()`` – e.g.
+    'TBR = 0: read 16.6 books/month (buying stays at 10.9) or buy at
+    most 0.3 books/month (reading stays at 6.1)'."""
+    lines = []
+    for target, pace in goals:
+        label = tr("TBR = {tbr}").format(tbr=target)
+        text = (target_pace_text(pace, tr, decimal_sep)
+                if target_buy_rate is not None
+                else pace_text(pace, tr, decimal_sep))
+        lines.append('{}: {}'.format(label, _capitalize(text)))
+    return lines
+
+
 def pace_table(tr, goals, target_buy_rate, decimal_sep='.'):
     """Compact pace table for the burn-up chart: one row per goal, one
     column per way, so the goal is named once instead of in every
