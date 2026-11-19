@@ -44,6 +44,7 @@ from calibre_plugins.readingprogress.report import (
     forecast_text,
     pace_help,
     pace_table,
+    percent,
 )
 from qt.core import (
     QApplication,
@@ -455,7 +456,7 @@ class AnnotationRenderer:
                 x += col_w[j] + TABLE_GAP
             y += PACE_LINE_HEIGHT
 
-    def draw_today(self, painter, scale, today, current_backlog,
+    def draw_today(self, painter, scale, today, current_backlog, total,
                    backlog_color, chrome):
         x = scale.date_to_x(today)
         y = scale.value_to_y(current_backlog)
@@ -464,7 +465,8 @@ class AnnotationRenderer:
         painter.setBrush(backlog_color)
         painter.drawEllipse(QPointF(x, y), 5, 5)
 
-        text = _("Today: {count} unread").format(count=current_backlog)
+        text = _("Today: {count} unread ({share})").format(
+            count=current_backlog, share=percent(current_backlog, total))
         font = QFont()
         font.setPointSize(10)
         painter.setFont(font)
@@ -763,7 +765,8 @@ class ChartWidget(QWidget):
             self._draw_forecast_note(painter, scale)
 
         self._annotation.draw_today(painter, scale, today, current_backlog,
-                                    self.colors['backlog'], self.chrome)
+                                    self.rows[-1][1], self.colors['backlog'],
+                                    self.chrome)
         self._legend.draw(painter, plot, self.target_date, self.date_format,
                            target_soft, self._forecast_name(), self.colors,
                            self.chrome, show_reference=x_max > today,
@@ -974,9 +977,12 @@ class ChartWidget(QWidget):
             QToolTip.hideText()
             return
 
-        text = _("{date}\nTotal: {total}\nRead: {read}\nBacklog: {backlog}") \
-            .format(date=best[0].strftime(self.date_format),
-                    total=best[1], read=best[2], backlog=best[3])
+        text = _("{date}\nTotal: {total}\nRead: {read} ({read_share})\n"
+                 "Backlog: {backlog} ({backlog_share})").format(
+            date=best[0].strftime(self.date_format),
+            total=best[1], read=best[2], backlog=best[3],
+            read_share=percent(best[2], best[1], self.decimal_sep),
+            backlog_share=percent(best[3], best[1], self.decimal_sep))
         QToolTip.showText(_global_pos(event), text, self)
 
 

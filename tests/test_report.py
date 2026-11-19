@@ -53,6 +53,7 @@ def test_markdown_contains_all_sections():
                     '## Age of the TBR', '## Data quality'):
         assert heading in text
     assert '| Read | 50 (25 %) |' in text
+    assert '| Unread (TBR) | 150 (75 %) |' in text
     assert '| Change of the TBR | +18 |' in text
     assert ('| Forecast (typical month of the last 24 months) | TBR = 0 '
             'between 05.2031 and 11.2034 |') in text
@@ -305,3 +306,10 @@ def test_report_includes_purchase_target_row():
             '26 over plan') in goal['rows']
     assert ('Required pace (TBR = 0)',
             'Read 9.0 books/month at a purchase target of 2.0') in goal['rows']
+
+
+@pytest.mark.parametrize('part, whole, expected', [
+    (240, 652, '37 %'), (412, 652, '63 %'), (0, 10, '0 %'), (5, 0, '–'),
+])
+def test_percent(part, whole, expected):
+    assert report.percent(part, whole) == expected

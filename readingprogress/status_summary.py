@@ -20,6 +20,11 @@ def _signed(n):
     return '±0'
 
 
+def _share(part, total):
+    """Whole-number percent of ``total``; 0 for an empty library."""
+    return round(100 * part / total) if total else 0
+
+
 def _months_back(day, months):
     """End of the month ``months`` before the month of ``day``."""
     index = day.year * 12 + day.month - 1 - months
@@ -58,8 +63,9 @@ def status_summary(rows, tr, pace_lines=()):
     _day, total, read, backlog = rows[-1]
     text = tr("TBR: {backlog}").format(backlog=backlog)
     lines = [tr("{total} books, {read} of them read ({percent} %)").format(
-        total=total, read=read,
-        percent=round(100 * read / total) if total else 0)]
+            total=total, read=read, percent=_share(read, total)),
+        tr("TBR: {backlog} ({percent} % of the library)").format(
+            backlog=backlog, percent=_share(backlog, total))]
     trend = backlog_trend(rows)
     if trend is not None:
         then, change = trend

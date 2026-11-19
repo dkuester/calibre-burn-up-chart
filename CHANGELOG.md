@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Added
+
+- **Shares of read books and TBR:** Next to the counts, the library now
+  shows what share of all books is read and what share is still in the
+  TBR: in the burn-up chart's hover tooltip ("Read: 412 (63 %)",
+  "Backlog: 240 (37 %)"), in its "Today" label, in the status-bar
+  tooltip (a new line "TBR: 240 (37 % of the library)") and in the
+  report's "Library" section, where "Unread (TBR)" now has a share like
+  "Read". Both shares are rounded on their own, so they can add up to
+  99 or 101 %.
+
 ## [1.8.1] – 2026-11-06
 
 ### Fixed

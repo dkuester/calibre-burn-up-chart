@@ -18,7 +18,9 @@ def _number(value, decimals, decimal_sep):
     return '{:.{}f}'.format(value, decimals).replace('.', decimal_sep)
 
 
-def _percent(part, whole, decimal_sep):
+def percent(part, whole, decimal_sep='.'):
+    """``part`` as a whole-number share of ``whole``, e.g. '37 %';
+    '–' if ``whole`` is 0."""
     if not whole:
         return '–'
     return _number(100 * part / whole, 0, decimal_sep) + ' %'
@@ -253,7 +255,7 @@ def speed_rows(speed, tr, decimal_sep='.'):
         (tr("Based on"), tr(
             "{known} of {read} read books with a page count ({percent})"
         ).format(known=speed['known_books'], read=speed['read_books'],
-                 percent=_percent(speed['known_books'], speed['read_books'],
+                 percent=percent(speed['known_books'], speed['read_books'],
                                   decimal_sep))),
     ]
 
@@ -294,7 +296,7 @@ def goal_title(summary, tr, decimal_sep='.'):
     return tr("Reading goal {year}: {read} of {goal} books "
               "({percent})").format(
         year=summary['year'], read=summary['read'], goal=summary['goal'],
-        percent=_percent(summary['read'], summary['goal'], decimal_sep))
+        percent=percent(summary['read'], summary['goal'], decimal_sep))
 
 
 def goal_status_text(summary, tr, decimal_sep='.'):
@@ -335,7 +337,7 @@ def goal_pages_text(summary, tr, decimal_sep='.'):
     needed while the year runs."""
     text = tr("{read} of {goal} pages ({percent})").format(
         read=summary['read_pages'], goal=summary['goal_pages'],
-        percent=_percent(summary['read_pages'], summary['goal_pages'],
+        percent=percent(summary['read_pages'], summary['goal_pages'],
                          decimal_sep))
     if summary['pages_per_day']:
         text += ', ' + tr("{pages} pages/day needed").format(
@@ -385,7 +387,7 @@ def goal_sections(goal, tr, date_format, decimal_sep='.'):
     rows = [
         (tr("Books on the list"), str(s['goal'])),
         (tr("Read"), '{} ({})'.format(
-            s['read'], _percent(s['read'], s['goal'], decimal_sep))),
+            s['read'], percent(s['read'], s['goal'], decimal_sep))),
     ]
     if s['state'] == 'running':
         rows.append((tr("Target today"),
@@ -455,7 +457,7 @@ def goal_sections(goal, tr, date_format, decimal_sep='.'):
             [tr("Year"), tr("Books on the list"), tr("Read"), tr("Share"),
              tr("Read in total (own data)")],
             [[str(r['year']), str(r['goal']), str(r['read']),
-              _percent(r['read'], r['goal'], decimal_sep),
+              percent(r['read'], r['goal'], decimal_sep),
               str(r['own_read'])] for r in goal['years']],
         ),
     })
@@ -493,8 +495,10 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
             (tr("Books in total"), str(data['total'])),
             (tr("Read"), '{} ({})'.format(
                 data['read'],
-                _percent(data['read'], data['total'], decimal_sep))),
-            (tr("Unread (TBR)"), str(data['backlog'])),
+                percent(data['read'], data['total'], decimal_sep))),
+            (tr("Unread (TBR)"), '{} ({})'.format(
+                data['backlog'],
+                percent(data['backlog'], data['total'], decimal_sep))),
         ],
     })
 
@@ -573,7 +577,7 @@ def build_sections(data, tr, date_format, decimal_sep='.'):
             'heading': tr("Age of the TBR"),
             'table': (
                 [tr("Time in the TBR"), tr("Books"), tr("Share")],
-                [[label, str(count), _percent(count, total, decimal_sep)]
+                [[label, str(count), percent(count, total, decimal_sep)]
                  for label, count in buckets],
             ),
             'note': tr("Median age: {years} years").format(
