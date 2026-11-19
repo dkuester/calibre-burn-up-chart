@@ -1,3 +1,16 @@
+## [Unveröffentlicht]
+
+### Hinzugefügt
+
+- **Anteile von Gelesen und SuB:** Neben den Zahlen zeigt das Plugin
+  jetzt, welcher Anteil aller Bücher gelesen ist und welcher noch im SuB
+  liegt: im Hover-Tooltip des Burn-up-Charts („Gelesen: 412 (63 %)“,
+  „SuB: 240 (37 %)“), im „Heute“-Label, im Tooltip der Statusleiste
+  (neue Zeile „SuB: 240 (37 % der Bibliothek)“) und im Bericht unter
+  „Bibliothek“, wo „Ungelesen (SuB)“ jetzt wie „Gelesen“ einen Anteil
+  hat. Beide Anteile werden einzeln gerundet und ergeben zusammen
+  deshalb manchmal 99 oder 101 %.
+
 ## [1.8.1] – 2026-11-06
 
 ### Behoben

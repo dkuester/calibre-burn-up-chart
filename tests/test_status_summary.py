@@ -25,6 +25,7 @@ def test_owner_example():
     assert text == 'TBR: 1652 ▲172'
     assert tooltip.split('\n') == [
         '2125 books, 473 of them read (22 %)',
+        'TBR: 1652 (78 % of the library)',
         '12 months ago: 1480 (+172)',
         'Pace line.',
         HINT,
@@ -60,7 +61,8 @@ def test_young_library_has_no_trend():
     assert ss.backlog_trend(rows) is None
     text, tooltip = ss.status_summary(rows, _tr)
     assert text == 'TBR: 8'
-    assert tooltip.split('\n') == ['10 books, 2 of them read (20 %)', HINT]
+    assert tooltip.split('\n') == ['10 books, 2 of them read (20 %)',
+                                    'TBR: 8 (80 % of the library)', HINT]
 
 
 def test_months_back_clamps_day_and_crosses_year():
@@ -72,7 +74,8 @@ def test_months_back_clamps_day_and_crosses_year():
 def test_no_books_counts_zero_percent():
     text, tooltip = ss.status_summary([(date(2026, 1, 1), 0, 0, 0)], _tr)
     assert text == 'TBR: 0'
-    assert tooltip.startswith('0 books, 0 of them read (0 %)')
+    assert tooltip.startswith('0 books, 0 of them read (0 %)\n'
+                              'TBR: 0 (0 % of the library)')
 
 
 def test_empty_summary():

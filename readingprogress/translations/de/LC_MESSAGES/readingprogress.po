@@ -44,6 +44,9 @@ msgstr "SuB: {backlog}"
 msgid "{total} books, {read} of them read ({percent} %)"
 msgstr "{total} Bücher, davon {read} gelesen ({percent} %)"
 
+msgid "TBR: {backlog} ({percent} % of the library)"
+msgstr "SuB: {backlog} ({percent} % der Bibliothek)"
+
 msgid "{months} months ago: {backlog} ({change})"
 msgstr "Vor {months} Monaten: {backlog} ({change})"
 
@@ -205,11 +208,15 @@ msgstr "Unsicherheit (80 % der Fälle)"
 msgid "Realistic: {forecast}"
 msgstr "Realistisch: {forecast}"
 
-msgid "{date}\nTotal: {total}\nRead: {read}\nBacklog: {backlog}"
-msgstr "{date}\nGesamt: {total}\nGelesen: {read}\nSuB: {backlog}"
+msgid ""
+"{date}\nTotal: {total}\nRead: {read} ({read_share})\n"
+"Backlog: {backlog} ({backlog_share})"
+msgstr ""
+"{date}\nGesamt: {total}\nGelesen: {read} ({read_share})\n"
+"SuB: {backlog} ({backlog_share})"
 
-msgid "Today: {count} unread"
-msgstr "Heute: {count} ungelesen"
+msgid "Today: {count} unread ({share})"
+msgstr "Heute: {count} ungelesen ({share})"
 
 msgid "Number of books"
 msgstr "Anzahl Bücher"
